@@ -323,10 +323,16 @@
       updateClock();
       window.setInterval(updateClock, 1000);
 
-      fetch(GAS_API_URL)
-        .then(res => res.json())
-        .then(config => applyConfig(config))
-        .catch(err => showFatal('설정을 불러오지 못했습니다. URL을 확인해 주세요.'));
+     applyConfig({
+  appTitle: 'LG전자 K-뉴딜 아카데미',
+  appSubtitle: '대전 교육장 입·퇴실 기록',
+  locationText: '대전 교육장',
+  classes: ['AX', 'SF'],
+  requireDailyCode: false,
+  geoRequired: true,
+  privacyNotice: '입력한 정보는 교육 운영 및 출결 확인 목적으로만 사용됩니다.',
+  supportText: '오류가 계속되면 운영매니저에게 알려주세요.'
+});
     }
 
     function bindEvents() {
