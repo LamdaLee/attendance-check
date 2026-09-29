@@ -1,0 +1,1229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!doctype html&gt;</p>
+<p class="p1">&lt;html lang="ko"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;base target="_top" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="utf-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="color-scheme" content="light" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>:root {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--navy-950: #0d1730;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--navy-900: #14203a;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--navy-800: #1c2d4d;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--blue-600: #2e68df;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--blue-500: #3e7cf0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--blue-100: #eaf1ff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--mint-600: #087c70;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--mint-100: #e3f7f3;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--red-600: #cc3a4a;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--red-100: #ffebee;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--amber-700: #986300;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--amber-100: #fff4d6;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--ink-900: #182033;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--ink-700: #3d475d;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--ink-500: #6b7487;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--line: #dce2ec;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--surface: #ffffff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--page: #f3f6fb;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--shadow: 0 22px 70px rgba(22, 34, 60, 0.14);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--radius-xl: 26px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--radius-lg: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>--radius-md: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>* {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-sizing: border-box;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>html {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--page);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-900);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>radial-gradient(circle at 10% 0%, rgba(62, 124, 240, 0.12), transparent 35%),</p>
+<p class="p1"><span class="Apple-converted-space">          </span>radial-gradient(circle at 100% 18%, rgba(8, 124, 112, 0.1), transparent 28%),</p>
+<p class="p1"><span class="Apple-converted-space">          </span>var(--page);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-family:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",</p>
+<p class="p1"><span class="Apple-converted-space">          </span>"Segoe UI", sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>-webkit-font-smoothing: antialiased;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>button,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>input {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font: inherit;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>button {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>-webkit-tap-highlight-color: transparent;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.page {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: min(100%, 620px);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 26px 16px calc(32px + env(safe-area-inset-bottom));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.app-card {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 1px solid rgba(220, 226, 236, 0.86);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: var(--radius-xl);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: rgba(255, 255, 255, 0.96);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: var(--shadow);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.hero {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 28px 26px 24px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>linear-gradient(135deg, rgba(20, 32, 58, 0.98), rgba(28, 55, 98, 0.96)),</p>
+<p class="p1"><span class="Apple-converted-space">          </span>var(--navy-900);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.hero::after {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: absolute;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 190px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 190px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>right: -62px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>top: -92px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 40px solid rgba(255, 255, 255, 0.055);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>content: "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.brand-row {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z-index: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.brand-mark {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flex: 0 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 44px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 44px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>place-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 1px solid rgba(255, 255, 255, 0.22);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: rgba(255, 255, 255, 0.1);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>letter-spacing: -0.03em;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.eyebrow {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 0 5px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: rgba(255, 255, 255, 0.65);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 750;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>letter-spacing: 0.12em;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>text-transform: uppercase;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>h1 {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: clamp(21px, 5vw, 27px);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>letter-spacing: -0.045em;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.25;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.hero-subtitle {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z-index: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>max-width: 450px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 18px 0 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: rgba(255, 255, 255, 0.76);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.6;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.meta-row {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z-index: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flex-wrap: wrap;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin-top: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.meta-pill {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: inline-flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 7px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 30px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 6px 10px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 1px solid rgba(255, 255, 255, 0.15);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 999px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: rgba(255, 255, 255, 0.87);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: rgba(255, 255, 255, 0.08);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 650;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.status-dot {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 7px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 7px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #62e0c7;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 0 0 4px rgba(98, 224, 199, 0.12);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.form-area {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 26px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.loading-banner,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>.fatal-banner {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>align-items: flex-start;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin-bottom: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 13px 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: var(--radius-md);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.5;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.loading-banner {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #28559f;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--blue-100);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.fatal-banner {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #a42e3c;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--red-100);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.spinner {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: inline-block;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flex: 0 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin-top: 1px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 2px solid currentColor;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-right-color: transparent;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>animation: spin 0.7s linear infinite;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.field-group {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 0 21px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.field-label {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>justify-content: space-between;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 0 9px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-700);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 750;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.required {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--blue-600);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.hint {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-500);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 550;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.class-picker {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>grid-template-columns: repeat(2, minmax(0, 1fr));</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 9px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.class-option {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 51px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 10px 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 1px solid var(--line);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: var(--radius-md);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-700);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 750;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transition:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>border-color 0.15s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>box-shadow 0.15s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>color 0.15s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>background 0.15s ease;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.class-option:hover {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-color: #a8bce3;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.class-option[aria-pressed="true"] {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-color: var(--blue-500);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #1f58c6;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--blue-100);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 0 0 3px rgba(62, 124, 240, 0.09);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.text-input {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 54px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 0 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 1px solid var(--line);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: var(--radius-md);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>outline: none;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-900);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 620;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transition:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>border-color 0.15s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>box-shadow 0.15s ease;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.text-input::placeholder {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #a0a8b8;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 500;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.text-input:focus {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-color: var(--blue-500);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 0 0 4px rgba(62, 124, 240, 0.11);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.text-input[aria-invalid="true"] {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-color: var(--red-600);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 0 0 4px rgba(204, 58, 74, 0.08);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.field-error {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 7px 2px 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--red-600);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 620;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.divider {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 1px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 25px 0 20px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--line);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-help {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 0 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-500);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-grid {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>grid-template-columns: repeat(2, minmax(0, 1fr));</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-button {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 58px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 13px 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transition:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>transform 0.12s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>filter 0.15s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>opacity 0.15s ease;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-button:hover:not(:disabled) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>filter: brightness(1.04);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-button:active:not(:disabled) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transform: translateY(1px) scale(0.995);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-button:disabled {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cursor: wait;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>opacity: 0.62;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-in {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: linear-gradient(135deg, #2d67dd, #3d82f2);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 11px 24px rgba(46, 104, 223, 0.22);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-out {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: linear-gradient(135deg, #137d73, #18a08f);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 11px 24px rgba(8, 124, 112, 0.2);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-leave {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #684300;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: linear-gradient(135deg, #ffd76a, #f4bd42);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 11px 24px rgba(196, 134, 14, 0.18);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.action-return {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: linear-gradient(135deg, #6657c9, #8174e2);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 11px 24px rgba(80, 67, 177, 0.2);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.button-inner {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: inline-flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.button-icon {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.privacy-note {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gap: 9px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 22px 0 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 12px 13px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-500);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #f6f8fb;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.55;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.privacy-icon {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>flex: 0 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-700);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.page-footer {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 17px auto 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #7a8497;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.6;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.dialog-backdrop {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: fixed;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z-index: 50;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>inset: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>place-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: rgba(9, 17, 34, 0.58);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>opacity: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>visibility: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transition:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>opacity 0.18s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>visibility 0.18s ease;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.dialog-backdrop.is-open {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>opacity: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>visibility: visible;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-dialog {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: min(100%, 390px);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 28px 24px 22px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 24px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 28px 80px rgba(4, 12, 28, 0.32);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transform: translateY(10px) scale(0.98);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transition: transform 0.2s ease;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.dialog-backdrop.is-open .result-dialog {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transform: translateY(0) scale(1);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-icon {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 64px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>height: 64px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 auto 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>place-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: linear-gradient(135deg, #0f8a7d, #20ad97);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 13px 28px rgba(8, 124, 112, 0.22);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 29px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 900;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-title {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-900);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 23px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 850;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>letter-spacing: -0.035em;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-message {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 10px 0 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-700);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.6;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-details {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>grid-template-columns: repeat(3, 1fr);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: 0 0 18px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 1px solid var(--line);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #f8fafc;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-detail {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 12px 7px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-right: 1px solid var(--line);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-detail:last-child {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-right: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-detail-label {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: block;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin-bottom: 5px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-500);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-detail-value {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: block;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--ink-900);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.judgement-normal {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--mint-600);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.judgement-alert {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--amber-700);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.result-notice {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>margin: -5px 0 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 9px 10px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: var(--amber-700);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--amber-100);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.5;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.dialog-close {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>min-height: 48px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: var(--navy-900);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.toast {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>position: fixed;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>z-index: 70;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>left: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>bottom: calc(20px + env(safe-area-inset-bottom));</p>
+<p class="p1"><span class="Apple-converted-space">        </span>width: min(calc(100% - 32px), 520px);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>padding: 14px 16px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>border-radius: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>background: #9c2d3b;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>box-shadow: 0 16px 45px rgba(30, 14, 18, 0.28);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>font-weight: 650;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>line-height: 1.5;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>opacity: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>visibility: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transform: translate(-50%, 12px);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transition:</p>
+<p class="p1"><span class="Apple-converted-space">          </span>opacity 0.18s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>transform 0.18s ease,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>visibility 0.18s ease;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.toast.is-visible {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>opacity: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>visibility: visible;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>transform: translate(-50%, 0);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>.hidden {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>display: none !important;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>@keyframes spin {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>to {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>transform: rotate(360deg);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>@media (max-width: 440px) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.page {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>padding: 12px 10px calc(22px + env(safe-area-inset-bottom));</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.app-card {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>border-radius: 21px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.hero {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>padding: 23px 20px 21px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.form-area {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>padding: 22px 18px 21px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.action-grid {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>gap: 9px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.action-button {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>min-height: 56px;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>padding-inline: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>@media (prefers-reduced-motion: reduce) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>*,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>*::before,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>*::after {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>scroll-behavior: auto !important;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>animation-duration: 0.01ms !important;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>animation-iteration-count: 1 !important;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>transition-duration: 0.01ms !important;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;main class="page"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;section class="app-card" aria-labelledby="app-title"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;header class="hero"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="brand-row"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="brand-mark" aria-hidden="true"&gt;K&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;p class="eyebrow"&gt;Attendance&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;h1 id="app-title"&gt;교육생 출결 기록&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;p class="hero-subtitle" id="app-subtitle"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>입실·퇴실·외출·복귀 정보를 정확하게 입력해 주세요.</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="meta-row"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="meta-pill hidden" id="location-pill"&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="meta-pill"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span class="status-dot" aria-hidden="true"&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span id="live-clock"&gt;시간 확인 중&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="form-area"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="loading-banner" id="loading-banner" role="status"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="spinner" aria-hidden="true"&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span&gt;출결 설정을 불러오고 있습니다.&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="fatal-banner hidden" id="fatal-banner" role="alert"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;form id="attendance-form" novalidate&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;fieldset class="field-group" id="class-fieldset" disabled&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;legend class="field-label"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span&gt;과정 선택 &lt;span class="required"&gt;*&lt;/span&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/legend&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="class-picker" id="class-picker"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;p class="field-error" id="class-error" aria-live="polite"&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/fieldset&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="field-group"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;label class="field-label" for="student-name"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span&gt;이름 &lt;span class="required"&gt;*&lt;/span&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;input</p>
+<p class="p1"><span class="Apple-converted-space">                </span>class="text-input"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>id="student-name"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>name="studentName"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>type="text"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>maxlength="40"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>autocomplete="off"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>placeholder="명단에 등록된 이름"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>disabled</p>
+<p class="p1"><span class="Apple-converted-space">                </span>required</p>
+<p class="p1"><span class="Apple-converted-space">              </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;p class="field-error" id="name-error" aria-live="polite"&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="field-group"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;label class="field-label" for="phone-last4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span&gt;휴대전화 뒷자리 &lt;span class="required"&gt;*&lt;/span&gt;&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span class="hint"&gt;숫자 4자리&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;input</p>
+<p class="p1"><span class="Apple-converted-space">                </span>class="text-input"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>id="phone-last4"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>name="phoneLast4"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>type="text"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>inputmode="numeric"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>pattern="[0-9]{4}"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>maxlength="4"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>autocomplete="off"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>placeholder="예: 1234"</p>
+<p class="p1"><span class="Apple-converted-space">                </span>disabled</p>
+<p class="p1"><span class="Apple-converted-space">                </span>required</p>
+<p class="p1"><span class="Apple-converted-space">              </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;p class="field-error" id="phone-error" aria-live="polite"&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="divider"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;p class="action-help"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>실제 기록은 서버 시간을 기준으로 저장됩니다. 외출 후에는 복귀를 꼭 기록해 주세요. 출결과 본인 기록 조회에는 강의장 위치 확인이 필요합니다.</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="action-grid"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button class="action-button action-in" id="check-in-button" type="button" disabled&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span class="button-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span class="button-icon" aria-hidden="true"&gt;→&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span&gt;입실하기&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button class="action-button action-out" id="check-out-button" type="button" disabled&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span class="button-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span class="button-icon" aria-hidden="true"&gt;←&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span&gt;퇴실하기&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button class="action-button action-leave" id="leave-button" type="button" disabled&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span class="button-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span class="button-icon" aria-hidden="true"&gt;↗&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span&gt;외출하기&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;button class="action-button action-return" id="return-button" type="button" disabled&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;span class="button-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span class="button-icon" aria-hidden="true"&gt;↙&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                  </span>&lt;span&gt;복귀하기&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="portal-open" type="button" id="my-records-button"&gt;내 기록 · 스탬프 · 정정 요청&lt;/button&gt;&lt;button class="portal-open" type="button" id="location-test-button"&gt;이 기기 위치 확인 시험&lt;/button&gt;&lt;p class="action-help" id="location-test-result" role="status"&gt;&lt;/p&gt;&lt;p class="action-help" style="margin-top:12px"&gt;위의 반·이름·전화번호 뒷자리를 입력하고 강의장에서 각 출결 버튼을 누르세요. 기록과 스탬프는 별도로 조회할 수 있습니다.&lt;/p&gt;&lt;p class="privacy-note"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span class="privacy-icon" aria-hidden="true"&gt;●&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;span id="privacy-notice"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>입력한 정보는 교육 운영 및 출결 확인 목적으로만 사용됩니다.</p>
+<p class="p1"><span class="Apple-converted-space">              </span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/form&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/section&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;p class="page-footer" id="support-text"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>오류가 계속되면 운영매니저에게 알려주세요.</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/main&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="dialog-backdrop" id="result-backdrop" role="presentation"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;section</p>
+<p class="p1"><span class="Apple-converted-space">        </span>class="result-dialog"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>id="result-dialog"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>role="dialog"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>aria-modal="true"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>aria-labelledby="result-title"</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="result-icon" aria-hidden="true"&gt;✓&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2 class="result-title" id="result-title"&gt;처리되었습니다&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="result-message" id="result-message"&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="result-details"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-detail"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="result-detail-label"&gt;과정&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;strong class="result-detail-value" id="result-class"&gt;-&lt;/strong&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-detail"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="result-detail-label"&gt;기록시간&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;strong class="result-detail-value" id="result-time"&gt;-&lt;/strong&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-detail"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="result-detail-label"&gt;판정&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;strong class="result-detail-value" id="result-judgement"&gt;-&lt;/strong&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="result-notice hidden" id="result-notice"&gt;&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="dialog-close" id="dialog-close" type="button"&gt;확인&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/section&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="toast" id="toast" role="alert" aria-live="assertive"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>'use strict';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const state = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>config: null,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>selectedClass: '',</p>
+<p class="p1"><span class="Apple-converted-space">        </span>submitting: false,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>toastTimer: null,</p>
+<p class="p1"><span class="Apple-converted-space">      </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const elements = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>form: document.getElementById('attendance-form'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>classFieldset: document.getElementById('class-fieldset'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>classPicker: document.getElementById('class-picker'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>classError: document.getElementById('class-error'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>nameInput: document.getElementById('student-name'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>nameError: document.getElementById('name-error'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>phoneInput: document.getElementById('phone-last4'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>phoneError: document.getElementById('phone-error'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>checkInButton: document.getElementById('check-in-button'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>checkOutButton: document.getElementById('check-out-button'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>leaveButton: document.getElementById('leave-button'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>returnButton: document.getElementById('return-button'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>loadingBanner: document.getElementById('loading-banner'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>fatalBanner: document.getElementById('fatal-banner'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>appTitle: document.getElementById('app-title'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>appSubtitle: document.getElementById('app-subtitle'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>locationPill: document.getElementById('location-pill'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>privacyNotice: document.getElementById('privacy-notice'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>supportText: document.getElementById('support-text'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>liveClock: document.getElementById('live-clock'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultBackdrop: document.getElementById('result-backdrop'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultDialog: document.getElementById('result-dialog'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultTitle: document.getElementById('result-title'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultMessage: document.getElementById('result-message'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultClass: document.getElementById('result-class'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultTime: document.getElementById('result-time'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultJudgement: document.getElementById('result-judgement'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resultNotice: document.getElementById('result-notice'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>dialogClose: document.getElementById('dialog-close'),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>toast: document.getElementById('toast'),</p>
+<p class="p1"><span class="Apple-converted-space">      </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.addEventListener('DOMContentLoaded', initialize);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// STEP 1에서 복사한 웹 앱 URL을 넣으세요.</p>
+<p class="p1">const GAS_API_URL = "https://script.google.com/macros/s/AKfycb.../exec";</p>
+<p class="p2"><br></p>
+<p class="p1">// 1. 초기 설정 로드 (initialize 함수 내부)</p>
+<p class="p1">function initialize() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>bindEvents();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>updateClock();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>window.setInterval(updateClock, 1000);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// fetch를 통해 구글 스프레드시트 설정 가져오기</p>
+<p class="p1"><span class="Apple-converted-space">  </span>fetch(GAS_API_URL)</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.then(res =&gt; res.json())</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.then(config =&gt; applyConfig(config))</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.catch(err =&gt; showFatal("설정을 불러오지 못했습니다: " + err.message));</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// 2. 출결 제출 (submitAttendance 함수 내부)</p>
+<p class="p1">async function submitAttendance(action) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (state.submitting || !state.config || !validateForm()) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.submitting = true;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>setSubmittingState(true, action);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>const payload = {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>className: state.selectedClass,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>name: elements.nameInput.value.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>dailyCode: state.config.requireDailyCode ? elements.codeInput.value.trim() : '',</p>
+<p class="p1"><span class="Apple-converted-space">    </span>action: action,</p>
+<p class="p1"><span class="Apple-converted-space">  </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>try {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>payload.position = await spLocate();<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>} catch (error) {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>state.submitting = false;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSubmittingState(false);<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>showToast(getErrorMessage(error));<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// 구글 Apps Script로 POST 요청 전송</p>
+<p class="p1"><span class="Apple-converted-space">  </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const response = await fetch(GAS_API_URL, {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>method: "POST",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// GAS 리다이렉트 처리 및 CORS 우회를 위해 text/plain 전송 권장</p>
+<p class="p1"><span class="Apple-converted-space">      </span>headers: { "Content-Type": "text/plain;charset=utf-8" },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>body: JSON.stringify(payload),</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const result = await response.json();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>state.submitting = false;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSubmittingState(false);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (result.ok) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>handleSuccess(result.data);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>showToast(result.error || "오류가 발생했습니다.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>} catch (err) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>state.submitting = false;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setSubmittingState(false);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>showToast("서버 통신 오류가 발생했습니다. 다시 시도해 주세요.");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function bindEvents() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.phoneInput.addEventListener('input', function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>this.value = this.value.replace(/\D/g, '').slice(0, 4);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>clearFieldError(this, elements.phoneError);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.nameInput.addEventListener('input', function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>clearFieldError(this, elements.nameError);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.checkInButton.addEventListener('click', function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>submitAttendance('IN');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.checkOutButton.addEventListener('click', function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>submitAttendance('OUT');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.leaveButton.addEventListener('click', function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>submitAttendance('LEAVE');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.returnButton.addEventListener('click', function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>submitAttendance('RETURN');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.form.addEventListener('submit', function (event) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>event.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">          </span>submitAttendance('IN');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.dialogClose.addEventListener('click', closeResultDialog);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultBackdrop.addEventListener('click', function (event) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (event.target === elements.resultBackdrop) closeResultDialog();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.addEventListener('keydown', function (event) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (event.key === 'Escape' &amp;&amp; elements.resultBackdrop.classList.contains('is-open')) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>closeResultDialog();</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function applyConfig(config) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!config || !Array.isArray(config.classes) || config.classes.length === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>showFatal('반 설정을 불러오지 못했습니다. 관리자에게 알려주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>state.config = config;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.appTitle.textContent = config.appTitle || '교육생 출결 기록';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.appSubtitle.textContent =</p>
+<p class="p1"><span class="Apple-converted-space">          </span>config.appSubtitle || '입실·퇴실·외출·복귀 정보를 정확하게 입력해 주세요.';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.privacyNotice.textContent = config.privacyNotice || '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.supportText.textContent = config.supportText || '';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (config.locationText) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.locationPill.textContent = config.locationText;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.locationPill.classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>renderClassPicker(config.classes);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setFormEnabled(true);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.loadingBanner.classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.nameInput.focus();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function renderClassPicker(classes) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.classPicker.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const columnCount = Math.min(Math.max(classes.length, 1), 3);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.classPicker.style.gridTemplateColumns =</p>
+<p class="p1"><span class="Apple-converted-space">          </span>'repeat(' + columnCount + ', minmax(0, 1fr))';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>classes.forEach(function (className, index) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const button = document.createElement('button');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.type = 'button';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.className = 'class-option';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.textContent = className;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.dataset.value = className;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.setAttribute('aria-pressed', 'false');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.addEventListener('click', function () {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>selectClass(className);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>});</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.classPicker.appendChild(button);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (classes.length === 1 || index === 0) selectClass(classes[0]);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function selectClass(className) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>state.selectedClass = className;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>Array.prototype.forEach.call(elements.classPicker.children, function (button) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.setAttribute('aria-pressed', String(button.dataset.value === className));</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.classError.textContent = '';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function validateForm() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let valid = true;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>clearAllErrors();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!state.selectedClass) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.classError.textContent = '반을 선택해 주세요.';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>valid = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const name = elements.nameInput.value.trim();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!name) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>setFieldError(elements.nameInput, elements.nameError, '이름을 입력해 주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>valid = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const phone = elements.phoneInput.value.replace(/\D/g, '');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!/^\d{4}$/.test(phone)) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>setFieldError(</p>
+<p class="p1"><span class="Apple-converted-space">            </span>elements.phoneInput,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>elements.phoneError,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'휴대전화 뒷자리 숫자 4개를 입력해 주세요.'</p>
+<p class="p1"><span class="Apple-converted-space">          </span>);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>valid = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!valid) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const firstInvalid = elements.form.querySelector('[aria-invalid="true"]');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (firstInvalid) firstInvalid.focus();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return valid;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>async function submitAttendance(action) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (state.submitting || !state.config || !validateForm()) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>state.submitting = true;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setSubmittingState(true, action);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const payload = {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>className: state.selectedClass,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>name: elements.nameInput.value.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">          </span>phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),</p>
+<p class="p1"><span class="Apple-converted-space">          </span>action: action,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>try { payload.position = await spLocate(); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>catch (error) { state.submitting = false; setSubmittingState(false); showToast(getErrorMessage(error)); return; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>google.script.run</p>
+<p class="p1"><span class="Apple-converted-space">          </span>.withSuccessHandler(function (result) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>state.submitting = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>setSubmittingState(false);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>handleSuccess(result);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>})</p>
+<p class="p1"><span class="Apple-converted-space">          </span>.withFailureHandler(function (error) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>state.submitting = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>setSubmittingState(false);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>showToast(getErrorMessage(error));</p>
+<p class="p1"><span class="Apple-converted-space">          </span>})</p>
+<p class="p1"><span class="Apple-converted-space">          </span>.submitAttendance(payload);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function handleSuccess(result) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!result || !result.ok) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>showToast('처리 결과를 확인하지 못했습니다. 다시 시도해 주세요.');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultTitle.textContent = result.action + ' 처리 완료';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultMessage.textContent = result.message || '출결 기록이 저장되었습니다.';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultClass.textContent = result.className || '-';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultTime.textContent = result.recordedAt || '-';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultJudgement.textContent = result.judgement || '-';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultJudgement.className =</p>
+<p class="p1"><span class="Apple-converted-space">          </span>'result-detail-value ' +</p>
+<p class="p1"><span class="Apple-converted-space">          </span>(result.judgement === '정상' ? 'judgement-normal' : 'judgement-alert');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (result.notice) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.resultNotice.textContent = result.notice + ' · LMS 입·퇴실도 확인해 주세요.';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.resultNotice.classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.resultNotice.textContent = 'LMS 입·퇴실도 확인해 주세요. 이 기록은 출결 확인용 보조자료입니다.';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.resultNotice.classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultBackdrop.classList.add('is-open');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.dialogClose.focus();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resetSensitiveFields();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function closeResultDialog() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.resultBackdrop.classList.remove('is-open');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.nameInput.focus();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function resetSensitiveFields() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.nameInput.value = '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.phoneInput.value = '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>clearAllErrors();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function setSubmittingState(isSubmitting, activeAction) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const buttons = [</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.checkInButton,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.checkOutButton,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.leaveButton,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.returnButton,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>buttons.forEach(function (button) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>button.disabled = isSubmitting;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const actionButtons = {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>IN: elements.checkInButton,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>OUT: elements.checkOutButton,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>LEAVE: elements.leaveButton,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>RETURN: elements.returnButton,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const activeButton = actionButtons[activeAction] || elements.checkInButton;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (isSubmitting) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>activeButton.dataset.originalHtml = activeButton.innerHTML;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>activeButton.innerHTML =</p>
+<p class="p1"><span class="Apple-converted-space">            </span>'&lt;span class="button-inner"&gt;&lt;span class="spinner" aria-hidden="true"&gt;&lt;/span&gt;&lt;span&gt;기록 중&lt;/span&gt;&lt;/span&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>buttons.forEach(function (button) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (button !== activeButton) button.style.opacity = '0.45';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>buttons.forEach(function (button) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (button.dataset.originalHtml) {</p>
+<p class="p1"><span class="Apple-converted-space">              </span>button.innerHTML = button.dataset.originalHtml;</p>
+<p class="p1"><span class="Apple-converted-space">              </span>delete button.dataset.originalHtml;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>button.style.opacity = '';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>button.disabled = false;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function setFormEnabled(enabled) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.classFieldset.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.nameInput.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.phoneInput.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.checkInButton.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.checkOutButton.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.leaveButton.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.returnButton.disabled = !enabled;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function setFieldError(input, errorElement, message) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>input.setAttribute('aria-invalid', 'true');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>errorElement.textContent = message;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function clearFieldError(input, errorElement) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>input.removeAttribute('aria-invalid');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>errorElement.textContent = '';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function clearAllErrors() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.classError.textContent = '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>clearFieldError(elements.nameInput, elements.nameError);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>clearFieldError(elements.phoneInput, elements.phoneError);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function showFatal(message) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.loadingBanner.classList.add('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.fatalBanner.textContent = message;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.fatalBanner.classList.remove('hidden');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setFormEnabled(false);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function showToast(message) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>window.clearTimeout(state.toastTimer);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.toast.textContent = message;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>elements.toast.classList.add('is-visible');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>state.toastTimer = window.setTimeout(function () {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.toast.classList.remove('is-visible');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}, 5200);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function getErrorMessage(error) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const raw = error &amp;&amp; error.message ? error.message : String(error || '알 수 없는 오류가 발생했습니다.');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return raw.replace(/^Exception:\s*/i, '').replace(/^Error:\s*/i, '');</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function updateClock() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const now = new Date();</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const text = new Intl.DateTimeFormat('ko-KR', {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>timeZone: 'Asia/Seoul',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>month: 'long',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>day: 'numeric',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>weekday: 'short',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>hour: '2-digit',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>minute: '2-digit',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>second: '2-digit',</p>
+<p class="p1"><span class="Apple-converted-space">            </span>hour12: false,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}).format(now);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.liveClock.textContent = text;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>elements.liveClock.textContent = new Date().toLocaleString('ko-KR');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1">[hidden]{display:none!important}.portal-open{width:100%;padding:14px;margin-top:18px;border:1px solid #b9d0cf;border-radius:13px;background:#edf7f4;color:#126457;font:inherit;font-weight:700;cursor:pointer}.student-modal{position:fixed;inset:0;z-index:60;overflow:auto;background:#f2f6f8;padding:0 12px}.student-panel{max-width:740px;min-height:100vh;margin:0 auto;background:#fff;padding:24px}.student-panel h2{margin:0 0 10px;font-size:22px}.student-panel h3{font-size:16px;margin:22px 0 12px}.student-panel p{line-height:1.7;font-size:13px;color:#56677e}.portal-actions{display:flex;gap:10px;justify-content:flex-end}.portal-actions button,.student-panel button{border:1px solid #d7e0e8;border-radius:10px;padding:10px 14px;background:#f6f9fc;color:#173247;font:inherit;cursor:pointer}.student-panel input,.student-panel textarea{display:block;width:100%;padding:11px;border:1px solid #bac9d7;border-radius:9px;font:inherit;margin:7px 0 14px}.student-panel label{font-size:12px;font-weight:650}.stamp-box{background:#eef8f3;border:1px solid #b9dfca;border-radius:15px;padding:18px}.stamp-dots{display:flex;gap:10px;margin:15px 0}.stamp-dot{display:grid;place-items:center;width:47px;height:47px;border-radius:50%;background:white;border:2px dashed #b6d6c4;color:#668477;font-size:20px}.stamp-dot.filled{background:#1b715d;color:white;border-style:solid;border-color:#1b715d}.my-events{display:grid;gap:8px}.my-event,.my-request{border:1px solid #e0e7ee;border-radius:9px;padding:11px;font-size:13px;line-height:1.8}.my-event strong{margin-left:13px}.my-request p{margin:5px 0}.student-panel .portal-error{background:#fff0f1;padding:12px;color:#a32c3a;border-radius:9px}.student-panel button:disabled{opacity:.5;cursor:not-allowed}.portal-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}.student-panel .portal-action-grid button{padding:15px;background:#e7f5f0;border-color:#b3d9cb;color:#125b4b;font-weight:700}.student-panel .portal-action-grid button[data-action="OUT"]{background:#eef3fb;border-color:#c9d5e7;color:#274766}.student-panel #portal-action-status{min-height:24px;font-weight:650;color:#17634f}@media(max-width:480px){.portal-action-grid{grid-template-columns:1fr 1fr}.student-panel{padding:18px}}</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;section id="student-portal" class="student-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title" hidden&gt;&lt;div class="student-panel"&gt;&lt;div class="portal-actions"&gt;&lt;button id="portal-refresh" type="button"&gt;새로고침&lt;/button&gt;&lt;button id="portal-close" type="button"&gt;닫기&lt;/button&gt;&lt;/div&gt;&lt;h2 id="portal-title"&gt;내 출결 화면&lt;/h2&gt;&lt;p id="portal-identity"&gt;&lt;/p&gt;&lt;p id="portal-error" class="portal-error" role="alert" hidden&gt;&lt;/p&gt;&lt;p id="portal-lms"&gt;&lt;/p&gt;&lt;h3&gt;오늘의 출결&lt;/h3&gt;&lt;p id="portal-schedule"&gt;&lt;/p&gt;&lt;div class="portal-action-grid" id="portal-action-grid"&gt;&lt;button type="button" data-action="IN"&gt;입실&lt;/button&gt;&lt;button type="button" data-action="LEAVE"&gt;외출&lt;/button&gt;&lt;button type="button" data-action="RETURN"&gt;복귀&lt;/button&gt;&lt;button type="button" data-action="OUT"&gt;퇴실&lt;/button&gt;&lt;/div&gt;&lt;p id="portal-action-status" role="status"&gt;&lt;/p&gt;&lt;h3&gt;오늘의 기록&lt;/h3&gt;&lt;div id="portal-records" class="my-events"&gt;&lt;/div&gt;&lt;h3&gt;최근 30일 출결 기록&lt;/h3&gt;&lt;div id="portal-history" class="my-events"&gt;&lt;/div&gt;&lt;h3&gt;커피쿠폰 이벤트&lt;/h3&gt;&lt;div id="portal-event"&gt;&lt;/div&gt;&lt;h3&gt;출결 정정 요청&lt;/h3&gt;&lt;p&gt;빠진 기록이나 잘못된 시각을 알려주세요. 운영자 확인 후 반영됩니다.&lt;/p&gt;&lt;form id="correction-form"&gt;&lt;label&gt;기록 날짜&lt;input id="correction-date" type="date" required&gt;&lt;/label&gt;&lt;label&gt;요청 내용&lt;textarea id="correction-reason" maxlength="500" rows="3" placeholder="예: 오늘 08:50 입실했지만 체크를 놓쳤습니다." required minlength="5"&gt;&lt;/textarea&gt;&lt;/label&gt;&lt;button id="correction-submit" type="submit"&gt;정정 요청 보내기&lt;/button&gt;&lt;/form&gt;&lt;h3&gt;내 요청 처리 현황&lt;/h3&gt;&lt;div id="portal-requests"&gt;&lt;/div&gt;&lt;p&gt;본인 확인 후 10분이 지나면 자동으로 닫힙니다. 공용 기기에서는 확인 후 닫아 주세요.&lt;/p&gt;&lt;/div&gt;&lt;/section&gt;</p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">const studentView={token:'',busy:false,timer:null};</p>
+<p class="p1">const sp=id=&gt;document.getElementById(id);</p>
+<p class="p1">function spEscape(v){return String(v==null?'':v).replace(/[&amp;&lt;&gt;"']/g,c=&gt;({'&amp;':'&amp;amp;','&lt;':'&amp;lt;','&gt;':'&amp;gt;','"':'&amp;quot;',"'":'&amp;#39;'}[c]));}</p>
+<p class="p1">function spRpc(name,...args){return new Promise((ok,bad)=&gt;google.script.run.withSuccessHandler(ok).withFailureHandler(bad)[name](...args));}</p>
+<p class="p1">function spLocate(force){if(!force&amp;&amp;!state.config?.geoRequired)return Promise.resolve(null);if(!navigator.geolocation)return Promise.reject(new Error('이 브라우저는 위치 확인을 지원하지 않습니다. 위치 서비스를 지원하는 브라우저에서 QR 주소를 열어 주세요.'));return new Promise((resolve,reject)=&gt;{let attempts=0;const request=()=&gt;navigator.geolocation.getCurrentPosition(p=&gt;{const age=Date.now()-p.timestamp;if(!Number.isFinite(age)||age&gt;120000||age&lt; -120000){if(attempts++&lt;1){request();return;}const detail=Number.isFinite(age)?(age&gt;=0?Math.ceil(age/1000)+'초 전':Math.ceil(-age/1000)+'초 미래'):'시각을 알 수 없는';reject(new Error('기기가 '+detail+' 위치를 반환했습니다. Wi-Fi와 위치 서비스, 기기의 자동 날짜·시간 설정을 확인하고 다시 시도해 주세요. 계속되면 휴대전화에서 열어 주세요.'));return;}resolve({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,timestamp:p.timestamp});},e=&gt;reject(new Error(e.code===1?'위치 권한이 거부되었거나 웹앱의 위치 접근이 차단되었습니다. 브라우저 위치 권한을 확인해 주세요.':e.code===3?'위치 확인 시간이 초과되었습니다. Wi-Fi와 위치 서비스를 켜고 다시 시도해 주세요.':'현재 위치를 확인할 수 없습니다. 다시 시도해 주세요.')),{enableHighAccuracy:true,maximumAge:0,timeout:15000});request();});}</p>
+<p class="p2"><br></p>
+<p class="p1">function spError(e){const msg=getErrorMessage(e);if(msg.includes('STUDENT_AUTH')){spClose();showToast('조회 시간이 만료되었습니다. 본인 정보를 다시 입력해 주세요.');return;}sp('portal-error').textContent=msg;sp('portal-error').hidden=false;}</p>
+<p class="p1">function spRender(data){sp('portal-identity').textContent=data.className+' · '+data.name+' · '+data.today;sp('portal-lms').textContent=data.lmsNotice+(state.config?.geoRequired?' · 출결 시 위치 확인 필요':'');sp('portal-schedule').textContent=data.schedule.teaching?'수업 '+data.schedule.start+'–'+data.schedule.end+(data.schedule.note?' · '+data.schedule.note:''):'오늘은 수업 없는 날입니다.';const row=data.row;sp('portal-action-grid').querySelectorAll('button').forEach(b=&gt;{const a=b.dataset.action;b.disabled=(a==='IN'?!!row.inTime:a==='RETURN'?(!row.awaySince||!!row.outTime):(!row.inTime||!!row.outTime||!!row.awaySince));});sp('portal-records').innerHTML=data.row.events.length?data.row.events.map(e=&gt;'&lt;div class="my-event"&gt;'+spEscape(e.time)+' &lt;strong&gt;'+spEscape(e.action)+'&lt;/strong&gt; '+spEscape(e.judgement)+' '+spEscape(e.note||'')+'&lt;/div&gt;').join(''):'&lt;p&gt;아직 오늘 체크한 기록이 없습니다.&lt;/p&gt;';sp('portal-history').innerHTML=data.history?.length?data.history.map(r=&gt;'&lt;div class="my-event"&gt;&lt;b&gt;'+spEscape(r.date)+'&lt;/b&gt; · '+spEscape(r.status)+'&lt;br&gt;입실 '+spEscape(r.inTime||'—')+' · 퇴실 '+spEscape(r.outTime||'—')+' · 외출 '+spEscape(r.awayCount)+'회'+(r.flags?.length?'&lt;br&gt;'+spEscape(r.flags.join(' · ')):'')+'&lt;/div&gt;').join(''):'&lt;p&gt;최근 30일 기록이 없습니다.&lt;/p&gt;';const ev=data.event;if(!ev){sp('portal-event').innerHTML='&lt;p&gt;현재 참여할 수 있는 이벤트가 없습니다.&lt;/p&gt;';}else{const status=ev.drawn?(ev.won?'커피쿠폰에 당첨되었습니다. 운영자 안내를 확인해 주세요.':'추첨이 완료되었습니다. 참여해 주셔서 감사합니다.'):ev.eligible?'응모 조건을 충족했습니다. 1인 1회 응모됩니다.':ev.closed?'이벤트 기간이 종료되었습니다.':'스탬프 '+Math.max(0,ev.required-ev.count)+'개를 더 모으면 응모할 수 있어요.';sp('portal-event').innerHTML='&lt;div class="stamp-box"&gt;&lt;b&gt;'+spEscape(ev.title)+'&lt;/b&gt;&lt;p&gt;'+spEscape(ev.start)+' ~ '+spEscape(ev.end)+' · '+ev.winners+'명 추첨&lt;/p&gt;&lt;div class="stamp-dots"&gt;'+Array.from({length:ev.required},(_,i)=&gt;'&lt;span class="stamp-dot '+(i&lt;ev.count?'filled':'')+'"&gt;'+(i&lt;ev.count?'✓':i+1)+'&lt;/span&gt;').join('')+'&lt;/div&gt;&lt;b&gt;내 스탬프 '+ev.count+'개&lt;/b&gt;&lt;p&gt;'+spEscape(status)+'&lt;/p&gt;&lt;p&gt;입·퇴실과 외출 후 복귀를 완료하면 하루 1개. 3개 이상이면 1인 1회 응모하며, 지각·조퇴 자체로 감점하지 않습니다. 운영자 확인 후 확정됩니다.&lt;/p&gt;&lt;p&gt;적립일: '+spEscape(ev.dates.join(', ')||'아직 없음')+'&lt;/p&gt;&lt;/div&gt;';}</p>
+<p class="p1">sp('portal-requests').innerHTML=data.requests.length?data.requests.map(r=&gt;'&lt;div class="my-request"&gt;&lt;b&gt;'+spEscape(r.date)+' · '+spEscape(r.status)+'&lt;/b&gt;&lt;p&gt;'+spEscape(r.reason)+'&lt;/p&gt;'+(r.reply?'&lt;p&gt;운영자: '+spEscape(r.reply)+'&lt;/p&gt;':'')+'&lt;/div&gt;').join(''):'&lt;p&gt;최근 요청이 없습니다.&lt;/p&gt;';sp('correction-date').max=data.today;if(!sp('correction-date').value)sp('correction-date').value=data.today;}</p>
+<p class="p1">async function spEnter(){if(studentView.busy||state.submitting||!state.config||!validateForm())return;studentView.busy=true;setSubmittingState(true,'IN');try{const position=await spLocate();const r=await spRpc('studentEnter',{position:position,className:state.selectedClass,name:elements.nameInput.value.trim(),phoneLast4:elements.phoneInput.value.replace(/\D/g,'')});spShow(r);sp('portal-action-status').textContent=r.checkIn?'입실 완료 · '+r.checkIn.recordedAt:r.alreadyIn?'오늘 입실 기록이 있습니다. 이어서 이용하세요.':'';if(r.portalStale)spRefresh();}catch(e){showToast(getErrorMessage(e));}finally{studentView.busy=false;setSubmittingState(false);}}</p>
+<p class="p1">function spShow(r){studentView.token=r.token;clearTimeout(studentView.timer);studentView.timer=setTimeout(spClose,Math.max(0,r.expiresAt-Date.now()));spRender(r.portal);sp('portal-error').hidden=true;sp('student-portal').hidden=false;resetSensitiveFields();sp('portal-close').focus();}</p>
+<p class="p1">async function spOpen(){if(studentView.busy||state.submitting||!state.config||!validateForm())return;studentView.busy=true;sp('my-records-button').disabled=true;try{const position=await spLocate();const r=await spRpc('studentOpen',{position:position,className:state.selectedClass,name:elements.nameInput.value.trim(),phoneLast4:elements.phoneInput.value.replace(/\D/g,'')});spShow(r);sp('portal-action-status').textContent='';}catch(e){showToast(getErrorMessage(e));}finally{studentView.busy=false;sp('my-records-button').disabled=false;}}</p>
+<p class="p1">function spClose(){const t=studentView.token;studentView.token='';clearTimeout(studentView.timer);sp('student-portal').hidden=true;['portal-records','portal-history','portal-event','portal-requests'].forEach(id=&gt;sp(id).replaceChildren());sp('portal-identity').textContent='';sp('correction-reason').value='';sp('correction-date').value='';sp('portal-action-status').textContent='';if(t)spRpc('studentClose',t).catch(()=&gt;{});sp('my-records-button').focus();}</p>
+<p class="p1">async function spRefresh(){if(!studentView.token)return;sp('portal-refresh').disabled=true;try{const token=studentView.token,data=await spRpc('studentPortal',token);if(token===studentView.token){spRender(data);sp('portal-error').hidden=true;}}catch(e){spError(e);}finally{sp('portal-refresh').disabled=false;}}</p>
+<p class="p1">sp('location-test-button').onclick=async()=&gt;{const result=sp('location-test-result');result.textContent='위치를 확인하는 중입니다…';try{const p=await spLocate(true);result.textContent='위치 확인 성공 · 측정 '+Math.max(0,Math.ceil((Date.now()-p.timestamp)/1000))+'초 전 · 기기 오차 약 '+Math.ceil(p.accuracy)+'m. 출결 기록은 저장하지 않았습니다.';}catch(e){result.textContent=e.message;}};sp('my-records-button').onclick=spOpen;sp('portal-action-grid').onclick=async e=&gt;{const button=e.target.closest('button[data-action]');if(!button||studentView.busy||!studentView.token)return;const action=button.dataset.action,labels={IN:'입실',OUT:'퇴실',LEAVE:'외출',RETURN:'복귀'};if(!confirm(labels[action]+' 시간을 지금 기록할까요?'))return;studentView.busy=true;sp('portal-action-grid').querySelectorAll('button').forEach(b=&gt;b.disabled=true);try{const position=await spLocate(),token=studentView.token,r=await spRpc('studentSubmitAttendance',token,action,position);if(token!==studentView.token)return;if(r.portal)spRender(r.portal);sp('portal-action-status').textContent=labels[action]+' 완료 · '+r.result.recordedAt;sp('portal-error').hidden=true;if(r.portalStale)await spRefresh();}catch(error){spError(error);}finally{studentView.busy=false;}};sp('portal-close').onclick=spClose;sp('portal-refresh').onclick=spRefresh;sp('correction-form').onsubmit=async e=&gt;{e.preventDefault();if(studentView.busy||!studentView.token)return;studentView.busy=true;sp('correction-submit').disabled=true;try{await spRpc('studentRequestCorrection',studentView.token,{date:sp('correction-date').value,reason:sp('correction-reason').value});sp('correction-reason').value='';await spRefresh();}catch(error){spError(error);}finally{studentView.busy=false;sp('correction-submit').disabled=false;}};</p>
+<p class="p1">document.addEventListener('keydown',e=&gt;{if(sp('student-portal').hidden)return;if(e.key==='Escape')spClose();if(e.key==='Tab'){const list=Array.from(sp('student-portal').querySelectorAll('button,input,textarea')).filter(x=&gt;!x.disabled);const first=list[0],last=list[list.length-1];if(e.shiftKey&amp;&amp;document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&amp;&amp;document.activeElement===last){e.preventDefault();first.focus();}}});</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
