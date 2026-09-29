@@ -37,52 +37,84 @@
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
     }
-    button, input { font: inherit; }
+    button, input, textarea { font: inherit; }
     button { -webkit-tap-highlight-color: transparent; }
     .page { width: min(100%, 620px); margin: 0 auto; padding: 26px 16px calc(32px + env(safe-area-inset-bottom)); }
     .app-card { overflow: hidden; border: 1px solid rgba(220, 226, 236, 0.86); border-radius: var(--radius-xl); background: rgba(255, 255, 255, 0.96); box-shadow: var(--shadow); }
     .hero { position: relative; overflow: hidden; padding: 28px 26px 24px; color: #fff; background: linear-gradient(135deg, rgba(20, 32, 58, 0.98), rgba(28, 55, 98, 0.96)), var(--navy-900); }
+    .hero::after { position: absolute; width: 190px; height: 190px; right: -62px; top: -92px; border: 40px solid rgba(255, 255, 255, 0.055); border-radius: 50%; content: ""; }
     .brand-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 13px; }
     .brand-mark { display: grid; flex: 0 0 auto; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 14px; color: #fff; background: rgba(255, 255, 255, 0.1); font-size: 18px; font-weight: 800; }
     .eyebrow { margin: 0 0 5px; color: rgba(255, 255, 255, 0.65); font-size: 12px; font-weight: 750; letter-spacing: 0.12em; text-transform: uppercase; }
-    h1 { margin: 0; font-size: clamp(21px, 5vw, 27px); font-weight: 800; }
-    .hero-subtitle { margin: 18px 0 0; color: rgba(255, 255, 255, 0.76); font-size: 14px; line-height: 1.6; }
-    .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-    .meta-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 6px 10px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 999px; font-size: 12px; background: rgba(255, 255, 255, 0.08); }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #62e0c7; }
+    h1 { margin: 0; font-size: clamp(21px, 5vw, 27px); font-weight: 800; letter-spacing: -0.045em; line-height: 1.25; }
+    .hero-subtitle { position: relative; z-index: 1; max-width: 450px; margin: 18px 0 0; color: rgba(255, 255, 255, 0.76); font-size: 14px; line-height: 1.6; }
+    .meta-row { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .meta-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 6px 10px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 999px; color: rgba(255, 255, 255, 0.87); background: rgba(255, 255, 255, 0.08); font-size: 12px; font-weight: 650; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #62e0c7; box-shadow: 0 0 0 4px rgba(98, 224, 199, 0.12); }
     .form-area { padding: 26px; }
-    .loading-banner, .fatal-banner { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; padding: 13px 14px; border-radius: var(--radius-md); font-size: 13px; }
+    .loading-banner, .fatal-banner { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; padding: 13px 14px; border-radius: var(--radius-md); font-size: 13px; line-height: 1.5; }
     .loading-banner { color: #28559f; background: var(--blue-100); }
     .fatal-banner { color: #a42e3c; background: var(--red-100); }
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .spinner { display: inline-block; flex: 0 0 auto; width: 16px; height: 16px; margin-top: 1px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
     .field-group { margin: 0 0 21px; }
-    .field-label { display: flex; align-items: center; justify-content: space-between; margin: 0 0 9px; color: var(--ink-700); font-size: 13px; font-weight: 750; }
+    .field-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 9px; color: var(--ink-700); font-size: 13px; font-weight: 750; }
     .required { color: var(--blue-600); }
-    .hint { color: var(--ink-500); font-size: 11px; }
+    .hint { color: var(--ink-500); font-size: 11px; font-weight: 550; }
     .class-picker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-    .class-option { min-height: 51px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); color: var(--ink-700); background: #fff; font-weight: 750; cursor: pointer; }
-    .class-option[aria-pressed="true"] { border-color: var(--blue-500); color: #1f58c6; background: var(--blue-100); }
-    .text-input { width: 100%; height: 54px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--radius-md); outline: none; font-size: 16px; font-weight: 620; }
-    .field-error { min-height: 18px; margin: 7px 2px 0; color: var(--red-600); font-size: 12px; }
+    .class-option { min-height: 51px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); color: var(--ink-700); background: #fff; font-weight: 750; cursor: pointer; transition: 0.15s ease; }
+    .class-option:hover { border-color: #a8bce3; }
+    .class-option[aria-pressed="true"] { border-color: var(--blue-500); color: #1f58c6; background: var(--blue-100); box-shadow: 0 0 0 3px rgba(62, 124, 240, 0.09); }
+    .text-input { width: 100%; height: 54px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--radius-md); outline: none; color: var(--ink-900); background: #fff; font-size: 16px; font-weight: 620; transition: 0.15s ease; }
+    .text-input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 4px rgba(62, 124, 240, 0.11); }
+    .field-error { min-height: 18px; margin: 7px 2px 0; color: var(--red-600); font-size: 12px; font-weight: 620; }
     .divider { height: 1px; margin: 25px 0 20px; background: var(--line); }
-    .action-help { margin: 0 0 12px; color: var(--ink-500); font-size: 12px; text-align: center; }
+    .action-help { margin: 0 0 12px; color: var(--ink-500); font-size: 12px; text-align: center; line-height: 1.5; }
     .action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
-    .action-button { min-height: 58px; padding: 13px 16px; border: 0; border-radius: 15px; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; }
-    .action-in { background: linear-gradient(135deg, #2d67dd, #3d82f2); }
-    .action-out { background: linear-gradient(135deg, #137d73, #18a08f); }
-    .action-leave { color: #684300; background: linear-gradient(135deg, #ffd76a, #f4bd42); }
-    .action-return { background: linear-gradient(135deg, #6657c9, #8174e2); }
+    .action-button { min-height: 58px; padding: 13px 16px; border: 0; border-radius: 15px; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.12s ease; }
+    .action-button:hover:not(:disabled) { filter: brightness(1.04); }
+    .action-button:disabled { cursor: wait; opacity: 0.62; }
+    .action-in { background: linear-gradient(135deg, #2d67dd, #3d82f2); box-shadow: 0 11px 24px rgba(46, 104, 223, 0.22); }
+    .action-out { background: linear-gradient(135deg, #137d73, #18a08f); box-shadow: 0 11px 24px rgba(8, 124, 112, 0.2); }
+    .action-leave { color: #684300; background: linear-gradient(135deg, #ffd76a, #f4bd42); box-shadow: 0 11px 24px rgba(196, 134, 14, 0.18); }
+    .action-return { background: linear-gradient(135deg, #6657c9, #8174e2); box-shadow: 0 11px 24px rgba(80, 67, 177, 0.2); }
     .button-inner { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .privacy-note { display: flex; gap: 9px; margin: 22px 0 0; padding: 12px 13px; border-radius: 12px; color: var(--ink-500); background: #f6f8fb; font-size: 11px; }
+    .portal-open { width: 100%; min-height: 48px; margin-top: 10px; border: 1px solid var(--blue-500); border-radius: 12px; color: var(--blue-600); background: #f0f5ff; font-size: 14px; font-weight: 750; cursor: pointer; transition: 0.15s ease; }
+    .portal-open:hover:not(:disabled) { background: #e0ecff; }
+    .portal-open:disabled { opacity: 0.6; cursor: wait; }
+    .privacy-note { display: flex; gap: 9px; margin: 22px 0 0; padding: 12px 13px; border-radius: 12px; color: var(--ink-500); background: #f6f8fb; font-size: 11px; line-height: 1.55; }
     .page-footer { margin: 17px auto 0; color: #7a8497; font-size: 11px; text-align: center; }
     .dialog-backdrop { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(9, 17, 34, 0.58); opacity: 0; visibility: hidden; transition: 0.18s ease; }
     .dialog-backdrop.is-open { opacity: 1; visibility: visible; }
-    .result-dialog { width: min(100%, 390px); padding: 28px 24px 22px; border-radius: 24px; background: #fff; text-align: center; }
+    .result-dialog { width: min(100%, 390px); padding: 28px 24px 22px; border-radius: 24px; background: #fff; box-shadow: 0 28px 80px rgba(4, 12, 28, 0.32); text-align: center; }
+    .result-icon { display: grid; width: 64px; height: 64px; margin: 0 auto 16px; place-items: center; border-radius: 50%; color: #fff; background: linear-gradient(135deg, #0f8a7d, #20ad97); font-size: 29px; font-weight: 900; }
+    .result-title { margin: 0; font-size: 23px; font-weight: 850; }
+    .result-message { margin: 10px 0 16px; color: var(--ink-700); font-size: 14px; line-height: 1.6; }
+    .result-details { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 0 18px; border: 1px solid var(--line); border-radius: 14px; background: #f8fafc; }
+    .result-detail { padding: 12px 7px; border-right: 1px solid var(--line); }
+    .result-detail:last-child { border-right: 0; }
+    .result-detail-label { display: block; margin-bottom: 5px; color: var(--ink-500); font-size: 10px; }
+    .result-detail-value { display: block; color: var(--ink-900); font-size: 13px; font-weight: 800; }
     .dialog-close { width: 100%; min-height: 48px; border: 0; border-radius: 13px; color: #fff; background: var(--navy-900); font-weight: 800; cursor: pointer; }
-    .toast { position: fixed; z-index: 70; left: 50%; bottom: 20px; width: min(calc(100% - 32px), 520px); padding: 14px 16px; border-radius: 14px; color: #fff; background: #9c2d3b; transform: translate(-50%, 12px); opacity: 0; visibility: hidden; transition: 0.18s ease; }
+    .toast { position: fixed; z-index: 70; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); width: min(calc(100% - 32px), 520px); padding: 14px 16px; border-radius: 14px; color: #fff; background: #9c2d3b; font-size: 13px; font-weight: 650; opacity: 0; visibility: hidden; transform: translate(-50%, 12px); transition: 0.18s ease; }
     .toast.is-visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
     .hidden { display: none !important; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 학생 포털 모달 전용 스타일 */
+    .portal-modal { position: fixed; z-index: 60; inset: 0; overflow-y: auto; padding: 20px 12px; background: rgba(9, 17, 34, 0.7); display: flex; justify-content: center; }
+    .portal-card { width: min(100%, 560px); margin: auto; padding: 24px; border-radius: 20px; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+    .portal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+    .portal-header h2 { margin: 0; font-size: 20px; font-weight: 800; }
+    .portal-header button { border: 0; background: transparent; font-size: 15px; font-weight: 700; color: var(--ink-500); cursor: pointer; }
+    .portal-sec { margin-top: 20px; padding: 16px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--line); }
+    .portal-sec h3 { margin: 0 0 10px; font-size: 15px; font-weight: 800; color: var(--navy-900); }
+    .my-event { padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+    .my-event:last-child { border-bottom: none; }
+    .my-request { padding: 8px 10px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid var(--line); font-size: 12px; }
+    .stamp-box { text-align: center; padding: 12px; border-radius: 10px; background: #fff; border: 1px solid #ffd76a; }
+    .stamp-dots { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
+    .stamp-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px dashed #ffb800; display: inline-grid; place-items: center; font-size: 12px; font-weight: 800; color: #ffb800; }
+    .stamp-dot.filled { border-style: solid; background: #ffb800; color: #fff; }
   </style>
 </head>
 <body>
@@ -146,7 +178,7 @@
           </div>
 
           <div class="divider"></div>
-          <p class="action-help">실제 기록은 서버 시간을 기준으로 저장됩니다.</p>
+          <p class="action-help">실제 기록은 서버 시간을 기준으로 저장됩니다. 외출 후에는 복귀를 꼭 기록해 주세요.</p>
           <div class="action-grid">
             <button class="action-button action-in" id="check-in-button" type="button" disabled>
               <span class="button-inner"><span>→</span><span>입실하기</span></span>
@@ -162,6 +194,11 @@
             </button>
           </div>
 
+          <!-- 복원된 포털 및 시험 버튼 -->
+          <button class="portal-open" type="button" id="my-records-button">내 기록 · 스탬프 · 정정 요청</button>
+          <button class="portal-open" type="button" id="location-test-button" style="background:#fff;border-color:var(--line);color:var(--ink-700);margin-top:6px;">이 기기 위치 확인 시험</button>
+          <p class="action-help" id="location-test-result" role="status" style="margin-top:8px;"></p>
+
           <p class="privacy-note">
             <span>●</span>
             <span id="privacy-notice">입력한 정보는 교육 운영 및 출결 확인 목적으로만 사용됩니다.</span>
@@ -172,22 +209,75 @@
     <p class="page-footer" id="support-text">오류가 계속되면 운영매니저에게 알려주세요.</p>
   </main>
 
+  <!-- 출결 완료 팝업 -->
   <div class="dialog-backdrop" id="result-backdrop" role="presentation">
     <section class="result-dialog" id="result-dialog" role="dialog" aria-modal="true">
-      <h2 id="result-title">처리되었습니다</h2>
-      <p id="result-message"></p>
+      <div class="result-icon">✓</div>
+      <h2 class="result-title" id="result-title">처리되었습니다</h2>
+      <p class="result-message" id="result-message"></p>
+      <div class="result-details">
+        <div class="result-detail"><span class="result-detail-label">과정</span><strong class="result-detail-value" id="result-class">-</strong></div>
+        <div class="result-detail"><span class="result-detail-label">기록시간</span><strong class="result-detail-value" id="result-time">-</strong></div>
+        <div class="result-detail"><span class="result-detail-label">판정</span><strong class="result-detail-value" id="result-judgement">-</strong></div>
+      </div>
       <button class="dialog-close" id="dialog-close" type="button">확인</button>
     </section>
+  </div>
+
+  <!-- 복원된 내 정보 및 정정 포털 모달 -->
+  <div class="portal-modal hidden" id="student-portal">
+    <div class="portal-card">
+      <div class="portal-header">
+        <div>
+          <h2 id="portal-identity">내 출결 포털</h2>
+          <small id="portal-lms" style="color:var(--ink-500);"></small>
+        </div>
+        <div>
+          <button type="button" id="portal-refresh">새로고침</button>
+          <button type="button" id="portal-close" style="margin-left:10px;">닫기 ✕</button>
+        </div>
+      </div>
+
+      <div id="portal-error" class="fatal-banner" hidden></div>
+      <p id="portal-schedule" style="font-weight:700;font-size:13px;color:var(--blue-600);"></p>
+
+      <div class="portal-sec">
+        <h3>오늘의 기록</h3>
+        <div id="portal-records"></div>
+      </div>
+
+      <div class="portal-sec">
+        <h3>스탬프 이벤트</h3>
+        <div id="portal-event"></div>
+      </div>
+
+      <div class="portal-sec">
+        <h3>최근 30일 출결 내역</h3>
+        <div id="portal-history" style="max-height:180px;overflow-y:auto;"></div>
+      </div>
+
+      <div class="portal-sec">
+        <h3>출결 정정 요청</h3>
+        <form id="correction-form">
+          <input type="date" id="correction-date" class="text-input" style="height:44px;margin-bottom:8px;" required>
+          <textarea id="correction-reason" class="text-input" style="height:70px;padding:8px;font-size:13px;" placeholder="누락 사유와 시각을 5자 이상 적어주세요." required></textarea>
+          <button type="submit" id="correction-submit" class="portal-open" style="margin-top:8px;">정정 요청 보내기</button>
+        </form>
+        <div id="portal-requests" style="margin-top:12px;"></div>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
   <script>
     'use strict';
-    // 여기에 배포한 구글 웹앱 URL을 입력하세요.
-    const GAS_API_URL = "[https://script.google.com/macros/s/AKfycb.../exec](https://script.google.com/macros/s/AKfycb.../exec)";
+    // 배포한 본인의 구글 웹앱 URL을 입력해 주세요.
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycb.../exec";
 
     const state = { config: null, selectedClass: '', submitting: false, toastTimer: null };
+    const studentView = { token: '', timer: null, busy: false };
+
     const elements = {
       form: document.getElementById('attendance-form'),
       classFieldset: document.getElementById('class-fieldset'),
@@ -216,9 +306,15 @@
       resultDialog: document.getElementById('result-dialog'),
       resultTitle: document.getElementById('result-title'),
       resultMessage: document.getElementById('result-message'),
+      resultClass: document.getElementById('result-class'),
+      resultTime: document.getElementById('result-time'),
+      resultJudgement: document.getElementById('result-judgement'),
       dialogClose: document.getElementById('dialog-close'),
       toast: document.getElementById('toast'),
     };
+
+    function sp(id) { return document.getElementById(id); }
+    function spEscape(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
     document.addEventListener('DOMContentLoaded', initialize);
 
@@ -227,7 +323,6 @@
       updateClock();
       window.setInterval(updateClock, 1000);
 
-      // fetch로 스프레드시트 설정 로드
       fetch(GAS_API_URL)
         .then(res => res.json())
         .then(config => applyConfig(config))
@@ -243,6 +338,41 @@
       elements.leaveButton.addEventListener('click', () => submitAttendance('LEAVE'));
       elements.returnButton.addEventListener('click', () => submitAttendance('RETURN'));
       elements.dialogClose.addEventListener('click', () => elements.resultBackdrop.classList.remove('is-open'));
+
+      sp('my-records-button').onclick = spOpen;
+      sp('portal-close').onclick = spClose;
+      sp('portal-refresh').onclick = spRefresh;
+
+      sp('location-test-button').onclick = async () => {
+        const res = sp('location-test-result');
+        res.textContent = '위치를 확인하는 중입니다…';
+        try {
+          const p = await spLocate(true);
+          res.textContent = '위치 확인 성공 · 오차 약 ' + Math.ceil(p.accuracy) + 'm (기록 미저장)';
+        } catch(e) {
+          res.textContent = e.message;
+        }
+      };
+
+      sp('correction-form').onsubmit = async (e) => {
+        e.preventDefault();
+        if (studentView.busy || !studentView.token) return;
+        studentView.busy = true;
+        sp('correction-submit').disabled = true;
+        try {
+          await spRpc('studentRequestCorrection', studentView.token, {
+            date: sp('correction-date').value,
+            reason: sp('correction-reason').value
+          });
+          sp('correction-reason').value = '';
+          await spRefresh();
+        } catch(err) {
+          spError(err);
+        } finally {
+          studentView.busy = false;
+          sp('correction-submit').disabled = false;
+        }
+      };
     }
 
     function applyConfig(config) {
@@ -279,12 +409,9 @@
       });
     }
 
-    function getGpsPosition() {
+    function spLocate(testOnly) {
       return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('GPS를 지원하지 않는 브라우저입니다.'));
-          return;
-        }
+        if (!navigator.geolocation) return reject(new Error('GPS를 지원하지 않는 브라우저입니다.'));
         navigator.geolocation.getCurrentPosition(
           pos => resolve({
             latitude: pos.coords.latitude,
@@ -292,38 +419,45 @@
             accuracy: pos.coords.accuracy,
             timestamp: pos.timestamp
           }),
-          err => reject(err),
+          err => reject(new Error('위치 권한을 허용해 주세요.')),
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
         );
       });
     }
 
-    async function submitAttendance(action) {
-      if (state.submitting || !state.config) return;
-      const name = elements.nameInput.value.trim();
-      const phone = elements.phoneInput.value.trim();
-      if (!name || phone.length !== 4) {
-        showToast('이름과 전화번호 뒷자리 4자리를 정확히 입력해 주세요.');
-        return;
-      }
+    async function spRpc(action, ...args) {
+      const res = await fetch(GAS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ rpc: action, args: args })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '요청 실패');
+      return data.data;
+    }
 
+    async function submitAttendance(action) {
+      if (state.submitting || !state.config || !validateForm()) return;
       state.submitting = true;
+      setSubmittingState(true, action);
+
       let position = null;
       if (state.config.geoRequired) {
         try {
           showToast('GPS 위치를 확인하는 중입니다...');
-          position = await getGpsPosition();
+          position = await spLocate();
         } catch (e) {
           state.submitting = false;
-          showToast('위치 정보를 가져올 수 없습니다. 위치 권한을 확인해 주세요.');
+          setSubmittingState(false);
+          showToast(e.message);
           return;
         }
       }
 
       const payload = {
         className: state.selectedClass,
-        name: name,
-        phoneLast4: phone,
+        name: elements.nameInput.value.trim(),
+        phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),
         dailyCode: state.config.requireDailyCode ? elements.codeInput.value.trim() : '',
         action: action,
         position: position
@@ -337,18 +471,106 @@
         });
         const result = await res.json();
         state.submitting = false;
+        setSubmittingState(false);
 
         if (result.ok) {
           elements.resultTitle.textContent = action + ' 처리 완료';
           elements.resultMessage.textContent = result.data.message || '출결이 기록되었습니다.';
+          elements.resultClass.textContent = result.data.className || '-';
+          elements.resultTime.textContent = result.data.recordedAt || '-';
+          elements.resultJudgement.textContent = result.data.judgement || '-';
           elements.resultBackdrop.classList.add('is-open');
         } else {
           showToast(result.error || '오류가 발생했습니다.');
         }
       } catch (err) {
         state.submitting = false;
+        setSubmittingState(false);
         showToast('서버 통신 오류가 발생했습니다.');
       }
+    }
+
+    /* 포털 모달 로직 */
+    async function spOpen() {
+      if (studentView.busy || !validateForm()) return;
+      studentView.busy = true;
+      sp('my-records-button').disabled = true;
+      try {
+        const r = await spRpc('studentOpen', {
+          className: state.selectedClass,
+          name: elements.nameInput.value.trim(),
+          phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),
+          dailyCode: state.config.requireDailyCode ? elements.codeInput.value.trim() : ''
+        });
+        spShow(r);
+      } catch (e) {
+        showToast(e.message);
+      } finally {
+        studentView.busy = false;
+        sp('my-records-button').disabled = false;
+      }
+    }
+
+    function spShow(r) {
+      studentView.token = r.token;
+      clearTimeout(studentView.timer);
+      studentView.timer = setTimeout(spClose, Math.max(0, r.expiresAt - Date.now()));
+      spRender(r.portal);
+      sp('portal-error').hidden = true;
+      sp('student-portal').classList.remove('hidden');
+    }
+
+    function spClose() {
+      studentView.token = '';
+      clearTimeout(studentView.timer);
+      sp('student-portal').classList.add('hidden');
+    }
+
+    async function spRefresh() {
+      if (!studentView.token) return;
+      sp('portal-refresh').disabled = true;
+      try {
+        const data = await spRpc('studentPortal', studentView.token);
+        spRender(data);
+        sp('portal-error').hidden = true;
+      } catch(e) {
+        spError(e);
+      } finally {
+        sp('portal-refresh').disabled = false;
+      }
+    }
+
+    function spRender(data) {
+      sp('portal-identity').textContent = data.className + ' · ' + data.name + ' · ' + data.today;
+      sp('portal-lms').textContent = data.lmsNotice;
+      sp('portal-schedule').textContent = data.schedule.teaching ? '수업 ' + data.schedule.start + '–' + data.schedule.end : '수업 없는 날';
+      sp('portal-records').innerHTML = data.row.events.length ? data.row.events.map(e => '<div class="my-event">' + spEscape(e.time) + ' <strong>' + spEscape(e.action) + '</strong> ' + spEscape(e.judgement) + '</div>').join('') : '<p>오늘 기록이 없습니다.</p>';
+      sp('portal-history').innerHTML = data.history?.length ? data.history.map(r => '<div class="my-event"><b>' + spEscape(r.date) + '</b> · ' + spEscape(r.status) + '<br>입실 ' + spEscape(r.inTime||'—') + ' · 퇴실 ' + spEscape(r.outTime||'—') + '</div>').join('') : '<p>최근 기록이 없습니다.</p>';
+
+      const ev = data.event;
+      if (!ev) {
+        sp('portal-event').innerHTML = '<p>진행 중인 이벤트가 없습니다.</p>';
+      } else {
+        sp('portal-event').innerHTML = '<div class="stamp-box"><b>' + spEscape(ev.title) + '</b><div class="stamp-dots">' + Array.from({length:ev.required}, (_,i) => '<span class="stamp-dot ' + (i<ev.count?'filled':'') + '">' + (i<ev.count?'✓':i+1) + '</span>').join('') + '</div><b>내 스탬프: ' + ev.count + '개</b></div>';
+      }
+
+      sp('portal-requests').innerHTML = data.requests.length ? data.requests.map(r => '<div class="my-request"><b>' + spEscape(r.date) + ' · ' + spEscape(r.status) + '</b><p>' + spEscape(r.reason) + '</p>' + (r.reply ? '<p>답변: ' + spEscape(r.reply) + '</p>' : '') + '</div>').join('') : '<p>정정 요청 내역이 없습니다.</p>';
+      sp('correction-date').max = data.today;
+      if (!sp('correction-date').value) sp('correction-date').value = data.today;
+    }
+
+    function spError(e) {
+      sp('portal-error').textContent = e.message;
+      sp('portal-error').hidden = false;
+    }
+
+    function validateForm() {
+      clearAllErrors();
+      const name = elements.nameInput.value.trim();
+      const phone = elements.phoneInput.value.replace(/\D/g, '');
+      if (!name) { setFieldError(elements.nameInput, elements.nameError, '이름을 입력해 주세요.'); return false; }
+      if (phone.length !== 4) { setFieldError(elements.phoneInput, elements.phoneError, '뒷자리 4자리를 입력해 주세요.'); return false; }
+      return true;
     }
 
     function setFormEnabled(enabled) {
@@ -362,19 +584,16 @@
       elements.returnButton.disabled = !enabled;
     }
 
-    function showFatal(msg) {
-      elements.loadingBanner.classList.add('hidden');
-      elements.fatalBanner.textContent = msg;
-      elements.fatalBanner.classList.remove('hidden');
-      setFormEnabled(false);
+    function setSubmittingState(submitting, action) {
+      [elements.checkInButton, elements.checkOutButton, elements.leaveButton, elements.returnButton].forEach(b => b.disabled = submitting);
     }
 
-    function showToast(msg) {
-      clearTimeout(state.toastTimer);
-      elements.toast.textContent = msg;
-      elements.toast.classList.add('is-visible');
-      state.toastTimer = setTimeout(() => elements.toast.classList.remove('is-visible'), 4000);
-    }
+    function setFieldError(input, el, msg) { input.setAttribute('aria-invalid', 'true'); el.textContent = msg; }
+    function clearFieldError(input, el) { input.removeAttribute('aria-invalid'); el.textContent = ''; }
+    function clearAllErrors() { clearFieldError(elements.nameInput, elements.nameError); clearFieldError(elements.phoneInput, elements.phoneError); }
+
+    function showFatal(msg) { elements.loadingBanner.classList.add('hidden'); elements.fatalBanner.textContent = msg; elements.fatalBanner.classList.remove('hidden'); setFormEnabled(false); }
+    function showToast(msg) { clearTimeout(state.toastTimer); elements.toast.textContent = msg; elements.toast.classList.add('is-visible'); state.toastTimer = setTimeout(() => elements.toast.classList.remove('is-visible'), 4000); }
 
     function updateClock() {
       try {
