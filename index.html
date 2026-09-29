@@ -1,1166 +1,389 @@
 <!doctype html>
 <html lang="ko">
-  <head>
-    <base target="_top" />
-    <meta charset="utf-8" />
-    <meta name="color-scheme" content="light" />
-    <style>
-      :root {
-        --navy-950: #0d1730;
-        --navy-900: #14203a;
-        --navy-800: #1c2d4d;
-        --blue-600: #2e68df;
-        --blue-500: #3e7cf0;
-        --blue-100: #eaf1ff;
-        --mint-600: #087c70;
-        --mint-100: #e3f7f3;
-        --red-600: #cc3a4a;
-        --red-100: #ffebee;
-        --amber-700: #986300;
-        --amber-100: #fff4d6;
-        --ink-900: #182033;
-        --ink-700: #3d475d;
-        --ink-500: #6b7487;
-        --line: #dce2ec;
-        --surface: #ffffff;
-        --page: #f3f6fb;
-        --shadow: 0 22px 70px rgba(22, 34, 60, 0.14);
-        --radius-xl: 26px;
-        --radius-lg: 18px;
-        --radius-md: 13px;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        min-height: 100%;
-        background: var(--page);
-      }
-
-      body {
-        min-height: 100vh;
-        margin: 0;
-        color: var(--ink-900);
-        background:
-          radial-gradient(circle at 10% 0%, rgba(62, 124, 240, 0.12), transparent 35%),
-          radial-gradient(circle at 100% 18%, rgba(8, 124, 112, 0.1), transparent 28%),
-          var(--page);
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
-          "Segoe UI", sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-
-      button,
-      input {
-        font: inherit;
-      }
-
-      button {
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .page {
-        width: min(100%, 620px);
-        margin: 0 auto;
-        padding: 26px 16px calc(32px + env(safe-area-inset-bottom));
-      }
-
-      .app-card {
-        overflow: hidden;
-        border: 1px solid rgba(220, 226, 236, 0.86);
-        border-radius: var(--radius-xl);
-        background: rgba(255, 255, 255, 0.96);
-        box-shadow: var(--shadow);
-      }
-
-      .hero {
-        position: relative;
-        overflow: hidden;
-        padding: 28px 26px 24px;
-        color: #fff;
-        background:
-          linear-gradient(135deg, rgba(20, 32, 58, 0.98), rgba(28, 55, 98, 0.96)),
-          var(--navy-900);
-      }
-
-      .hero::after {
-        position: absolute;
-        width: 190px;
-        height: 190px;
-        right: -62px;
-        top: -92px;
-        border: 40px solid rgba(255, 255, 255, 0.055);
-        border-radius: 50%;
-        content: "";
-      }
-
-      .brand-row {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        gap: 13px;
-      }
-
-      .brand-mark {
-        display: grid;
-        flex: 0 0 auto;
-        width: 44px;
-        height: 44px;
-        place-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        border-radius: 14px;
-        color: #fff;
-        background: rgba(255, 255, 255, 0.1);
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-      }
-
-      .eyebrow {
-        margin: 0 0 5px;
-        color: rgba(255, 255, 255, 0.65);
-        font-size: 12px;
-        font-weight: 750;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(21px, 5vw, 27px);
-        font-weight: 800;
-        letter-spacing: -0.045em;
-        line-height: 1.25;
-      }
-
-      .hero-subtitle {
-        position: relative;
-        z-index: 1;
-        max-width: 450px;
-        margin: 18px 0 0;
-        color: rgba(255, 255, 255, 0.76);
-        font-size: 14px;
-        line-height: 1.6;
-      }
-
-      .meta-row {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 18px;
-      }
-
-      .meta-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        min-height: 30px;
-        padding: 6px 10px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 999px;
-        color: rgba(255, 255, 255, 0.87);
-        background: rgba(255, 255, 255, 0.08);
-        font-size: 12px;
-        font-weight: 650;
-      }
-
-      .status-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #62e0c7;
-        box-shadow: 0 0 0 4px rgba(98, 224, 199, 0.12);
-      }
-
-      .form-area {
-        padding: 26px;
-      }
-
-      .loading-banner,
-      .fatal-banner {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 20px;
-        padding: 13px 14px;
-        border-radius: var(--radius-md);
-        font-size: 13px;
-        line-height: 1.5;
-      }
-
-      .loading-banner {
-        color: #28559f;
-        background: var(--blue-100);
-      }
-
-      .fatal-banner {
-        color: #a42e3c;
-        background: var(--red-100);
-      }
-
-      .spinner {
-        display: inline-block;
-        flex: 0 0 auto;
-        width: 16px;
-        height: 16px;
-        margin-top: 1px;
-        border: 2px solid currentColor;
-        border-right-color: transparent;
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-      }
-
-      .field-group {
-        margin: 0 0 21px;
-      }
-
-      .field-label {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin: 0 0 9px;
-        color: var(--ink-700);
-        font-size: 13px;
-        font-weight: 750;
-      }
-
-      .required {
-        color: var(--blue-600);
-      }
-
-      .hint {
-        color: var(--ink-500);
-        font-size: 11px;
-        font-weight: 550;
-      }
-
-      .class-picker {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 9px;
-      }
-
-      .class-option {
-        min-height: 51px;
-        padding: 10px 14px;
-        border: 1px solid var(--line);
-        border-radius: var(--radius-md);
-        color: var(--ink-700);
-        background: #fff;
-        font-weight: 750;
-        cursor: pointer;
-        transition:
-          border-color 0.15s ease,
-          box-shadow 0.15s ease,
-          color 0.15s ease,
-          background 0.15s ease;
-      }
-
-      .class-option:hover {
-        border-color: #a8bce3;
-      }
-
-      .class-option[aria-pressed="true"] {
-        border-color: var(--blue-500);
-        color: #1f58c6;
-        background: var(--blue-100);
-        box-shadow: 0 0 0 3px rgba(62, 124, 240, 0.09);
-      }
-
-      .text-input {
-        width: 100%;
-        height: 54px;
-        padding: 0 16px;
-        border: 1px solid var(--line);
-        border-radius: var(--radius-md);
-        outline: none;
-        color: var(--ink-900);
-        background: #fff;
-        font-size: 16px;
-        font-weight: 620;
-        transition:
-          border-color 0.15s ease,
-          box-shadow 0.15s ease;
-      }
-
-      .text-input::placeholder {
-        color: #a0a8b8;
-        font-weight: 500;
-      }
-
-      .text-input:focus {
-        border-color: var(--blue-500);
-        box-shadow: 0 0 0 4px rgba(62, 124, 240, 0.11);
-      }
-
-      .text-input[aria-invalid="true"] {
-        border-color: var(--red-600);
-        box-shadow: 0 0 0 4px rgba(204, 58, 74, 0.08);
-      }
-
-      .field-error {
-        min-height: 18px;
-        margin: 7px 2px 0;
-        color: var(--red-600);
-        font-size: 12px;
-        font-weight: 620;
-      }
-
-      .divider {
-        height: 1px;
-        margin: 25px 0 20px;
-        background: var(--line);
-      }
-
-      .action-help {
-        margin: 0 0 12px;
-        color: var(--ink-500);
-        font-size: 12px;
-        text-align: center;
-      }
-
-      .action-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 11px;
-      }
-
-      .action-button {
-        position: relative;
-        min-height: 58px;
-        padding: 13px 16px;
-        border: 0;
-        border-radius: 15px;
-        color: #fff;
-        font-size: 16px;
-        font-weight: 800;
-        cursor: pointer;
-        transition:
-          transform 0.12s ease,
-          filter 0.15s ease,
-          opacity 0.15s ease;
-      }
-
-      .action-button:hover:not(:disabled) {
-        filter: brightness(1.04);
-      }
-
-      .action-button:active:not(:disabled) {
-        transform: translateY(1px) scale(0.995);
-      }
-
-      .action-button:disabled {
-        cursor: wait;
-        opacity: 0.62;
-      }
-
-      .action-in {
-        background: linear-gradient(135deg, #2d67dd, #3d82f2);
-        box-shadow: 0 11px 24px rgba(46, 104, 223, 0.22);
-      }
-
-      .action-out {
-        background: linear-gradient(135deg, #137d73, #18a08f);
-        box-shadow: 0 11px 24px rgba(8, 124, 112, 0.2);
-      }
-
-      .action-leave {
-        color: #684300;
-        background: linear-gradient(135deg, #ffd76a, #f4bd42);
-        box-shadow: 0 11px 24px rgba(196, 134, 14, 0.18);
-      }
-
-      .action-return {
-        background: linear-gradient(135deg, #6657c9, #8174e2);
-        box-shadow: 0 11px 24px rgba(80, 67, 177, 0.2);
-      }
-
-      .button-inner {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-      }
-
-      .button-icon {
-        font-size: 18px;
-        line-height: 1;
-      }
-
-      .privacy-note {
-        display: flex;
-        gap: 9px;
-        margin: 22px 0 0;
-        padding: 12px 13px;
-        border-radius: 12px;
-        color: var(--ink-500);
-        background: #f6f8fb;
-        font-size: 11px;
-        line-height: 1.55;
-      }
-
-      .privacy-icon {
-        flex: 0 0 auto;
-        color: var(--ink-700);
-      }
-
-      .page-footer {
-        margin: 17px auto 0;
-        color: #7a8497;
-        font-size: 11px;
-        line-height: 1.6;
-        text-align: center;
-      }
-
-      .dialog-backdrop {
-        position: fixed;
-        z-index: 50;
-        inset: 0;
-        display: grid;
-        place-items: center;
-        padding: 20px;
-        background: rgba(9, 17, 34, 0.58);
-        opacity: 0;
-        visibility: hidden;
-        transition:
-          opacity 0.18s ease,
-          visibility 0.18s ease;
-      }
-
-      .dialog-backdrop.is-open {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .result-dialog {
-        width: min(100%, 390px);
-        padding: 28px 24px 22px;
-        border-radius: 24px;
-        background: #fff;
-        box-shadow: 0 28px 80px rgba(4, 12, 28, 0.32);
-        text-align: center;
-        transform: translateY(10px) scale(0.98);
-        transition: transform 0.2s ease;
-      }
-
-      .dialog-backdrop.is-open .result-dialog {
-        transform: translateY(0) scale(1);
-      }
-
-      .result-icon {
-        display: grid;
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 16px;
-        place-items: center;
-        border-radius: 50%;
-        color: #fff;
-        background: linear-gradient(135deg, #0f8a7d, #20ad97);
-        box-shadow: 0 13px 28px rgba(8, 124, 112, 0.22);
-        font-size: 29px;
-        font-weight: 900;
-      }
-
-      .result-title {
-        margin: 0;
-        color: var(--ink-900);
-        font-size: 23px;
-        font-weight: 850;
-        letter-spacing: -0.035em;
-      }
-
-      .result-message {
-        margin: 10px 0 16px;
-        color: var(--ink-700);
-        font-size: 14px;
-        line-height: 1.6;
-      }
-
-      .result-details {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        overflow: hidden;
-        margin: 0 0 18px;
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        background: #f8fafc;
-      }
-
-      .result-detail {
-        padding: 12px 7px;
-        border-right: 1px solid var(--line);
-      }
-
-      .result-detail:last-child {
-        border-right: 0;
-      }
-
-      .result-detail-label {
-        display: block;
-        margin-bottom: 5px;
-        color: var(--ink-500);
-        font-size: 10px;
-      }
-
-      .result-detail-value {
-        display: block;
-        color: var(--ink-900);
-        font-size: 13px;
-        font-weight: 800;
-      }
-
-      .judgement-normal {
-        color: var(--mint-600);
-      }
-
-      .judgement-alert {
-        color: var(--amber-700);
-      }
-
-      .result-notice {
-        margin: -5px 0 14px;
-        padding: 9px 10px;
-        border-radius: 10px;
-        color: var(--amber-700);
-        background: var(--amber-100);
-        font-size: 11px;
-        line-height: 1.5;
-      }
-
-      .dialog-close {
-        width: 100%;
-        min-height: 48px;
-        border: 0;
-        border-radius: 13px;
-        color: #fff;
-        background: var(--navy-900);
-        font-weight: 800;
-        cursor: pointer;
-      }
-
-      .toast {
-        position: fixed;
-        z-index: 70;
-        left: 50%;
-        bottom: calc(20px + env(safe-area-inset-bottom));
-        width: min(calc(100% - 32px), 520px);
-        padding: 14px 16px;
-        border-radius: 14px;
-        color: #fff;
-        background: #9c2d3b;
-        box-shadow: 0 16px 45px rgba(30, 14, 18, 0.28);
-        font-size: 13px;
-        font-weight: 650;
-        line-height: 1.5;
-        opacity: 0;
-        visibility: hidden;
-        transform: translate(-50%, 12px);
-        transition:
-          opacity 0.18s ease,
-          transform 0.18s ease,
-          visibility 0.18s ease;
-      }
-
-      .toast.is-visible {
-        opacity: 1;
-        visibility: visible;
-        transform: translate(-50%, 0);
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      @media (max-width: 440px) {
-        .page {
-          padding: 12px 10px calc(22px + env(safe-area-inset-bottom));
-        }
-
-        .app-card {
-          border-radius: 21px;
-        }
-
-        .hero {
-          padding: 23px 20px 21px;
-        }
-
-        .form-area {
-          padding: 22px 18px 21px;
-        }
-
-        .action-grid {
-          gap: 9px;
-        }
-
-        .action-button {
-          min-height: 56px;
-          padding-inline: 10px;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          scroll-behavior: auto !important;
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <main class="page">
-      <section class="app-card" aria-labelledby="app-title">
-        <header class="hero">
-          <div class="brand-row">
-            <div class="brand-mark" aria-hidden="true">K</div>
-            <div>
-              <p class="eyebrow">Attendance</p>
-              <h1 id="app-title">교육생 출결 기록</h1>
-            </div>
-          </div>
-          <p class="hero-subtitle" id="app-subtitle">
-            입실·퇴실·외출·복귀 정보를 정확하게 입력해 주세요.
-          </p>
-          <div class="meta-row">
-            <span class="meta-pill hidden" id="location-pill"></span>
-            <span class="meta-pill">
-              <span class="status-dot" aria-hidden="true"></span>
-              <span id="live-clock">시간 확인 중</span>
-            </span>
-          </div>
-        </header>
-
-        <div class="form-area">
-          <div class="loading-banner" id="loading-banner" role="status">
-            <span class="spinner" aria-hidden="true"></span>
-            <span>출결 설정을 불러오고 있습니다.</span>
-          </div>
-          <div class="fatal-banner hidden" id="fatal-banner" role="alert"></div>
-
-          <form id="attendance-form" novalidate>
-            <fieldset class="field-group" id="class-fieldset" disabled>
-              <legend class="field-label">
-                <span>과정 선택 <span class="required">*</span></span>
-              </legend>
-              <div class="class-picker" id="class-picker"></div>
-              <p class="field-error" id="class-error" aria-live="polite"></p>
-            </fieldset>
-
-            <div class="field-group">
-              <label class="field-label" for="student-name">
-                <span>이름 <span class="required">*</span></span>
-              </label>
-              <input
-                class="text-input"
-                id="student-name"
-                name="studentName"
-                type="text"
-                maxlength="40"
-                autocomplete="off"
-                placeholder="명단에 등록된 이름"
-                disabled
-                required
-              />
-              <p class="field-error" id="name-error" aria-live="polite"></p>
-            </div>
-
-            <div class="field-group">
-              <label class="field-label" for="phone-last4">
-                <span>휴대전화 뒷자리 <span class="required">*</span></span>
-                <span class="hint">숫자 4자리</span>
-              </label>
-              <input
-                class="text-input"
-                id="phone-last4"
-                name="phoneLast4"
-                type="text"
-                inputmode="numeric"
-                pattern="[0-9]{4}"
-                maxlength="4"
-                autocomplete="off"
-                placeholder="예: 1234"
-                disabled
-                required
-              />
-              <p class="field-error" id="phone-error" aria-live="polite"></p>
-            </div>
-
-            <div class="divider"></div>
-            <p class="action-help">
-              실제 기록은 서버 시간을 기준으로 저장됩니다. 외출 후에는 복귀를 꼭 기록해 주세요. 출결과 본인 기록 조회에는 강의장 위치 확인이 필요합니다.
-            </p>
-            <div class="action-grid">
-              <button class="action-button action-in" id="check-in-button" type="button" disabled>
-                <span class="button-inner">
-                  <span class="button-icon" aria-hidden="true">→</span>
-                  <span>입실하기</span>
-                </span>
-              </button>
-              <button class="action-button action-out" id="check-out-button" type="button" disabled>
-                <span class="button-inner">
-                  <span class="button-icon" aria-hidden="true">←</span>
-                  <span>퇴실하기</span>
-                </span>
-              </button>
-              <button class="action-button action-leave" id="leave-button" type="button" disabled>
-                <span class="button-inner">
-                  <span class="button-icon" aria-hidden="true">↗</span>
-                  <span>외출하기</span>
-                </span>
-              </button>
-              <button class="action-button action-return" id="return-button" type="button" disabled>
-                <span class="button-inner">
-                  <span class="button-icon" aria-hidden="true">↙</span>
-                  <span>복귀하기</span>
-                </span>
-              </button>
-            </div>
-
-            <button class="portal-open" type="button" id="my-records-button">내 기록 · 스탬프 · 정정 요청</button><button class="portal-open" type="button" id="location-test-button">이 기기 위치 확인 시험</button><p class="action-help" id="location-test-result" role="status"></p><p class="action-help" style="margin-top:12px">위의 반·이름·전화번호 뒷자리를 입력하고 강의장에서 각 출결 버튼을 누르세요. 기록과 스탬프는 별도로 조회할 수 있습니다.</p><p class="privacy-note">
-              <span class="privacy-icon" aria-hidden="true">●</span>
-              <span id="privacy-notice">
-                입력한 정보는 교육 운영 및 출결 확인 목적으로만 사용됩니다.
-              </span>
-            </p>
-          </form>
-        </div>
-      </section>
-
-      <p class="page-footer" id="support-text">
-        오류가 계속되면 운영매니저에게 알려주세요.
-      </p>
-    </main>
-
-    <div class="dialog-backdrop" id="result-backdrop" role="presentation">
-      <section
-        class="result-dialog"
-        id="result-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="result-title"
-      >
-        <div class="result-icon" aria-hidden="true">✓</div>
-        <h2 class="result-title" id="result-title">처리되었습니다</h2>
-        <p class="result-message" id="result-message"></p>
-        <div class="result-details">
-          <div class="result-detail">
-            <span class="result-detail-label">과정</span>
-            <strong class="result-detail-value" id="result-class">-</strong>
-          </div>
-          <div class="result-detail">
-            <span class="result-detail-label">기록시간</span>
-            <strong class="result-detail-value" id="result-time">-</strong>
-          </div>
-          <div class="result-detail">
-            <span class="result-detail-label">판정</span>
-            <strong class="result-detail-value" id="result-judgement">-</strong>
-          </div>
-        </div>
-        <p class="result-notice hidden" id="result-notice"></p>
-        <button class="dialog-close" id="dialog-close" type="button">확인</button>
-      </section>
-    </div>
-
-    <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
-
-    <script>
-      'use strict';
-
-      const state = {
-        config: null,
-        selectedClass: '',
-        submitting: false,
-        toastTimer: null,
-      };
-
-      const elements = {
-        form: document.getElementById('attendance-form'),
-        classFieldset: document.getElementById('class-fieldset'),
-        classPicker: document.getElementById('class-picker'),
-        classError: document.getElementById('class-error'),
-        nameInput: document.getElementById('student-name'),
-        nameError: document.getElementById('name-error'),
-        phoneInput: document.getElementById('phone-last4'),
-        phoneError: document.getElementById('phone-error'),
-        checkInButton: document.getElementById('check-in-button'),
-        checkOutButton: document.getElementById('check-out-button'),
-        leaveButton: document.getElementById('leave-button'),
-        returnButton: document.getElementById('return-button'),
-        loadingBanner: document.getElementById('loading-banner'),
-        fatalBanner: document.getElementById('fatal-banner'),
-        appTitle: document.getElementById('app-title'),
-        appSubtitle: document.getElementById('app-subtitle'),
-        locationPill: document.getElementById('location-pill'),
-        privacyNotice: document.getElementById('privacy-notice'),
-        supportText: document.getElementById('support-text'),
-        liveClock: document.getElementById('live-clock'),
-        resultBackdrop: document.getElementById('result-backdrop'),
-        resultDialog: document.getElementById('result-dialog'),
-        resultTitle: document.getElementById('result-title'),
-        resultMessage: document.getElementById('result-message'),
-        resultClass: document.getElementById('result-class'),
-        resultTime: document.getElementById('result-time'),
-        resultJudgement: document.getElementById('result-judgement'),
-        resultNotice: document.getElementById('result-notice'),
-        dialogClose: document.getElementById('dialog-close'),
-        toast: document.getElementById('toast'),
-      };
-
-      document.addEventListener('DOMContentLoaded', initialize);
-
-      function initialize() {
-        bindEvents();
-        updateClock();
-        window.setInterval(updateClock, 1000);
-
-        if (typeof google === 'undefined' || !google.script || !google.script.run) {
-          showFatal('Apps Script 웹앱 주소에서 접속해 주세요.');
-          return;
-        }
-
-        google.script.run
-          .withSuccessHandler(applyConfig)
-          .withFailureHandler(function (error) {
-            showFatal(getErrorMessage(error));
-          })
-          .getPublicConfig();
-      }
-
-      function bindEvents() {
-        elements.phoneInput.addEventListener('input', function () {
-          this.value = this.value.replace(/\D/g, '').slice(0, 4);
-          clearFieldError(this, elements.phoneError);
-        });
-
-        elements.nameInput.addEventListener('input', function () {
-          clearFieldError(this, elements.nameError);
-        });
-
-        elements.checkInButton.addEventListener('click', function () {
-          submitAttendance('IN');
-        });
-        elements.checkOutButton.addEventListener('click', function () {
-          submitAttendance('OUT');
-        });
-        elements.leaveButton.addEventListener('click', function () {
-          submitAttendance('LEAVE');
-        });
-        elements.returnButton.addEventListener('click', function () {
-          submitAttendance('RETURN');
-        });
-
-        elements.form.addEventListener('submit', function (event) {
-          event.preventDefault();
-          submitAttendance('IN');
-        });
-
-        elements.dialogClose.addEventListener('click', closeResultDialog);
-        elements.resultBackdrop.addEventListener('click', function (event) {
-          if (event.target === elements.resultBackdrop) closeResultDialog();
-        });
-        document.addEventListener('keydown', function (event) {
-          if (event.key === 'Escape' && elements.resultBackdrop.classList.contains('is-open')) {
-            closeResultDialog();
-          }
-        });
-      }
-
-      function applyConfig(config) {
-        if (!config || !Array.isArray(config.classes) || config.classes.length === 0) {
-          showFatal('반 설정을 불러오지 못했습니다. 관리자에게 알려주세요.');
-          return;
-        }
-
-        state.config = config;
-        elements.appTitle.textContent = config.appTitle || '교육생 출결 기록';
-        elements.appSubtitle.textContent =
-          config.appSubtitle || '입실·퇴실·외출·복귀 정보를 정확하게 입력해 주세요.';
-        elements.privacyNotice.textContent = config.privacyNotice || '';
-        elements.supportText.textContent = config.supportText || '';
-
-        if (config.locationText) {
-          elements.locationPill.textContent = config.locationText;
-          elements.locationPill.classList.remove('hidden');
-        }
-
-        renderClassPicker(config.classes);
-        setFormEnabled(true);
-        elements.loadingBanner.classList.add('hidden');
-        elements.nameInput.focus();
-      }
-
-      function renderClassPicker(classes) {
-        elements.classPicker.innerHTML = '';
-        const columnCount = Math.min(Math.max(classes.length, 1), 3);
-        elements.classPicker.style.gridTemplateColumns =
-          'repeat(' + columnCount + ', minmax(0, 1fr))';
-
-        classes.forEach(function (className, index) {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'class-option';
-          button.textContent = className;
-          button.dataset.value = className;
-          button.setAttribute('aria-pressed', 'false');
-          button.addEventListener('click', function () {
-            selectClass(className);
-          });
-          elements.classPicker.appendChild(button);
-          if (classes.length === 1 || index === 0) selectClass(classes[0]);
-        });
-      }
-
-      function selectClass(className) {
-        state.selectedClass = className;
-        Array.prototype.forEach.call(elements.classPicker.children, function (button) {
-          button.setAttribute('aria-pressed', String(button.dataset.value === className));
-        });
-        elements.classError.textContent = '';
-      }
-
-      function validateForm() {
-        let valid = true;
-        clearAllErrors();
-
-        if (!state.selectedClass) {
-          elements.classError.textContent = '반을 선택해 주세요.';
-          valid = false;
-        }
-
-        const name = elements.nameInput.value.trim();
-        if (!name) {
-          setFieldError(elements.nameInput, elements.nameError, '이름을 입력해 주세요.');
-          valid = false;
-        }
-
-        const phone = elements.phoneInput.value.replace(/\D/g, '');
-        if (!/^\d{4}$/.test(phone)) {
-          setFieldError(
-            elements.phoneInput,
-            elements.phoneError,
-            '휴대전화 뒷자리 숫자 4개를 입력해 주세요.'
-          );
-          valid = false;
-        }
-
-
-        if (!valid) {
-          const firstInvalid = elements.form.querySelector('[aria-invalid="true"]');
-          if (firstInvalid) firstInvalid.focus();
-        }
-        return valid;
-      }
-
-      async function submitAttendance(action) {
-        if (state.submitting || !state.config || !validateForm()) return;
-
-        state.submitting = true;
-        setSubmittingState(true, action);
-
-        const payload = {
-          className: state.selectedClass,
-          name: elements.nameInput.value.trim(),
-          phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),
-          action: action,
-        };
-
-        try { payload.position = await spLocate(); }
-        catch (error) { state.submitting = false; setSubmittingState(false); showToast(getErrorMessage(error)); return; }
-
-        google.script.run
-          .withSuccessHandler(function (result) {
-            state.submitting = false;
-            setSubmittingState(false);
-            handleSuccess(result);
-          })
-          .withFailureHandler(function (error) {
-            state.submitting = false;
-            setSubmittingState(false);
-            showToast(getErrorMessage(error));
-          })
-          .submitAttendance(payload);
-      }
-
-      function handleSuccess(result) {
-        if (!result || !result.ok) {
-          showToast('처리 결과를 확인하지 못했습니다. 다시 시도해 주세요.');
-          return;
-        }
-
-        elements.resultTitle.textContent = result.action + ' 처리 완료';
-        elements.resultMessage.textContent = result.message || '출결 기록이 저장되었습니다.';
-        elements.resultClass.textContent = result.className || '-';
-        elements.resultTime.textContent = result.recordedAt || '-';
-        elements.resultJudgement.textContent = result.judgement || '-';
-        elements.resultJudgement.className =
-          'result-detail-value ' +
-          (result.judgement === '정상' ? 'judgement-normal' : 'judgement-alert');
-
-        if (result.notice) {
-          elements.resultNotice.textContent = result.notice + ' · LMS 입·퇴실도 확인해 주세요.';
-          elements.resultNotice.classList.remove('hidden');
-        } else {
-          elements.resultNotice.textContent = 'LMS 입·퇴실도 확인해 주세요. 이 기록은 출결 확인용 보조자료입니다.';
-          elements.resultNotice.classList.remove('hidden');
-        }
-
-        elements.resultBackdrop.classList.add('is-open');
-        elements.dialogClose.focus();
-        resetSensitiveFields();
-      }
-
-      function closeResultDialog() {
-        elements.resultBackdrop.classList.remove('is-open');
-        elements.nameInput.focus();
-      }
-
-      function resetSensitiveFields() {
-        elements.nameInput.value = '';
-        elements.phoneInput.value = '';
-        clearAllErrors();
-      }
-
-      function setSubmittingState(isSubmitting, activeAction) {
-        const buttons = [
-          elements.checkInButton,
-          elements.checkOutButton,
-          elements.leaveButton,
-          elements.returnButton,
-        ];
-        buttons.forEach(function (button) {
-          button.disabled = isSubmitting;
-        });
-
-        const actionButtons = {
-          IN: elements.checkInButton,
-          OUT: elements.checkOutButton,
-          LEAVE: elements.leaveButton,
-          RETURN: elements.returnButton,
-        };
-        const activeButton = actionButtons[activeAction] || elements.checkInButton;
-        if (isSubmitting) {
-          activeButton.dataset.originalHtml = activeButton.innerHTML;
-          activeButton.innerHTML =
-            '<span class="button-inner"><span class="spinner" aria-hidden="true"></span><span>기록 중</span></span>';
-          buttons.forEach(function (button) {
-            if (button !== activeButton) button.style.opacity = '0.45';
-          });
-        } else {
-          buttons.forEach(function (button) {
-            if (button.dataset.originalHtml) {
-              button.innerHTML = button.dataset.originalHtml;
-              delete button.dataset.originalHtml;
-            }
-            button.style.opacity = '';
-            button.disabled = false;
-          });
-        }
-      }
-
-      function setFormEnabled(enabled) {
-        elements.classFieldset.disabled = !enabled;
-        elements.nameInput.disabled = !enabled;
-        elements.phoneInput.disabled = !enabled;
-        elements.checkInButton.disabled = !enabled;
-        elements.checkOutButton.disabled = !enabled;
-        elements.leaveButton.disabled = !enabled;
-        elements.returnButton.disabled = !enabled;
-      }
-
-      function setFieldError(input, errorElement, message) {
-        input.setAttribute('aria-invalid', 'true');
-        errorElement.textContent = message;
-      }
-
-      function clearFieldError(input, errorElement) {
-        input.removeAttribute('aria-invalid');
-        errorElement.textContent = '';
-      }
-
-      function clearAllErrors() {
-        elements.classError.textContent = '';
-        clearFieldError(elements.nameInput, elements.nameError);
-        clearFieldError(elements.phoneInput, elements.phoneError);
-      }
-
-      function showFatal(message) {
-        elements.loadingBanner.classList.add('hidden');
-        elements.fatalBanner.textContent = message;
-        elements.fatalBanner.classList.remove('hidden');
-        setFormEnabled(false);
-      }
-
-      function showToast(message) {
-        window.clearTimeout(state.toastTimer);
-        elements.toast.textContent = message;
-        elements.toast.classList.add('is-visible');
-        state.toastTimer = window.setTimeout(function () {
-          elements.toast.classList.remove('is-visible');
-        }, 5200);
-      }
-
-      function getErrorMessage(error) {
-        const raw = error && error.message ? error.message : String(error || '알 수 없는 오류가 발생했습니다.');
-        return raw.replace(/^Exception:\s*/i, '').replace(/^Error:\s*/i, '');
-      }
-
-      function updateClock() {
-        try {
-          const now = new Date();
-          const text = new Intl.DateTimeFormat('ko-KR', {
-            timeZone: 'Asia/Seoul',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-          }).format(now);
-          elements.liveClock.textContent = text;
-        } catch (error) {
-          elements.liveClock.textContent = new Date().toLocaleString('ko-KR');
-        }
-      }
-    </script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>교육생 출결 기록</title>
   <style>
-[hidden]{display:none!important}.portal-open{width:100%;padding:14px;margin-top:18px;border:1px solid #b9d0cf;border-radius:13px;background:#edf7f4;color:#126457;font:inherit;font-weight:700;cursor:pointer}.student-modal{position:fixed;inset:0;z-index:60;overflow:auto;background:#f2f6f8;padding:0 12px}.student-panel{max-width:740px;min-height:100vh;margin:0 auto;background:#fff;padding:24px}.student-panel h2{margin:0 0 10px;font-size:22px}.student-panel h3{font-size:16px;margin:22px 0 12px}.student-panel p{line-height:1.7;font-size:13px;color:#56677e}.portal-actions{display:flex;gap:10px;justify-content:flex-end}.portal-actions button,.student-panel button{border:1px solid #d7e0e8;border-radius:10px;padding:10px 14px;background:#f6f9fc;color:#173247;font:inherit;cursor:pointer}.student-panel input,.student-panel textarea{display:block;width:100%;padding:11px;border:1px solid #bac9d7;border-radius:9px;font:inherit;margin:7px 0 14px}.student-panel label{font-size:12px;font-weight:650}.stamp-box{background:#eef8f3;border:1px solid #b9dfca;border-radius:15px;padding:18px}.stamp-dots{display:flex;gap:10px;margin:15px 0}.stamp-dot{display:grid;place-items:center;width:47px;height:47px;border-radius:50%;background:white;border:2px dashed #b6d6c4;color:#668477;font-size:20px}.stamp-dot.filled{background:#1b715d;color:white;border-style:solid;border-color:#1b715d}.my-events{display:grid;gap:8px}.my-event,.my-request{border:1px solid #e0e7ee;border-radius:9px;padding:11px;font-size:13px;line-height:1.8}.my-event strong{margin-left:13px}.my-request p{margin:5px 0}.student-panel .portal-error{background:#fff0f1;padding:12px;color:#a32c3a;border-radius:9px}.student-panel button:disabled{opacity:.5;cursor:not-allowed}.portal-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}.student-panel .portal-action-grid button{padding:15px;background:#e7f5f0;border-color:#b3d9cb;color:#125b4b;font-weight:700}.student-panel .portal-action-grid button[data-action="OUT"]{background:#eef3fb;border-color:#c9d5e7;color:#274766}.student-panel #portal-action-status{min-height:24px;font-weight:650;color:#17634f}@media(max-width:480px){.portal-action-grid{grid-template-columns:1fr 1fr}.student-panel{padding:18px}}
-</style>
-<section id="student-portal" class="student-modal" role="dialog" aria-modal="true" aria-labelledby="portal-title" hidden><div class="student-panel"><div class="portal-actions"><button id="portal-refresh" type="button">새로고침</button><button id="portal-close" type="button">닫기</button></div><h2 id="portal-title">내 출결 화면</h2><p id="portal-identity"></p><p id="portal-error" class="portal-error" role="alert" hidden></p><p id="portal-lms"></p><h3>오늘의 출결</h3><p id="portal-schedule"></p><div class="portal-action-grid" id="portal-action-grid"><button type="button" data-action="IN">입실</button><button type="button" data-action="LEAVE">외출</button><button type="button" data-action="RETURN">복귀</button><button type="button" data-action="OUT">퇴실</button></div><p id="portal-action-status" role="status"></p><h3>오늘의 기록</h3><div id="portal-records" class="my-events"></div><h3>최근 30일 출결 기록</h3><div id="portal-history" class="my-events"></div><h3>커피쿠폰 이벤트</h3><div id="portal-event"></div><h3>출결 정정 요청</h3><p>빠진 기록이나 잘못된 시각을 알려주세요. 운영자 확인 후 반영됩니다.</p><form id="correction-form"><label>기록 날짜<input id="correction-date" type="date" required></label><label>요청 내용<textarea id="correction-reason" maxlength="500" rows="3" placeholder="예: 오늘 08:50 입실했지만 체크를 놓쳤습니다." required minlength="5"></textarea></label><button id="correction-submit" type="submit">정정 요청 보내기</button></form><h3>내 요청 처리 현황</h3><div id="portal-requests"></div><p>본인 확인 후 10분이 지나면 자동으로 닫힙니다. 공용 기기에서는 확인 후 닫아 주세요.</p></div></section>
-<script>
-const studentView={token:'',busy:false,timer:null};
-const sp=id=>document.getElementById(id);
-function spEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function spRpc(name,...args){return new Promise((ok,bad)=>google.script.run.withSuccessHandler(ok).withFailureHandler(bad)[name](...args));}
-function spLocate(force){if(!force&&!state.config?.geoRequired)return Promise.resolve(null);if(!navigator.geolocation)return Promise.reject(new Error('이 브라우저는 위치 확인을 지원하지 않습니다. 위치 서비스를 지원하는 브라우저에서 QR 주소를 열어 주세요.'));return new Promise((resolve,reject)=>{let attempts=0;const request=()=>navigator.geolocation.getCurrentPosition(p=>{const age=Date.now()-p.timestamp;if(!Number.isFinite(age)||age>120000||age< -120000){if(attempts++<1){request();return;}const detail=Number.isFinite(age)?(age>=0?Math.ceil(age/1000)+'초 전':Math.ceil(-age/1000)+'초 미래'):'시각을 알 수 없는';reject(new Error('기기가 '+detail+' 위치를 반환했습니다. Wi-Fi와 위치 서비스, 기기의 자동 날짜·시간 설정을 확인하고 다시 시도해 주세요. 계속되면 휴대전화에서 열어 주세요.'));return;}resolve({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy,timestamp:p.timestamp});},e=>reject(new Error(e.code===1?'위치 권한이 거부되었거나 웹앱의 위치 접근이 차단되었습니다. 브라우저 위치 권한을 확인해 주세요.':e.code===3?'위치 확인 시간이 초과되었습니다. Wi-Fi와 위치 서비스를 켜고 다시 시도해 주세요.':'현재 위치를 확인할 수 없습니다. 다시 시도해 주세요.')),{enableHighAccuracy:true,maximumAge:0,timeout:15000});request();});}
+    :root {
+      --page: #f0f4f9;
+      --navy-900: #101c36;
+      --ink-900: #1a2233;
+      --ink-700: #42526e;
+      --ink-500: #6b778c;
+      --line: #dfe1e6;
+      --blue-100: #deebff;
+      --blue-500: #3e7cf0;
+      --blue-600: #2d67dd;
+      --red-100: #ffebe6;
+      --red-600: #de350b;
+      --amber-100: #fffae6;
+      --amber-700: #ff8b00;
+      --mint-600: #00875a;
+      --radius-md: 10px;
+      --radius-xl: 20px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--page); }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink-900);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(62, 124, 240, 0.12), transparent 35%),
+        radial-gradient(circle at 100% 18%, rgba(8, 124, 112, 0.1), transparent 28%),
+        var(--page);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .page { width: min(100%, 620px); margin: 0 auto; padding: 26px 16px calc(32px + env(safe-area-inset-bottom)); }
+    .app-card { overflow: hidden; border: 1px solid rgba(220, 226, 236, 0.86); border-radius: var(--radius-xl); background: rgba(255, 255, 255, 0.96); box-shadow: var(--shadow); }
+    .hero { position: relative; overflow: hidden; padding: 28px 26px 24px; color: #fff; background: linear-gradient(135deg, rgba(20, 32, 58, 0.98), rgba(28, 55, 98, 0.96)), var(--navy-900); }
+    .brand-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 13px; }
+    .brand-mark { display: grid; flex: 0 0 auto; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 14px; color: #fff; background: rgba(255, 255, 255, 0.1); font-size: 18px; font-weight: 800; }
+    .eyebrow { margin: 0 0 5px; color: rgba(255, 255, 255, 0.65); font-size: 12px; font-weight: 750; letter-spacing: 0.12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(21px, 5vw, 27px); font-weight: 800; }
+    .hero-subtitle { margin: 18px 0 0; color: rgba(255, 255, 255, 0.76); font-size: 14px; line-height: 1.6; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .meta-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 6px 10px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 999px; font-size: 12px; background: rgba(255, 255, 255, 0.08); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #62e0c7; }
+    .form-area { padding: 26px; }
+    .loading-banner, .fatal-banner { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; padding: 13px 14px; border-radius: var(--radius-md); font-size: 13px; }
+    .loading-banner { color: #28559f; background: var(--blue-100); }
+    .fatal-banner { color: #a42e3c; background: var(--red-100); }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .field-group { margin: 0 0 21px; }
+    .field-label { display: flex; align-items: center; justify-content: space-between; margin: 0 0 9px; color: var(--ink-700); font-size: 13px; font-weight: 750; }
+    .required { color: var(--blue-600); }
+    .hint { color: var(--ink-500); font-size: 11px; }
+    .class-picker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+    .class-option { min-height: 51px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); color: var(--ink-700); background: #fff; font-weight: 750; cursor: pointer; }
+    .class-option[aria-pressed="true"] { border-color: var(--blue-500); color: #1f58c6; background: var(--blue-100); }
+    .text-input { width: 100%; height: 54px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--radius-md); outline: none; font-size: 16px; font-weight: 620; }
+    .field-error { min-height: 18px; margin: 7px 2px 0; color: var(--red-600); font-size: 12px; }
+    .divider { height: 1px; margin: 25px 0 20px; background: var(--line); }
+    .action-help { margin: 0 0 12px; color: var(--ink-500); font-size: 12px; text-align: center; }
+    .action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+    .action-button { min-height: 58px; padding: 13px 16px; border: 0; border-radius: 15px; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; }
+    .action-in { background: linear-gradient(135deg, #2d67dd, #3d82f2); }
+    .action-out { background: linear-gradient(135deg, #137d73, #18a08f); }
+    .action-leave { color: #684300; background: linear-gradient(135deg, #ffd76a, #f4bd42); }
+    .action-return { background: linear-gradient(135deg, #6657c9, #8174e2); }
+    .button-inner { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .privacy-note { display: flex; gap: 9px; margin: 22px 0 0; padding: 12px 13px; border-radius: 12px; color: var(--ink-500); background: #f6f8fb; font-size: 11px; }
+    .page-footer { margin: 17px auto 0; color: #7a8497; font-size: 11px; text-align: center; }
+    .dialog-backdrop { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(9, 17, 34, 0.58); opacity: 0; visibility: hidden; transition: 0.18s ease; }
+    .dialog-backdrop.is-open { opacity: 1; visibility: visible; }
+    .result-dialog { width: min(100%, 390px); padding: 28px 24px 22px; border-radius: 24px; background: #fff; text-align: center; }
+    .dialog-close { width: 100%; min-height: 48px; border: 0; border-radius: 13px; color: #fff; background: var(--navy-900); font-weight: 800; cursor: pointer; }
+    .toast { position: fixed; z-index: 70; left: 50%; bottom: 20px; width: min(calc(100% - 32px), 520px); padding: 14px 16px; border-radius: 14px; color: #fff; background: #9c2d3b; transform: translate(-50%, 12px); opacity: 0; visibility: hidden; transition: 0.18s ease; }
+    .toast.is-visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+    .hidden { display: none !important; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="app-card">
+      <header class="hero">
+        <div class="brand-row">
+          <div class="brand-mark">K</div>
+          <div>
+            <p class="eyebrow">Attendance</p>
+            <h1 id="app-title">LG전자 K-뉴딜 아카데미</h1>
+          </div>
+        </div>
+        <p class="hero-subtitle" id="app-subtitle">대전 교육장 입·퇴실 기록</p>
+        <div class="meta-row">
+          <span class="meta-pill hidden" id="location-pill">대전 교육장</span>
+          <span class="meta-pill"><span class="status-dot"></span><span id="live-clock">시간 동기화 중</span></span>
+        </div>
+      </header>
 
-function spError(e){const msg=getErrorMessage(e);if(msg.includes('STUDENT_AUTH')){spClose();showToast('조회 시간이 만료되었습니다. 본인 정보를 다시 입력해 주세요.');return;}sp('portal-error').textContent=msg;sp('portal-error').hidden=false;}
-function spRender(data){sp('portal-identity').textContent=data.className+' · '+data.name+' · '+data.today;sp('portal-lms').textContent=data.lmsNotice+(state.config?.geoRequired?' · 출결 시 위치 확인 필요':'');sp('portal-schedule').textContent=data.schedule.teaching?'수업 '+data.schedule.start+'–'+data.schedule.end+(data.schedule.note?' · '+data.schedule.note:''):'오늘은 수업 없는 날입니다.';const row=data.row;sp('portal-action-grid').querySelectorAll('button').forEach(b=>{const a=b.dataset.action;b.disabled=(a==='IN'?!!row.inTime:a==='RETURN'?(!row.awaySince||!!row.outTime):(!row.inTime||!!row.outTime||!!row.awaySince));});sp('portal-records').innerHTML=data.row.events.length?data.row.events.map(e=>'<div class="my-event">'+spEscape(e.time)+' <strong>'+spEscape(e.action)+'</strong> '+spEscape(e.judgement)+' '+spEscape(e.note||'')+'</div>').join(''):'<p>아직 오늘 체크한 기록이 없습니다.</p>';sp('portal-history').innerHTML=data.history?.length?data.history.map(r=>'<div class="my-event"><b>'+spEscape(r.date)+'</b> · '+spEscape(r.status)+'<br>입실 '+spEscape(r.inTime||'—')+' · 퇴실 '+spEscape(r.outTime||'—')+' · 외출 '+spEscape(r.awayCount)+'회'+(r.flags?.length?'<br>'+spEscape(r.flags.join(' · ')):'')+'</div>').join(''):'<p>최근 30일 기록이 없습니다.</p>';const ev=data.event;if(!ev){sp('portal-event').innerHTML='<p>현재 참여할 수 있는 이벤트가 없습니다.</p>';}else{const status=ev.drawn?(ev.won?'커피쿠폰에 당첨되었습니다. 운영자 안내를 확인해 주세요.':'추첨이 완료되었습니다. 참여해 주셔서 감사합니다.'):ev.eligible?'응모 조건을 충족했습니다. 1인 1회 응모됩니다.':ev.closed?'이벤트 기간이 종료되었습니다.':'스탬프 '+Math.max(0,ev.required-ev.count)+'개를 더 모으면 응모할 수 있어요.';sp('portal-event').innerHTML='<div class="stamp-box"><b>'+spEscape(ev.title)+'</b><p>'+spEscape(ev.start)+' ~ '+spEscape(ev.end)+' · '+ev.winners+'명 추첨</p><div class="stamp-dots">'+Array.from({length:ev.required},(_,i)=>'<span class="stamp-dot '+(i<ev.count?'filled':'')+'">'+(i<ev.count?'✓':i+1)+'</span>').join('')+'</div><b>내 스탬프 '+ev.count+'개</b><p>'+spEscape(status)+'</p><p>입·퇴실과 외출 후 복귀를 완료하면 하루 1개. 3개 이상이면 1인 1회 응모하며, 지각·조퇴 자체로 감점하지 않습니다. 운영자 확인 후 확정됩니다.</p><p>적립일: '+spEscape(ev.dates.join(', ')||'아직 없음')+'</p></div>';}
-sp('portal-requests').innerHTML=data.requests.length?data.requests.map(r=>'<div class="my-request"><b>'+spEscape(r.date)+' · '+spEscape(r.status)+'</b><p>'+spEscape(r.reason)+'</p>'+(r.reply?'<p>운영자: '+spEscape(r.reply)+'</p>':'')+'</div>').join(''):'<p>최근 요청이 없습니다.</p>';sp('correction-date').max=data.today;if(!sp('correction-date').value)sp('correction-date').value=data.today;}
-async function spEnter(){if(studentView.busy||state.submitting||!state.config||!validateForm())return;studentView.busy=true;setSubmittingState(true,'IN');try{const position=await spLocate();const r=await spRpc('studentEnter',{position:position,className:state.selectedClass,name:elements.nameInput.value.trim(),phoneLast4:elements.phoneInput.value.replace(/\D/g,'')});spShow(r);sp('portal-action-status').textContent=r.checkIn?'입실 완료 · '+r.checkIn.recordedAt:r.alreadyIn?'오늘 입실 기록이 있습니다. 이어서 이용하세요.':'';if(r.portalStale)spRefresh();}catch(e){showToast(getErrorMessage(e));}finally{studentView.busy=false;setSubmittingState(false);}}
-function spShow(r){studentView.token=r.token;clearTimeout(studentView.timer);studentView.timer=setTimeout(spClose,Math.max(0,r.expiresAt-Date.now()));spRender(r.portal);sp('portal-error').hidden=true;sp('student-portal').hidden=false;resetSensitiveFields();sp('portal-close').focus();}
-async function spOpen(){if(studentView.busy||state.submitting||!state.config||!validateForm())return;studentView.busy=true;sp('my-records-button').disabled=true;try{const position=await spLocate();const r=await spRpc('studentOpen',{position:position,className:state.selectedClass,name:elements.nameInput.value.trim(),phoneLast4:elements.phoneInput.value.replace(/\D/g,'')});spShow(r);sp('portal-action-status').textContent='';}catch(e){showToast(getErrorMessage(e));}finally{studentView.busy=false;sp('my-records-button').disabled=false;}}
-function spClose(){const t=studentView.token;studentView.token='';clearTimeout(studentView.timer);sp('student-portal').hidden=true;['portal-records','portal-history','portal-event','portal-requests'].forEach(id=>sp(id).replaceChildren());sp('portal-identity').textContent='';sp('correction-reason').value='';sp('correction-date').value='';sp('portal-action-status').textContent='';if(t)spRpc('studentClose',t).catch(()=>{});sp('my-records-button').focus();}
-async function spRefresh(){if(!studentView.token)return;sp('portal-refresh').disabled=true;try{const token=studentView.token,data=await spRpc('studentPortal',token);if(token===studentView.token){spRender(data);sp('portal-error').hidden=true;}}catch(e){spError(e);}finally{sp('portal-refresh').disabled=false;}}
-sp('location-test-button').onclick=async()=>{const result=sp('location-test-result');result.textContent='위치를 확인하는 중입니다…';try{const p=await spLocate(true);result.textContent='위치 확인 성공 · 측정 '+Math.max(0,Math.ceil((Date.now()-p.timestamp)/1000))+'초 전 · 기기 오차 약 '+Math.ceil(p.accuracy)+'m. 출결 기록은 저장하지 않았습니다.';}catch(e){result.textContent=e.message;}};sp('my-records-button').onclick=spOpen;sp('portal-action-grid').onclick=async e=>{const button=e.target.closest('button[data-action]');if(!button||studentView.busy||!studentView.token)return;const action=button.dataset.action,labels={IN:'입실',OUT:'퇴실',LEAVE:'외출',RETURN:'복귀'};if(!confirm(labels[action]+' 시간을 지금 기록할까요?'))return;studentView.busy=true;sp('portal-action-grid').querySelectorAll('button').forEach(b=>b.disabled=true);try{const position=await spLocate(),token=studentView.token,r=await spRpc('studentSubmitAttendance',token,action,position);if(token!==studentView.token)return;if(r.portal)spRender(r.portal);sp('portal-action-status').textContent=labels[action]+' 완료 · '+r.result.recordedAt;sp('portal-error').hidden=true;if(r.portalStale)await spRefresh();}catch(error){spError(error);}finally{studentView.busy=false;}};sp('portal-close').onclick=spClose;sp('portal-refresh').onclick=spRefresh;sp('correction-form').onsubmit=async e=>{e.preventDefault();if(studentView.busy||!studentView.token)return;studentView.busy=true;sp('correction-submit').disabled=true;try{await spRpc('studentRequestCorrection',studentView.token,{date:sp('correction-date').value,reason:sp('correction-reason').value});sp('correction-reason').value='';await spRefresh();}catch(error){spError(error);}finally{studentView.busy=false;sp('correction-submit').disabled=false;}};
-document.addEventListener('keydown',e=>{if(sp('student-portal').hidden)return;if(e.key==='Escape')spClose();if(e.key==='Tab'){const list=Array.from(sp('student-portal').querySelectorAll('button,input,textarea')).filter(x=>!x.disabled);const first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
-</script>
+      <div class="form-area">
+        <div class="loading-banner" id="loading-banner" role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>출결 설정을 불러오고 있습니다.</span>
+        </div>
+        <div class="fatal-banner hidden" id="fatal-banner" role="alert"></div>
 
+        <form id="attendance-form" novalidate>
+          <fieldset class="field-group" id="class-fieldset" disabled>
+            <legend class="field-label">
+              <span>과정 선택 <span class="required">*</span></span>
+            </legend>
+            <div class="class-picker" id="class-picker"></div>
+            <p class="field-error" id="class-error" aria-live="polite"></p>
+          </fieldset>
+
+          <div class="field-group">
+            <label class="field-label" for="student-name">
+              <span>이름 <span class="required">*</span></span>
+            </label>
+            <input class="text-input" id="student-name" name="studentName" type="text" maxlength="40" placeholder="명단에 등록된 이름" disabled required />
+            <p class="field-error" id="name-error" aria-live="polite"></p>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="phone-last4">
+              <span>휴대전화 뒷자리 <span class="required">*</span></span>
+              <span class="hint">숫자 4자리</span>
+            </label>
+            <input class="text-input" id="phone-last4" name="phoneLast4" type="text" inputmode="numeric" maxlength="4" placeholder="예: 1234" disabled required />
+            <p class="field-error" id="phone-error" aria-live="polite"></p>
+          </div>
+
+          <div class="field-group" id="daily-code-group">
+            <label class="field-label" for="daily-code">
+              <span>오늘의 출결코드 <span class="required">*</span></span>
+              <span class="hint">현장 안내 코드</span>
+            </label>
+            <input class="text-input" id="daily-code" name="dailyCode" type="text" inputmode="numeric" maxlength="12" placeholder="안내받은 코드" disabled />
+            <p class="field-error" id="code-error" aria-live="polite"></p>
+          </div>
+
+          <div class="divider"></div>
+          <p class="action-help">실제 기록은 서버 시간을 기준으로 저장됩니다.</p>
+          <div class="action-grid">
+            <button class="action-button action-in" id="check-in-button" type="button" disabled>
+              <span class="button-inner"><span>→</span><span>입실하기</span></span>
+            </button>
+            <button class="action-button action-out" id="check-out-button" type="button" disabled>
+              <span class="button-inner"><span>←</span><span>퇴실하기</span></span>
+            </button>
+            <button class="action-button action-leave" id="leave-button" type="button" disabled>
+              <span class="button-inner"><span>↗</span><span>외출하기</span></span>
+            </button>
+            <button class="action-button action-return" id="return-button" type="button" disabled>
+              <span class="button-inner"><span>↙</span><span>복귀하기</span></span>
+            </button>
+          </div>
+
+          <p class="privacy-note">
+            <span>●</span>
+            <span id="privacy-notice">입력한 정보는 교육 운영 및 출결 확인 목적으로만 사용됩니다.</span>
+          </p>
+        </form>
+      </div>
+    </section>
+    <p class="page-footer" id="support-text">오류가 계속되면 운영매니저에게 알려주세요.</p>
+  </main>
+
+  <div class="dialog-backdrop" id="result-backdrop" role="presentation">
+    <section class="result-dialog" id="result-dialog" role="dialog" aria-modal="true">
+      <h2 id="result-title">처리되었습니다</h2>
+      <p id="result-message"></p>
+      <button class="dialog-close" id="dialog-close" type="button">확인</button>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <script>
+    'use strict';
+    // 여기에 배포한 구글 웹앱 URL을 입력하세요.
+    const GAS_API_URL = "[https://script.google.com/macros/s/AKfycb.../exec](https://script.google.com/macros/s/AKfycb.../exec)";
+
+    const state = { config: null, selectedClass: '', submitting: false, toastTimer: null };
+    const elements = {
+      form: document.getElementById('attendance-form'),
+      classFieldset: document.getElementById('class-fieldset'),
+      classPicker: document.getElementById('class-picker'),
+      classError: document.getElementById('class-error'),
+      nameInput: document.getElementById('student-name'),
+      nameError: document.getElementById('name-error'),
+      phoneInput: document.getElementById('phone-last4'),
+      phoneError: document.getElementById('phone-error'),
+      codeGroup: document.getElementById('daily-code-group'),
+      codeInput: document.getElementById('daily-code'),
+      codeError: document.getElementById('code-error'),
+      checkInButton: document.getElementById('check-in-button'),
+      checkOutButton: document.getElementById('check-out-button'),
+      leaveButton: document.getElementById('leave-button'),
+      returnButton: document.getElementById('return-button'),
+      loadingBanner: document.getElementById('loading-banner'),
+      fatalBanner: document.getElementById('fatal-banner'),
+      appTitle: document.getElementById('app-title'),
+      appSubtitle: document.getElementById('app-subtitle'),
+      locationPill: document.getElementById('location-pill'),
+      privacyNotice: document.getElementById('privacy-notice'),
+      supportText: document.getElementById('support-text'),
+      liveClock: document.getElementById('live-clock'),
+      resultBackdrop: document.getElementById('result-backdrop'),
+      resultDialog: document.getElementById('result-dialog'),
+      resultTitle: document.getElementById('result-title'),
+      resultMessage: document.getElementById('result-message'),
+      dialogClose: document.getElementById('dialog-close'),
+      toast: document.getElementById('toast'),
+    };
+
+    document.addEventListener('DOMContentLoaded', initialize);
+
+    function initialize() {
+      bindEvents();
+      updateClock();
+      window.setInterval(updateClock, 1000);
+
+      // fetch로 스프레드시트 설정 로드
+      fetch(GAS_API_URL)
+        .then(res => res.json())
+        .then(config => applyConfig(config))
+        .catch(err => showFatal('설정을 불러오지 못했습니다. URL을 확인해 주세요.'));
+    }
+
+    function bindEvents() {
+      elements.phoneInput.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 4);
+      });
+      elements.checkInButton.addEventListener('click', () => submitAttendance('IN'));
+      elements.checkOutButton.addEventListener('click', () => submitAttendance('OUT'));
+      elements.leaveButton.addEventListener('click', () => submitAttendance('LEAVE'));
+      elements.returnButton.addEventListener('click', () => submitAttendance('RETURN'));
+      elements.dialogClose.addEventListener('click', () => elements.resultBackdrop.classList.remove('is-open'));
+    }
+
+    function applyConfig(config) {
+      if (!config || !Array.isArray(config.classes)) {
+        showFatal('설정을 불러오지 못했습니다.');
+        return;
+      }
+      state.config = config;
+      elements.appTitle.textContent = config.appTitle || '교육생 출결 기록';
+      elements.appSubtitle.textContent = config.appSubtitle || '';
+      elements.codeGroup.classList.toggle('hidden', !config.requireDailyCode);
+      renderClassPicker(config.classes);
+      setFormEnabled(true);
+      elements.loadingBanner.classList.add('hidden');
+    }
+
+    function renderClassPicker(classes) {
+      elements.classPicker.innerHTML = '';
+      classes.forEach((className, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'class-option';
+        btn.textContent = className;
+        btn.addEventListener('click', () => selectClass(className));
+        elements.classPicker.appendChild(btn);
+        if (idx === 0) selectClass(className);
+      });
+    }
+
+    function selectClass(className) {
+      state.selectedClass = className;
+      Array.from(elements.classPicker.children).forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.textContent === className));
+      });
+    }
+
+    function getGpsPosition() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error('GPS를 지원하지 않는 브라우저입니다.'));
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: pos.timestamp
+          }),
+          err => reject(err),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+        );
+      });
+    }
+
+    async function submitAttendance(action) {
+      if (state.submitting || !state.config) return;
+      const name = elements.nameInput.value.trim();
+      const phone = elements.phoneInput.value.trim();
+      if (!name || phone.length !== 4) {
+        showToast('이름과 전화번호 뒷자리 4자리를 정확히 입력해 주세요.');
+        return;
+      }
+
+      state.submitting = true;
+      let position = null;
+      if (state.config.geoRequired) {
+        try {
+          showToast('GPS 위치를 확인하는 중입니다...');
+          position = await getGpsPosition();
+        } catch (e) {
+          state.submitting = false;
+          showToast('위치 정보를 가져올 수 없습니다. 위치 권한을 확인해 주세요.');
+          return;
+        }
+      }
+
+      const payload = {
+        className: state.selectedClass,
+        name: name,
+        phoneLast4: phone,
+        dailyCode: state.config.requireDailyCode ? elements.codeInput.value.trim() : '',
+        action: action,
+        position: position
+      };
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        state.submitting = false;
+
+        if (result.ok) {
+          elements.resultTitle.textContent = action + ' 처리 완료';
+          elements.resultMessage.textContent = result.data.message || '출결이 기록되었습니다.';
+          elements.resultBackdrop.classList.add('is-open');
+        } else {
+          showToast(result.error || '오류가 발생했습니다.');
+        }
+      } catch (err) {
+        state.submitting = false;
+        showToast('서버 통신 오류가 발생했습니다.');
+      }
+    }
+
+    function setFormEnabled(enabled) {
+      elements.classFieldset.disabled = !enabled;
+      elements.nameInput.disabled = !enabled;
+      elements.phoneInput.disabled = !enabled;
+      elements.codeInput.disabled = !enabled;
+      elements.checkInButton.disabled = !enabled;
+      elements.checkOutButton.disabled = !enabled;
+      elements.leaveButton.disabled = !enabled;
+      elements.returnButton.disabled = !enabled;
+    }
+
+    function showFatal(msg) {
+      elements.loadingBanner.classList.add('hidden');
+      elements.fatalBanner.textContent = msg;
+      elements.fatalBanner.classList.remove('hidden');
+      setFormEnabled(false);
+    }
+
+    function showToast(msg) {
+      clearTimeout(state.toastTimer);
+      elements.toast.textContent = msg;
+      elements.toast.classList.add('is-visible');
+      state.toastTimer = setTimeout(() => elements.toast.classList.remove('is-visible'), 4000);
+    }
+
+    function updateClock() {
+      try {
+        elements.liveClock.textContent = new Intl.DateTimeFormat('ko-KR', {
+          timeZone: 'Asia/Seoul', month: 'long', day: 'numeric',
+          weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        }).format(new Date());
+      } catch (e) {}
+    }
+  </script>
 </body>
 </html>
