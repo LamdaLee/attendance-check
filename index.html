@@ -496,17 +496,17 @@
       studentView.busy = true;
       sp('my-records-button').disabled = true;
       try {
-  const position = await spLocate();
-
-  const r = await spRpc('studentOpen', {
-    className: state.selectedClass,
-    name: elements.nameInput.value.trim(),
-    phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),
-    dailyCode: state.config.requireDailyCode
-      ? elements.codeInput.value.trim()
-      : '',
-    position: position
-  });
+            const position = await spLocate();
+          
+            const r = await spRpc('studentOpen', {
+              className: state.selectedClass,
+              name: elements.nameInput.value.trim(),
+              phoneLast4: elements.phoneInput.value.replace(/\D/g, ''),
+              dailyCode: state.config.requireDailyCode
+                ? elements.codeInput.value.trim()
+                : '',
+              position: position
+            });
 
   spShow(r);
       } catch (e) {
