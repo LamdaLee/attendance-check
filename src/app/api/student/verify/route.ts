@@ -1,0 +1,27 @@
+import { callApi } from "@/lib/db";
+import { hashToken, last4Hmac, newSessionToken, normalizeName } from "@/lib/crypto";
+import { STUDENT_COOKIE, STUDENT_SESSION_SECONDS, fail, guarded, isSameOrigin, readJson, respond } from "@/lib/http";
+import { getClientIp } from "@/lib/ip";
+
+type Body = { code?: string; name?: string; last4?: string };
+
+export async function POST(req: Request) {
+  return guarded(async () => {
+    if (!isSameOrigin(req)) return fail("forbidden");
+    const ip = getClientIp(req);
+    if (!ip) return fail("ip_unavailable");
+    const body = await readJson<Body>(req);
+    const name = normalizeName(body?.name ?? "");
+    if (!body?.code || !name || name.length > 40 || !/^\d{4}$/.test(body.last4 ?? "")) {
+      return fail("bad_request");
+    }
+
+    const token = newSessionToken();
+    const result = await callApi("api_student_verify", [
+      body.code, name, last4Hmac(body.last4!), ip, hashToken(token), STUDENT_SESSION_SECONDS,
+    ]);
+    return respond(result, result.ok
+      ? { cookie: { name: STUDENT_COOKIE, value: token, maxAge: STUDENT_SESSION_SECONDS } }
+      : undefined);
+  });
+}

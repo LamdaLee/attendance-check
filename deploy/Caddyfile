@@ -1,0 +1,14 @@
+{$DOMAIN} {
+	encode gzip
+
+	reverse_proxy app:3000 {
+		# 학생이 보낸 헤더 값은 버리고, Caddy 가 본 실제 접속 주소로 덮어쓴다.
+		header_up X-Real-IP {remote_host}
+		header_up -X-Forwarded-For
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}
