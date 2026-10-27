@@ -52,7 +52,8 @@ export type ApiFunction =
   | "api_operator_course_lms"
   | "api_campus_links"
   | "api_operator_links"
-  | "api_operator_link_save";
+  | "api_operator_link_save"
+  | "api_entry";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 

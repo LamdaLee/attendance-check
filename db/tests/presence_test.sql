@@ -41,6 +41,16 @@ begin
   -- 출석코드: 처음에는 꺼져 있음
   r := attendance.api_campus_info('dev-daejeon-a', '8.8.8.8');
   perform pg_temp.eq('code mode off', r->>'codeMode', 'false');
+
+  -- 0010: 첫 화면 교육장 찾기 (대전 교육장 A 에 127.0.0.1 이 허용돼 있음)
+  r := attendance.api_entry('127.0.0.1');
+  perform pg_temp.eq('entry matched', r->'matched'->0->>'code', 'dev-daejeon-a');
+  perform pg_temp.eq('entry matched one', jsonb_array_length(r->'matched'), 1);
+  r := attendance.api_entry('8.8.8.8');
+  perform pg_temp.eq('entry no match', jsonb_array_length(r->'matched'), 0);
+  perform pg_temp.eq('entry campuses', jsonb_array_length(r->'campuses'), 3);
+  r := attendance.api_entry(null);
+  perform pg_temp.eq('entry no ip', jsonb_array_length(r->'matched'), 0);
   r := attendance.api_operator_codes(dj, null);
   perform pg_temp.eq('no code yet', r->'campuses'->0->>'code', null);
 

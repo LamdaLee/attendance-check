@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import InstallCard, { LAST_CAMPUS_KEY } from "./InstallCard";
 import {
   ACTION_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
   formatDate, formatTime, messageFor, noticeText, todayInSeoul,
@@ -86,6 +87,10 @@ export default function StudentFlow({ code }: { code: string }) {
       }
       setCampus(r.campus);
       setNetworkOk(r.networkOk);
+      // 홈 화면 바로가기(첫 화면)에서 다음에 이 교육장을 먼저 보여 주기 위해 기억해 둔다.
+      try {
+        localStorage.setItem(LAST_CAMPUS_KEY, code);
+      } catch {}
       setCodeMode(r.codeMode);
       return r.networkOk as boolean;
     } catch {
@@ -298,6 +303,7 @@ export default function StudentFlow({ code }: { code: string }) {
         )}
 
         {phase === "verify" && <LinksCard links={links} />}
+        {phase === "verify" && <InstallCard />}
 
         {phase === "home" && today && (
           <>
@@ -367,7 +373,9 @@ export default function StudentFlow({ code }: { code: string }) {
             <NoticeCard />
             <CorrectionCard />
             <LinksCard links={links} />
+            <InstallCard />
             <button className="btn plain block" onClick={switchStudent}>다른 교육생으로 확인 · 확인 종료</button>
+            <a className="small center" href="/?pick=1" style={{ display: "block" }}>다른 교육장 고르기</a>
           </>
         )}
 
