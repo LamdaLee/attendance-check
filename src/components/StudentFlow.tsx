@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CertificateOverlay, birthValid, formatBirth, type CertificateData } from "./Certificate";
 import {
   ACTION_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
   formatDate, formatTime, messageFor, noticeText, todayInSeoul,
@@ -367,7 +366,6 @@ export default function StudentFlow({ code }: { code: string }) {
 
             <NoticeCard />
             <CorrectionCard />
-            {today.presence && <CertificateCard />}
             <LinksCard links={links} />
             <button className="btn plain block" onClick={switchStudent}>다른 교육생으로 확인 · 확인 종료</button>
           </>
@@ -409,7 +407,7 @@ function LinksCard({ links }: { links: { label: string; url: string }[] }) {
   return (
     <div className="card">
       <h2>바로가기</h2>
-      <p className="small" style={{ marginTop: -6 }}>공가 서류 접수와 출결확인서·참여확인서는 LMS에 로그인해서 진행합니다.</p>
+      <p className="small" style={{ marginTop: -6 }}>공가 서류 접수와 출결확인서·참여확인서 발급은 LMS에 로그인해서 진행합니다.</p>
       <div className="link-list">
         {links.map((l) => (
           <a key={l.url} className="btn ghost block" href={l.url} target="_blank" rel="noopener noreferrer">{l.label} →</a>
@@ -552,60 +550,6 @@ function NoticeCard() {
         </ul>
       )}
     </form>
-  );
-}
-
-// 출석확인서 (교육장 회선이나 출석코드로 확인된 경우에만). 생년월일은 출력에만 쓰고 저장하지 않는다.
-function CertificateCard() {
-  const today = todayInSeoul();
-  const [open, setOpen] = useState(false);
-  const [from, setFrom] = useState(addDays(today, -30));
-  const [to, setTo] = useState(today);
-  const [birth, setBirth] = useState("");
-  const [cert, setCert] = useState<CertificateData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!birthValid(birth)) {
-      setError("생년월일을 8자리 숫자로 입력해 주세요. 예: 19990101");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    const r = await postJson("/api/student/certificate", { from, to }).catch(() => ({ ok: false, code: "server_error" }));
-    setBusy(false);
-    if (!r.ok) {
-      setError(messageFor(r.code));
-      return;
-    }
-    setCert(r as CertificateData);
-  }
-
-  return (
-    <div className="card">
-      <div className="row between">
-        <h2 style={{ margin: 0 }}>출석확인서</h2>
-        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "만들기"}</button>
-      </div>
-      <p className="small">외부 기관에 낼 출석확인서를 기간을 정해 PDF로 저장할 수 있습니다.</p>
-      {open && (
-        <form onSubmit={submit}>
-          <div className="grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            <label className="field">시작일<input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} required /></label>
-            <label className="field">종료일<input type="date" value={to} min={from} max={today} onChange={(e) => setTo(e.target.value)} required /></label>
-          </div>
-          <label className="field">
-            생년월일 (확인서에만 표시, 저장하지 않음)
-            <input value={birth} onChange={(e) => setBirth(formatBirth(e.target.value))} inputMode="numeric" placeholder="예: 19990101" required />
-          </label>
-          {error && <p className="notice error">{error}</p>}
-          <button className="btn block" disabled={busy}>확인서 만들기</button>
-        </form>
-      )}
-      {cert && <CertificateOverlay data={cert} birth={birth} onClose={() => setCert(null)} />}
-    </div>
   );
 }
 

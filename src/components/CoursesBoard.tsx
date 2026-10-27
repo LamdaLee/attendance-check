@@ -90,7 +90,6 @@ export default function CoursesBoard() {
           {courses?.length === 0 && <p className="small" style={{ padding: 14 }}>과정이 없습니다.</p>}
         </div>
         <QuickLinks region={region} />
-        <InstitutionSetting region={region} />
         </div>
         {course && <CourseDetail key={course.id} course={course} onSaved={async (t) => { setMessage({ kind: "ok", text: t }); await load(); }} />}
       </div>
@@ -185,7 +184,7 @@ function CourseDetail({ course, onSaved }: { course: Course; onSaved: (t: string
       <form className="panel" onSubmit={save}>
         <h2>{course.name} 설정</h2>
         <div className="grid-2">
-          <label className="field">정식 이름 (출석확인서에 표시)<input value={form.fullName} onChange={set("fullName")} maxLength={120} placeholder="예: LG전자 K뉴딜 아카데미 AX 워크플로우" /></label>
+          <label className="field">정식 이름<input value={form.fullName} onChange={set("fullName")} maxLength={120} placeholder="예: LG전자 K뉴딜 아카데미 AX 워크플로우" /></label>
           <label className="field">
             <span className="row" style={{ gap: 6 }}>
               <input type="checkbox" checked={form.active} onChange={set("active")} style={{ width: "auto", margin: 0 }} /> 사용 중인 과정
@@ -390,41 +389,6 @@ function PyeongtaekPreset({ course, onApply }: { course: Course; onApply: (e: { 
       <div className="row" style={{ justifyContent: "flex-end" }}>
         <button className="btn plain sm" onClick={() => setOpen(false)}>취소</button>
         <button className="btn sm" onClick={apply} disabled={!monday}>5일 지정</button>
-      </div>
-    </div>
-  );
-}
-
-// 출석확인서에 들어가는 기관명
-function InstitutionSetting({ region }: { region: string }) {
-  const [name, setName] = useState("");
-  const [saved, setSaved] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    api("/api/admin/institution").then((r) => {
-      if (!r.ok) return;
-      const v = (r.regions as { code: string; institution: string }[]).find((x) => x.code === region)?.institution ?? "";
-      setName(v);
-      setSaved(v);
-    });
-  }, [region]);
-
-  async function save() {
-    const r = await api("/api/admin/institution", { region, name });
-    setMessage(r.ok ? "저장했습니다." : messageFor(r.code));
-    if (r.ok) setSaved(name.trim());
-  }
-
-  return (
-    <div className="panel" style={{ marginTop: 14 }}>
-      <h2>출석확인서 기관명</h2>
-      <p className="small">교육생이 만드는 출석확인서의 &lsquo;훈련기관&rsquo;과 서명란에 들어갑니다.</p>
-      <div className="row">
-        <input value={name} onChange={(e) => { setName(e.target.value); setMessage(null); }} maxLength={80} placeholder="예: ○○교육원 대전캠퍼스"
-          style={{ flex: 1, minWidth: 220, padding: "9px 11px", border: "1.5px solid var(--line)", borderRadius: 10 }} />
-        <button className="btn" onClick={save} disabled={name.trim() === saved}>저장</button>
-        {message && <span className="small">{message}</span>}
       </div>
     </div>
   );

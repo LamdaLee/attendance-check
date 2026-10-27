@@ -228,55 +228,7 @@ a.btn.block { display: flex; }
 .link-btn { border: 0; background: none; color: var(--danger); font-size: 12px; padding: 0; text-decoration: underline; }
 .upload-btn { display: inline-block; margin-top: 6px; cursor: pointer; }
 
-/* 출석확인서 */
-.cert-overlay { position: fixed; inset: 0; z-index: 50; overflow: auto; background: #e9ebf3; padding: 12px; }
-.cert-bar { position: sticky; top: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: #e9ebf3; padding: 4px 0 10px; }
-.cert { background: #fff; color: #111; max-width: 794px; margin: 0 auto; padding: 36px 40px; font-size: 13px; line-height: 1.5; }
-.cert h1 { text-align: center; font-size: 26px; letter-spacing: 8px; margin: 0 0 22px; }
-.cert table { width: 100%; border-collapse: collapse; white-space: normal; font-size: 12.5px; }
-.cert th, .cert td { border: 1px solid #555; padding: 5px 7px; text-align: left; background: none; color: #111; }
-.cert th { background: #f2f2f2; font-weight: 700; width: 1%; white-space: nowrap; }
-.cert-info { margin-bottom: 14px; }
-.cert-sum th, .cert-sum td { text-align: center; width: auto; }
-.cert-sum { margin-bottom: 14px; }
-.cert-h { font-size: 13.5px; margin: 16px 0 6px; }
-.cert-scroll { overflow-x: auto; }
-.cert-days th, .cert-days td { padding: 4px 6px; font-size: 11.5px; width: auto; text-align: center; }
-.cert-days td:first-child { text-align: left; white-space: nowrap; }
-.cert-days .cert-sign-cell { width: 16%; }
-.cert-days tr { break-inside: avoid; }
-.cert-place { font-size: 10px; color: #666; }
-.cert-note { font-size: 11px; color: #444; margin: 12px 0 0; }
-.cert-claim { text-align: center; font-size: 15px; margin: 26px 0 6px; }
-.cert-date { text-align: center; margin: 0 0 14px; }
-.cert-sign { text-align: center; font-size: 17px; font-weight: 700; }
-.cert-sign span { font-weight: 400; color: #666; margin-left: 10px; }
-.cert-code { font-size: 10.5px; color: #555; margin-top: 18px; text-align: center; }
-html.cert-open, html.cert-open body { overflow: hidden; }
-@media (max-width: 600px) {
-  .cert { padding: 20px 12px; font-size: 12px; }
-  .cert-sum th, .cert-sum td { padding: 4px 2px; font-size: 10.5px; white-space: normal; word-break: keep-all; }
-}
-
-/* 단위기간 출석부 */
-.sheet td, .sheet th { padding: 6px 4px; text-align: center; font-size: 12.5px; }
-.sheet td.name, .sheet th.name { text-align: left; padding-left: 10px; position: sticky; left: 0; background: #fff; z-index: 1; }
-.sheet th.name { background: #fafbfe; }
-.sheet .m-ok { color: var(--ok); }
-.sheet .m-warn { color: var(--warn); font-weight: 700; }
-.sheet .m-bad { color: var(--danger); font-weight: 700; }
-.sheet .m-leave { color: var(--brand-strong); font-weight: 700; }
-.sheet .m-none { color: #c4c7d4; }
-.sheet .sum { background: #fafbfe; font-variant-numeric: tabular-nums; }
-.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin: 8px 0; }
-
 @media print {
-  html.cert-open body > *:not(.cert-overlay) { display: none !important; }
-  html.cert-open, html.cert-open body { overflow: visible; }
-  html.cert-open .cert-overlay { position: static; padding: 0; background: #fff; overflow: visible; }
-  html.cert-open .cert { padding: 0; max-width: none; }
-  .sheet td, .sheet th { padding: 3px 2px; font-size: 10px; }
-  .sheet td.name, .sheet th.name { position: static; }
   body { background: #fff; }
   .a-head, .filters, .no-print { display: none !important; }
   .print-meta { display: block; font-size: 12px; color: #333; margin-bottom: 10px; }

@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { CertificateOverlay, birthValid, formatBirth, type CertificateData } from "./Certificate";
 import DayPanel from "./DayPanel";
 import { TrainingTag } from "./RosterBoard";
 import { api } from "@/lib/client";
 import {
-  LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, todayInSeoul,
+  LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, formatDate, formatTime, leaveText, messageFor, todayInSeoul,
 } from "@/lib/messages";
 
 type Data = {
@@ -132,70 +131,6 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
         />
       </div>
 
-      <CertificatePanel enrollmentId={enrollmentId} />
     </>
-  );
-}
-
-// 운영자 출석확인서 발급과 발급 이력
-type Issued = { code: string; from: string; to: string; issuedAt: string; issuedBy: string; summary: { days: number; rate: number | null } };
-
-function CertificatePanel({ enrollmentId }: { enrollmentId: number }) {
-  const today = todayInSeoul();
-  const [from, setFrom] = useState(today.slice(0, 8) + "01");
-  const [to, setTo] = useState(today);
-  const [birth, setBirth] = useState("");
-  const [cert, setCert] = useState<CertificateData | null>(null);
-  const [history, setHistory] = useState<Issued[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadHistory = useCallback(async () => {
-    const r = await api(`/api/admin/certificate?enrollment=${enrollmentId}`);
-    if (r.ok) setHistory(r.certificates);
-  }, [enrollmentId]);
-
-  useEffect(() => {
-    void loadHistory();
-  }, [loadHistory]);
-
-  async function issue(e: React.FormEvent) {
-    e.preventDefault();
-    if (birth && !birthValid(birth)) {
-      setError("생년월일을 8자리 숫자로 입력해 주세요. 비워 두면 빈칸으로 출력됩니다.");
-      return;
-    }
-    setError(null);
-    const r = await api("/api/admin/certificate", { enrollmentId, from, to });
-    if (!r.ok) {
-      setError(messageFor(r.code));
-      return;
-    }
-    setCert(r as unknown as CertificateData);
-    await loadHistory();
-  }
-
-  return (
-    <div className="panel" style={{ marginTop: 14 }}>
-      <h2>출석확인서</h2>
-      <p className="small">외부 기관 제출용 출석확인서를 기간을 정해 출력합니다. 생년월일은 출력에만 쓰고 저장하지 않습니다. 교육생도 휴대폰에서 직접 만들 수 있습니다.</p>
-      <form className="row" onSubmit={issue}>
-        <label className="field" style={{ margin: 0 }}>시작일<input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} required /></label>
-        <label className="field" style={{ margin: 0 }}>종료일<input type="date" value={to} min={from} max={today} onChange={(e) => setTo(e.target.value)} required /></label>
-        <label className="field" style={{ margin: 0 }}>생년월일<input value={birth} onChange={(e) => setBirth(formatBirth(e.target.value))} inputMode="numeric" placeholder="19990101" /></label>
-        <button className="btn" style={{ alignSelf: "flex-end" }}>확인서 만들기</button>
-      </form>
-      {error && <p className="notice error">{error}</p>}
-      {history.length > 0 && (
-        <ul className="mini-list" style={{ marginTop: 10 }}>
-          {history.map((h) => (
-            <li key={h.code}>
-              <span><b className="mono">{h.code}</b> · {formatDate(h.from)} ~ {formatDate(h.to)} · 수업 {h.summary.days}일 · 출석률 {h.summary.rate ?? "—"}%</span>
-              <span className="small">{h.issuedBy === "본인" ? "교육생 본인" : h.issuedBy} · {formatDateTime(h.issuedAt)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {cert && <CertificateOverlay data={cert} birth={birth} onClose={() => setCert(null)} />}
-    </div>
   );
 }

@@ -44,7 +44,6 @@ const MESSAGES: Record<string, string> = {
   invalid_hours: "시작 시각이 종료 시각보다 빨라야 하고, 지각 기준은 0~120분, 점심은 시작이 끝보다 빨라야 합니다.",
   invalid_file: "JPG·PNG 사진이나 PDF 파일만, 5MB까지 올릴 수 있습니다.",
   too_many_files: "서류는 공가 한 건에 3개까지 올릴 수 있습니다.",
-  presence_required: "출석확인서는 교육장 와이파이에 연결했거나 오늘의 출석코드로 확인한 뒤 만들 수 있습니다.",
   invalid_period: "기간을 확인해 주세요. 오늘까지, 최대 1년 범위만 만들 수 있습니다.",
   invalid_url: "https:// 로 시작하는 주소를 입력해 주세요.",
   sick_limit: "병결은 과정 중 평일 기준 5일까지 등록할 수 있습니다.",
