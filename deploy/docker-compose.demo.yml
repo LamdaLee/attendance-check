@@ -1,0 +1,34 @@
+# 데모 구성: 집 PC Supabase 대신 이 서버 안의 임시 Postgres 를 쓴다.
+# 서버·HTTPS·IP 판정을 먼저 시험하고, 나중에 DATABASE_URL 만 집 PC 로 바꾼다.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+#
+# 예시 교육생: 예시학생01 / 0123 (대전 교육장 A, QR 주소 /c/dev-daejeon-a)
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DEMO_DB_ADMIN_PASSWORD:?DEMO_DB_ADMIN_PASSWORD 를 지정해 주세요}
+      POSTGRES_DB: attendance
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD 를 지정해 주세요}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?DEMO_ADMIN_PASSWORD 를 지정해 주세요}
+    volumes:
+      - ../db/migrations/0001_init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ../db/seed/dev.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./demo-init.sh:/docker-entrypoint-initdb.d/03-demo.sh:ro
+      - demo_db:/var/lib/postgresql/data
+    # 포트를 외부에 열지 않는다. 앱 컨테이너만 접근한다.
+
+  app:
+    environment:
+      DATABASE_URL: postgres://attendance_app:${APP_DB_PASSWORD}@db:5432/attendance
+      # 예시 데이터의 뒷자리 대조 값이 이 비밀값으로 만들어져 있다. 데모 전용.
+      STUDENT_MATCH_SECRET: dev-only-secret
+      DATABASE_SSL: "false"
+    depends_on:
+      - db
+
+volumes:
+  demo_db:

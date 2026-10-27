@@ -96,6 +96,30 @@ DOMAIN=attend.example.com docker compose up -d --build
 - 앱 컨테이너는 외부 포트를 열지 않습니다. 이 조건이 깨지면 IP 헤더를 위조할 수 있습니다.
 - 배포 후 운영자 화면의 **현재 접속 IP 확인**에 휴대폰 LTE 주소 등 실제 공인 IP가 보이는지 확인합니다. Docker 게이트웨이 주소(172.x)가 보이면 프록시 구성을 점검해야 합니다.
 - `STUDENT_MATCH_SECRET` 을 잃어버리거나 바꾸면 명단 대조 값을 모두 다시 등록해야 합니다. 따로 백업해 두세요.
+- 도메인에 IPv6(AAAA) 레코드는 아직 넣지 않습니다. Docker 기본 설정에서는 IPv6 로 들어온 접속의 주소가 Docker 내부 주소로 바뀌어 교육장 IP 판정이 틀어집니다. IPv6 가 필요해지면 Docker IPv6 설정 후 추가합니다.
+
+### 데모 실행 (도메인·집 PC DB 없이)
+
+서버 안에 임시 Postgres 를 띄우고, 무료 주소 `<IP를-대시로>.sslip.io` 로 HTTPS 를 받아 전체 흐름을 먼저 시험합니다. 예시 데이터(예시학생01 / 0123, 대전 교육장 A)가 들어갑니다.
+
+```bash
+cd ~/attendance-check/deploy
+IP=$(curl -s -4 https://checkip.amazonaws.com)
+ADMIN_PW=$(openssl rand -base64 12 | tr -d '/+=')
+cat > .env <<EOF
+DOMAIN=${IP//./-}.sslip.io
+DEMO_DB_ADMIN_PASSWORD=$(openssl rand -hex 16)
+APP_DB_PASSWORD=$(openssl rand -hex 16)
+DEMO_ADMIN_PASSWORD=$ADMIN_PW
+EOF
+chmod 600 .env
+docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+echo "주소: https://${IP//./-}.sslip.io/admin   운영자 비밀번호(모든 지역 공통): $ADMIN_PW"
+```
+
+- 운영자 화면에서 대전으로 입장 → **교육장 · IP** → 시험할 휴대폰·와이파이에서 **현재 접속 IP 확인** → 그 주소를 사용 중으로 등록 → 화면의 QR 로 학생 흐름을 시험합니다.
+- 집 PC Supabase 로 옮길 때는 `.env` 에 `DATABASE_URL`, 새 `STUDENT_MATCH_SECRET` 을 넣고 `docker compose up -d` (demo 파일 없이) 로 다시 띄웁니다. 데모 데이터는 옮기지 않습니다.
+- 데모 DB 를 지우려면 `docker compose -f docker-compose.yml -f docker-compose.demo.yml down -v`.
 
 ### 4. 교육장 IP 등록
 
