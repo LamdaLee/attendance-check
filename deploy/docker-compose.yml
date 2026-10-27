@@ -1,5 +1,5 @@
 # 웹서버(클라우드 서버)용 구성: Caddy(HTTPS) → 출결 앱
-# 집 PC Supabase 는 서버에 설치한 Tailscale 을 통해 100.x 주소로 접속한다.
+# 사설 DB(Supabase)는 서버에 설치한 Tailscale 을 통해 100.x 주소로 접속한다.
 #
 #   cd deploy && cp ../.env.example .env  (값 수정) && DOMAIN=attend.example.com docker compose up -d --build
 services:

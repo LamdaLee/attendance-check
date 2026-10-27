@@ -32,7 +32,7 @@
       └─ 출결 앱 컨테이너 (외부 포트 없음)
               │ Tailscale 사설 주소 (100.x)
               ▼
-집 PC ── Supabase Postgres (attendance 스키마)
+사설 DB 서버 ── Supabase Postgres (attendance 스키마)
 ```
 
 ### 보안 원칙
@@ -75,7 +75,7 @@ npm run dev
 
 ## 운영 준비
 
-### 1. 집 PC Supabase 에 스키마 적용
+### 1. 사설 DB(Supabase)에 스키마 적용
 
 ```bash
 # Supabase .env 의 POSTGRES_PASSWORD 로 접속
@@ -104,7 +104,7 @@ npm run admin -- import-students daejeon 명단.csv --apply  # 저장
 ### 3. 웹서버 배포
 
 ```bash
-# 웹서버에 Docker·Tailscale 설치 후, 집 PC(100.67.186.67)에 접속되는지 확인
+# 웹서버에 Docker·Tailscale 설치 후, 사설 DB 서버(Tailscale 주소 100.x)에 접속되는지 확인
 cd deploy
 cp ../.env.example .env      # DATABASE_URL 은 100.x 주소, STUDENT_MATCH_SECRET 은 openssl rand -hex 32
 DOMAIN=attend.example.com docker compose up -d --build
@@ -116,7 +116,7 @@ DOMAIN=attend.example.com docker compose up -d --build
 - `STUDENT_MATCH_SECRET` 을 잃어버리거나 바꾸면 명단 대조 값을 모두 다시 등록해야 합니다. 따로 백업해 두세요.
 - 도메인에 IPv6(AAAA) 레코드는 아직 넣지 않습니다. Docker 기본 설정에서는 IPv6 로 들어온 접속의 주소가 Docker 내부 주소로 바뀌어 교육장 IP 판정이 틀어집니다. IPv6 가 필요해지면 Docker IPv6 설정 후 추가합니다.
 
-### 데모 실행 (도메인·집 PC DB 없이)
+### 데모 실행 (도메인·사설 DB 없이)
 
 서버 안에 임시 Postgres 를 띄우고, 무료 주소 `<IP를-대시로>.sslip.io` 로 HTTPS 를 받아 전체 흐름을 먼저 시험합니다. 예시 데이터(예시학생01 / 0123, 대전 교육장 A)가 들어갑니다.
 
@@ -136,7 +136,7 @@ echo "주소: https://${IP//./-}.sslip.io/admin   운영자 비밀번호(모든 
 ```
 
 - 운영자 화면에서 대전으로 입장 → **교육장 · IP** → 시험할 휴대폰·와이파이에서 **현재 접속 IP 확인** → 그 주소를 사용 중으로 등록 → 화면의 QR 로 학생 흐름을 시험합니다.
-- 집 PC Supabase 로 옮길 때는 `.env` 에 `DATABASE_URL`, 새 `STUDENT_MATCH_SECRET` 을 넣고 `docker compose up -d` (demo 파일 없이) 로 다시 띄웁니다. 데모 데이터는 옮기지 않습니다.
+- 사설 DB(Supabase)로 옮길 때는 `.env` 에 `DATABASE_URL`, 새 `STUDENT_MATCH_SECRET` 을 넣고 `docker compose up -d` (demo 파일 없이) 로 다시 띄웁니다. 데모 데이터는 옮기지 않습니다.
 - 데모 DB 를 지우려면 `docker compose -f docker-compose.yml -f docker-compose.demo.yml down -v`.
 - 예시 교육생: `예시학생01`/`0123`, `예시학생02`/`4567`, `예시학생03`/`8901`, `예시학생04`/`2345`, `예시학생05`~`12` 는 `1555`, `1666` … (1000 + 번호×111).
 

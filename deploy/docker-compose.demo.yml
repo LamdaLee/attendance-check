@@ -1,5 +1,5 @@
-# 데모 구성: 집 PC Supabase 대신 이 서버 안의 임시 Postgres 를 쓴다.
-# 서버·HTTPS·IP 판정을 먼저 시험하고, 나중에 DATABASE_URL 만 집 PC 로 바꾼다.
+# 데모 구성: 사설 DB(Supabase) 대신 이 서버 안의 임시 Postgres 를 쓴다.
+# 서버·HTTPS·IP 판정을 먼저 시험하고, 나중에 DATABASE_URL 만 사설 DB 로 바꾼다.
 #
 #   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
 #
