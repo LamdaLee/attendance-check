@@ -54,7 +54,18 @@ type Row = {
   notices: { kind: string; expectedTime: string | null; reason: string }[];
   note: { text: string; version: number; updatedBy: string; updatedAt: string } | null;
 };
-type Course = { id: number; name: string; classStart: string; classEnd: string; lateAfter: number };
+// dayStart·dayEnd·dayPlace·dayOff: 이 날의 일정 (평택 연수·휴강 반영)
+type Course = {
+  id: number;
+  name: string;
+  classStart: string;
+  classEnd: string;
+  lateAfter: number;
+  dayStart: string;
+  dayEnd: string;
+  dayPlace: string;
+  dayOff: boolean;
+};
 type Data = { date: string; today: string; now: string; courses: Course[]; rows: Row[] };
 
 const SICK_LIMIT = 5;
@@ -71,7 +82,7 @@ type Judged = Row & {
 function judge(r: Row, data: Data, course: Course | undefined): Judged {
   const j = r.judge;
   const current = r.state === "training";
-  const final = data.date < data.today || (data.date === data.today && !!course && kstHHMM(data.now) >= course.classEnd);
+  const final = data.date < data.today || (data.date === data.today && !!course && kstHHMM(data.now) >= course.dayEnd);
   const absent = current && final && j.absent;
   const leaveAttend = current && final && j.leaveAttend;
   const notYet = current && !final && !r.firstCheckInAt;
@@ -147,7 +158,6 @@ export default function ReportBoard() {
   const [showAll, setShowAll] = useState(false);
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [editingHours, setEditingHours] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const r = await api(`/api/admin/report?region=${encodeURIComponent(region)}&date=${date}`);
@@ -228,12 +238,10 @@ export default function ReportBoard() {
                     <tr key={name}>
                       <td><b>{name}</b></td>
                       <td>
-                        {info && editingHours === info.id ? (
-                          <HoursEditor course={info} onDone={async (changed) => { setEditingHours(null); if (changed) await load(); }} />
-                        ) : (
-                          <span className="row" style={{ flexWrap: "nowrap", gap: 6 }}>
-                            {info ? <span>{info.classStart}~{info.classEnd}<br /><span className="small">{info.lateAfter}분부터 지각</span></span> : "—"}
-                            {info && <button className="btn plain sm no-print" onClick={() => setEditingHours(info.id)}>변경</button>}
+                        {!info ? "—" : info.dayOff ? <span className="tag">휴강</span> : (
+                          <span>
+                            {info.dayStart}~{info.dayEnd}{info.dayPlace && <> · {info.dayPlace}</>}
+                            <br /><span className="small">{info.lateAfter}분부터 지각 · <Link href="/admin/courses" className="no-print">일정 변경</Link></span>
                           </span>
                         )}
                       </td>
@@ -339,35 +347,6 @@ function SummaryCells({ s, isToday, showCompleted, showNotYet }: { s: Summary; i
       <td>{withExcused(s.outs, s.outsExcused)}</td>
       {showNotYet && <td>{s.notYet}</td>}
     </>
-  );
-}
-
-function HoursEditor({ course, onDone }: { course: Course; onDone: (changed: boolean) => void }) {
-  const [start, setStart] = useState(course.classStart);
-  const [end, setEnd] = useState(course.classEnd);
-  const [lateAfter, setLateAfter] = useState(course.lateAfter);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save() {
-    const r = await api("/api/admin/report", { action: "hours", courseId: course.id, start, end, lateAfter });
-    if (!r.ok && r.code !== "no_change") {
-      setError(messageFor(r.code));
-      return;
-    }
-    onDone(r.ok);
-  }
-
-  return (
-    <span className="row" style={{ flexWrap: "nowrap", gap: 6 }}>
-      <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="time-sm" aria-label="시작" />
-      ~
-      <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="time-sm" aria-label="종료" />
-      <input type="number" min={0} max={120} value={lateAfter} onChange={(e) => setLateAfter(Number(e.target.value))} className="time-sm" style={{ width: 64 }} aria-label="지각 기준(분)" />
-      분부터 지각
-      <button className="btn sm" onClick={save}>저장</button>
-      <button className="btn plain sm" onClick={() => onDone(false)}>취소</button>
-      {error && <span className="small" style={{ color: "var(--danger)" }}>{error}</span>}
-    </span>
   );
 }
 

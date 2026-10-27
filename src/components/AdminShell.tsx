@@ -30,6 +30,7 @@ const NAV = [
   { href: "/admin/issues", label: "누락 확인" },
   { href: "/admin/corrections", label: "정정 요청" },
   { href: "/admin/students", label: "교육생" },
+  { href: "/admin/courses", label: "과정 · 일정" },
   { href: "/admin/networks", label: "교육장 · IP" },
   { href: "/admin/audit", label: "변경 이력" },
 ];

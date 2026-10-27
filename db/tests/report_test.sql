@@ -359,6 +359,66 @@ begin
     exists (select 1 from jsonb_array_elements(r->'items') x where x->>'action' = 'leave.create'), true);
 end $$;
 
+-- 0007: 날짜별 일정 · 수업일 · 훈련시간
+do $$
+declare
+  dj    bytea := '\x80';
+  bs    bytea := '\x81';
+  w     date := current_setting('t.w')::date;
+  ax    bigint := current_setting('t.ax')::bigint;
+  e1    bigint := current_setting('t.e1')::bigint;
+  e3    bigint := current_setting('t.e3')::bigint;
+  r     jsonb;
+  row   jsonb;
+begin
+  -- 시작일이 없을 때는 기록이 있는 평일만 수업일 (월~금 5일)
+  r := attendance.api_operator_sheet(dj, null, ax, null, w, w + 4);
+  perform pg_temp.eq('legacy days', jsonb_array_length(r->'days'), 5);
+
+  r := attendance.api_operator_course_save(dj, ax, 'LG전자 K뉴딜 아카데미 AX 워크플로우', w, w + 60, '09:00', '18:00', 10, 480, true);
+  perform pg_temp.eq('course save', r->>'ok', 'true');
+  r := attendance.api_operator_course_save(bs, ax, '', w, w + 60, '09:00', '18:00', 10, 480, true);
+  perform pg_temp.eq('course save busan', r->>'code', 'not_found');
+  r := attendance.api_operator_course_save(dj, ax, '', w + 5, w, '09:00', '18:00', 10, 480, true);
+  perform pg_temp.eq('course save period', r->>'code', 'invalid_period');
+  r := attendance.api_operator_course_day_set(dj, ax, w + 2, 'off', null, null, null, '', '휴강');
+  perform pg_temp.eq('day off', r->>'ok', 'true');
+  r := attendance.api_operator_course_day_set(dj, ax, w + 1, 'class', '08:00', '17:00', 480, '평택 연수원', '');
+  perform pg_temp.eq('day class', r->>'ok', 'true');
+  r := attendance.api_operator_course_day_set(dj, ax, w + 3, 'class', '17:00', '08:00', 480, '', '');
+  perform pg_temp.eq('day invalid', r->>'code', 'invalid_hours');
+  r := attendance.api_operator_course_day_set(bs, ax, w + 3, 'off', null, null, null, '', '');
+  perform pg_temp.eq('day busan', r->>'code', 'not_found');
+  r := attendance.api_operator_course_days(dj, ax);
+  perform pg_temp.eq('days listed', jsonb_array_length(r->'days'), 2);
+
+  -- 일정 기준 수업일: 수요일 휴강 → 4일, 기록 없는 날은 결석
+  r := attendance.api_operator_sheet(dj, null, ax, null, w, w + 4);
+  perform pg_temp.eq('planned days', jsonb_array_length(r->'days'), 4);
+  select x into row from jsonb_array_elements(r->'students') x where (x->>'enrollmentId')::bigint = e3;
+  perform pg_temp.eq('no record absent', row->'cells'->1->>'absent', 'true');
+  select x into row from jsonb_array_elements(r->'students') x where (x->>'enrollmentId')::bigint = e1;
+  perform pg_temp.eq('day start', row->'cells'->1->>'start', '08:00');
+  perform pg_temp.eq('day place', row->'cells'->1->>'place', '평택 연수원');
+  -- 화요일 09:15 입실 → 08:00 시작 기준 지각
+  perform pg_temp.eq('late by day schedule', row->'cells'->1->>'late', 'true');
+
+  r := attendance.api_operator_certificate(dj, e1, w, w + 4);
+  perform pg_temp.eq('cert course full name', r->>'course', 'LG전자 K뉴딜 아카데미 AX 워크플로우');
+  perform pg_temp.eq('cert days planned', r->'summary'->>'days', '4');
+  perform pg_temp.eq('cert training minutes', r->'summary'->>'trainingMinutes', '1920');
+  perform pg_temp.eq('cert attended minutes', r->'summary'->>'attendedMinutes', '1440');
+
+  r := attendance.api_operator_course_day_set(dj, ax, w + 2, 'clear', null, null, null, '', '');
+  r := attendance.api_operator_sheet(dj, null, ax, null, w, w + 4);
+  perform pg_temp.eq('cleared off', jsonb_array_length(r->'days'), 5);
+
+  r := attendance.api_operator_course_create(dj, null, 'AX');
+  perform pg_temp.eq('course dup', r->>'code', 'duplicate');
+  r := attendance.api_operator_course_create(dj, null, '디지털마케팅');
+  perform pg_temp.eq('course create', r->>'ok', 'true');
+end $$;
+
 reset role;
 rollback;
 \echo 'REPORT TESTS PASSED'

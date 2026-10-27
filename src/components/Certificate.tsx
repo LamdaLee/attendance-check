@@ -19,6 +19,11 @@ export type Cell = {
   out?: string | null;
   leaveKind?: string | null;
   open?: boolean;
+  // 그 날 일정 (날짜별 일정 반영)
+  start?: string;
+  end?: string;
+  minutes?: number;
+  place?: string;
 };
 
 // 칸 판정 → 짧은 표기와 긴 표기
@@ -45,6 +50,8 @@ export type Summary = {
   outs: number;
   converted: number;
   rate: number | null;
+  trainingMinutes?: number;
+  attendedMinutes?: number;
 };
 
 export type CertificateData = {
@@ -71,71 +78,81 @@ function issuedDate(iso: string): string {
 
 const dot = (d: string | null | undefined) => (d ? d.replaceAll("-", ".") : "");
 
+const hrs = (m: number | undefined) => (m == null ? "—" : `${Number.isInteger(m / 60) ? m / 60 : (m / 60).toFixed(1)}시간`);
+
+// 출석확인서: 인적사항 → 출결 총계 → 일자별 출결(훈련생 서명·강사 확인란) → 확인·발급
 function CertificateView({ data, birth }: { data: CertificateData; birth: string }) {
   const s = data.summary;
-  const half = Math.ceil(data.days.length / 2);
-  const columns = [data.days.slice(0, half), data.days.slice(half)];
   return (
     <article className="cert">
       <h1>출 석 확 인 서</h1>
+
+      <h2 className="cert-h">1. 인적사항</h2>
       <table className="cert-info">
         <tbody>
-          <tr><th>성명</th><td>{data.name}</td><th>생년월일</th><td>{birth || " "}</td></tr>
+          <tr><th>훈련생 성명</th><td>{data.name}</td><th>생년월일</th><td>{birth || "\u00a0"}</td></tr>
           <tr><th>과정명</th><td colSpan={3}>{data.course}</td></tr>
-          <tr><th>훈련기관</th><td colSpan={3}>{data.institution || " "}</td></tr>
-          <tr>
-            <th>훈련기간</th>
-            <td colSpan={3}>{dot(data.courseStartsOn)} ~ {dot(data.courseEndsOn)}{data.courseEndsOn ? "" : " (진행 중)"} · 교육 시간 {data.classStart}~{data.classEnd}</td>
-          </tr>
-          <tr><th>확인기간</th><td colSpan={3}>{dot(data.from)} ~ {dot(data.to)}</td></tr>
+          <tr><th>훈련기관</th><td colSpan={3}>{data.institution || "\u00a0"}</td></tr>
+          <tr><th>전체 훈련기간</th><td colSpan={3}>{dot(data.courseStartsOn)} ~ {dot(data.courseEndsOn)}{data.courseEndsOn ? "" : " (진행 중)"}</td></tr>
+          <tr><th>확인 기간</th><td colSpan={3}>{dot(data.from)} ~ {dot(data.to)}</td></tr>
         </tbody>
       </table>
 
+      <h2 className="cert-h">2. 출결 총계 (확인 기간)</h2>
       <table className="cert-sum">
         <thead>
-          <tr><th>수업일수</th><th>출석</th><th>결석</th><th>지각</th><th>조퇴</th><th>외출</th><th>결석 환산</th><th>출석률</th></tr>
+          <tr><th>총 훈련일수</th><th>출석(참여)일수</th><th>결석</th><th>지각</th><th>조퇴</th><th>외출</th><th>총 훈련시간</th><th>참여 훈련시간</th><th>출석률</th></tr>
         </thead>
         <tbody>
           <tr>
-            <td>{s.days}</td>
-            <td>{s.attended}{s.leaveAttend > 0 && <small> (공가 {s.leaveAttend})</small>}</td>
+            <td>{s.days}일</td>
+            <td><b>{s.attended}일</b>{s.leaveAttend > 0 && <small> (공가 {s.leaveAttend})</small>}</td>
             <td>{s.absent}</td>
             <td>{s.late}</td>
             <td>{s.early}</td>
             <td>{s.outs}</td>
-            <td>{s.converted}</td>
+            <td>{hrs(s.trainingMinutes)}</td>
+            <td>{hrs(s.attendedMinutes)}</td>
             <td>{s.rate === null ? "—" : `${s.rate}%`}</td>
           </tr>
         </tbody>
       </table>
 
-      <div className="cert-days">
-        {columns.map((col, i) => (
-          <table key={i}>
-            <thead><tr><th>날짜</th><th>입실</th><th>퇴실</th><th>출결</th></tr></thead>
-            <tbody>
-              {col.map((d) => (
+      <h2 className="cert-h">3. 일자별 출결</h2>
+      <div className="cert-scroll">
+        <table className="cert-days">
+          <thead>
+            <tr><th>일자</th><th>입실</th><th>퇴실</th><th>훈련시간</th><th>출결</th><th>훈련생 서명</th><th>강사 확인</th></tr>
+          </thead>
+          <tbody>
+            {data.days.map((d) => {
+              const m = cellMark(d);
+              return (
                 <tr key={d.date}>
-                  <td>{formatDate(d.date)}</td>
+                  <td>{formatDate(d.date)}{d.place && <div className="cert-place">{d.place}</div>}</td>
                   <td>{d.in ?? "—"}</td>
                   <td>{d.out ?? "—"}</td>
-                  <td>{cellMark(d).long}</td>
+                  <td>{d.absent ? "0" : hrs(d.minutes)}</td>
+                  <td>{m.long}</td>
+                  <td className="cert-sign-cell" />
+                  <td className="cert-sign-cell" />
                 </tr>
-              ))}
-              {col.length === 0 && i === 0 && <tr><td colSpan={4}>이 기간에 수업일 기록이 없습니다.</td></tr>}
-            </tbody>
-          </table>
-        ))}
+              );
+            })}
+            {data.days.length === 0 && <tr><td colSpan={7}>확인 기간에 수업일이 없습니다.</td></tr>}
+          </tbody>
+        </table>
       </div>
 
       <p className="cert-note">
-        지각·조퇴·외출 3회는 결석 1회로 환산하며, 출석률 = (수업일수 − 결석 − 결석 환산) ÷ 수업일수 입니다.
-        수업일은 해당 과정의 출결 기록이 있는 평일입니다.
+        훈련시간은 해당 일자의 편성 시간(점심시간 제외)이며 결석일은 0으로 적습니다. 지각·조퇴·외출 3회는 결석 1회로 환산하고,
+        출석률 = (총 훈련일수 − 결석 − 결석 환산) ÷ 총 훈련일수 입니다. 승인된 공가는 출석으로 인정합니다.
+        입·퇴실 시각은 교육장 네트워크 확인을 거친 출결 시스템 기록입니다.
       </p>
       <p className="cert-claim">위와 같이 출석 사실을 확인합니다.</p>
       <p className="cert-date">{issuedDate(data.issuedAt)}</p>
       <p className="cert-sign">{data.institution || "훈련기관"} <span>(인)</span></p>
-      <p className="cert-code">발급번호 {data.code} · 출결 시스템 기록으로 자동 작성되었으며, 발급번호로 기관에 확인할 수 있습니다.</p>
+      <p className="cert-code">발급번호 {data.code} · 출결 시스템 기록으로 작성되었으며, 발급번호로 훈련기관에 진위를 확인할 수 있습니다.</p>
     </article>
   );
 }

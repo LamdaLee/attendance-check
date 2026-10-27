@@ -55,7 +55,11 @@ export type ApiFunction =
   | "api_operator_certificate"
   | "api_operator_certificates"
   | "api_operator_institutions"
-  | "api_operator_institution_set";
+  | "api_operator_institution_set"
+  | "api_operator_course_days"
+  | "api_operator_course_create"
+  | "api_operator_course_save"
+  | "api_operator_course_day_set";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 
