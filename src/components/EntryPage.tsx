@@ -24,8 +24,11 @@ export default function EntryPage() {
       .then((res) => res.json())
       .then((r) => {
         if (!r.ok) throw new Error();
-        if (!pick && r.matched.length === 1) {
-          window.location.replace(`/c/${encodeURIComponent(r.matched[0].code)}`);
+        // 회선이 한 교육장이면 바로, 여러 교육장(예: 평택 러닝센터는 세 지역이 같은 회선)이면
+        // 지난번에 고른 곳이 그중에 있을 때 바로 들어간다.
+        const auto = r.matched.length === 1 ? r.matched[0] : r.matched.find((m: Campus) => m.code === saved);
+        if (!pick && auto) {
+          window.location.replace(`/c/${encodeURIComponent(auto.code)}`);
           return;
         }
         setData(r);
@@ -40,7 +43,7 @@ export default function EntryPage() {
     <main className="m-shell">
       <section className="m-hero">
         <p className="eyebrow">교육장 출결</p>
-        <h1>교육장을<br />골라 주세요.</h1>
+        <h1>{data && data.matched.length > 1 ? <>지역을<br />골라 주세요.</> : <>교육장을<br />골라 주세요.</>}</h1>
         <p className="sub">교육장 와이파이에 연결돼 있으면 자동으로 들어갑니다.</p>
       </section>
       <div className="m-body">
@@ -55,15 +58,25 @@ export default function EntryPage() {
                 사전 알림·정정 요청은 아래에서 교육장을 골라 할 수 있습니다.
               </p>
             )}
-            {data.matched.length > 1 && <p className="notice ok" style={{ margin: 0 }}>지금 회선에서 여러 교육장이 확인됩니다. 계신 곳을 골라 주세요.</p>}
+            {data.matched.length > 1 && (
+              <div className="card">
+                <h2>{data.matched[0].name}</h2>
+                <p className="small" style={{ marginTop: -6 }}>여러 지역이 함께 쓰는 교육장입니다. 내 지역을 골라 주세요. 다음부터는 바로 들어갑니다.</p>
+                <div className="link-list">
+                  {data.matched.map((m) => (
+                    <Link key={m.code} className="btn block" href={`/c/${encodeURIComponent(m.code)}`}>{m.regionName}</Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {lastCampus && (
+            {lastCampus && data.matched.length <= 1 && (
               <Link className="btn block" href={`/c/${encodeURIComponent(lastCampus.code)}`}>
                 지난번 교육장: {lastCampus.regionName} {lastCampus.name}
               </Link>
             )}
 
-            {regions.map((region) => (
+            {data.matched.length <= 1 && regions.map((region) => (
               <div className="card" key={region}>
                 <h2>{region}</h2>
                 <div className="link-list">
