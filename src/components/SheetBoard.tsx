@@ -34,13 +34,16 @@ function unitPeriods(base: string, until: string): { n: number; from: string; to
 }
 
 function totals(cells: Cell[]) {
-  const t = { days: 0, absent: 0, leave: 0, late: 0, early: 0, outs: 0 };
+  const t = { days: 0, absent: 0, leave: 0, sick: 0, late: 0, early: 0, outs: 0 };
   for (const c of cells) {
     if (c.state !== "training" || c.open) continue;
     t.days++;
     if (c.absent) t.absent++;
     else {
-      if (c.leaveAttend) t.leave++;
+      if (c.leaveAttend) {
+        if (c.leaveKind === "sick") t.sick++;
+        else t.leave++;
+      }
       if (c.late) t.late++;
       if (c.early) t.early++;
       t.outs += c.outs ?? 0;
@@ -147,7 +150,7 @@ export default function SheetBoard({ enrollmentId }: { enrollmentId: number | nu
             <span><b className="m-warn">조</b> 조퇴</span>
             <span><b className="m-warn">외</b> 외출</span>
             <span><b className="m-bad">결</b> 결석(수업 50% 미만 포함)</span>
-            <span><b className="m-leave">공</b> 공가 출석 인정</span>
+            <span><b className="m-leave">병</b> 병결 · <b className="m-leave">공</b> 공가 (둘 다 출석 인정)</span>
             <span>빈칸: 수강 전·중도탈락 이후 · 지각·조퇴·외출 3회 = 결석 1회</span>
           </div>
           <div className="table-card">
@@ -176,7 +179,7 @@ export default function SheetBoard({ enrollmentId }: { enrollmentId: number | nu
                           return <td key={i} className={`m-${m.tone}`} title={c.in ? `${m.long} · ${c.in}~${c.out ?? ""}` : m.long}>{m.short}</td>;
                         })}
                         <td className="sum">{t.days}</td>
-                        <td className="sum">{t.attended}{t.leave > 0 && <small> (공{t.leave})</small>}</td>
+                        <td className="sum">{t.attended}{(t.sick > 0 || t.leave > 0) && <small> ({[t.sick && `병${t.sick}`, t.leave && `공${t.leave}`].filter(Boolean).join(" ")})</small>}</td>
                         <td className="sum">{t.absent}</td>
                         <td className="sum">{t.late}</td>
                         <td className="sum">{t.early}</td>

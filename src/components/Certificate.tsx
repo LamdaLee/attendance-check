@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { LEAVE_KIND_LABEL, formatDate } from "@/lib/messages";
+import { LEAVE_KIND_SHORT, formatDate } from "@/lib/messages";
 
 // 출석부 칸 하나 (attendance.day_cell)
 export type Cell = {
@@ -31,7 +31,10 @@ export function cellMark(c: Cell): { short: string; long: string; tone: "ok" | "
   if (c.state !== "training") return { short: "", long: "", tone: "none" };
   if (c.open) return { short: "·", long: "진행 중", tone: "none" };
   if (c.absent) return { short: "결", long: c.insufficient ? "결석(수업 50% 미만)" : "결석", tone: "bad" };
-  if (c.leaveAttend) return { short: "공", long: `공가 출석 인정${c.leaveKind ? `(${LEAVE_KIND_LABEL[c.leaveKind]})` : ""}`, tone: "leave" };
+  if (c.leaveAttend) {
+    const sick = c.leaveKind === "sick";
+    return { short: sick ? "병" : "공", long: sick ? "병결 (출석 인정)" : `공가 (출석 인정${c.leaveKind ? `, ${LEAVE_KIND_SHORT[c.leaveKind]}` : ""})`, tone: "leave" };
+  }
   const parts: [string, string][] = [];
   if (c.late) parts.push(["지", "지각"]);
   if (c.early) parts.push(["조", "조퇴"]);
@@ -45,6 +48,8 @@ export type Summary = {
   attended: number;
   absent: number;
   leaveAttend: number;
+  sickAttend?: number;
+  otherAttend?: number;
   late: number;
   early: number;
   outs: number;
@@ -106,7 +111,7 @@ function CertificateView({ data, birth }: { data: CertificateData; birth: string
         <tbody>
           <tr>
             <td>{s.days}일</td>
-            <td><b>{s.attended}일</b>{s.leaveAttend > 0 && <small> (공가 {s.leaveAttend})</small>}</td>
+            <td><b>{s.attended}일</b>{s.leaveAttend > 0 && <small> ({[s.sickAttend && `병결 ${s.sickAttend}`, s.otherAttend && `공가 ${s.otherAttend}`].filter(Boolean).join(" · ") || `공가 ${s.leaveAttend}`})</small>}</td>
             <td>{s.absent}</td>
             <td>{s.late}</td>
             <td>{s.early}</td>

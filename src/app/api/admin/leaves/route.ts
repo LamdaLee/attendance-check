@@ -2,7 +2,7 @@ import { callApi } from "@/lib/db";
 import { fail, readJson, respond } from "@/lib/http";
 import { isDate, isId, operatorRoute, param } from "@/lib/route";
 
-const KINDS = new Set(["sick", "interview", "reserve", "family", "other"]);
+const KINDS = new Set(["sick", "interview", "exam", "civic", "other"]);
 const PARTS = new Set(["full", "partial"]);
 
 export const GET = operatorRoute(async ({ token, url }) => {

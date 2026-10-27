@@ -107,9 +107,9 @@ export const TRAINING_STATUS_LABEL: Record<string, string> = {
 export const LEAVE_KIND_LABEL: Record<string, string> = {
   sick: "병결",
   interview: "면접",
-  reserve: "예비군·민방위",
-  family: "경조사",
-  other: "기타",
+  exam: "시험",
+  civic: "공민권 (예비군·민방위·투표 등)",
+  other: "기타 (경조사 등)",
 };
 
 export const LEAVE_PART_LABEL: Record<string, string> = {
@@ -134,8 +134,20 @@ export const LEAVE_STATUS_CLASS: Record<string, string> = {
 };
 
 export function leaveText(l: { kind: string; part: string }): string {
-  return `${LEAVE_KIND_LABEL[l.kind]}${l.part === "partial" ? " (일부)" : ""}`;
+  return `${LEAVE_KIND_SHORT[l.kind] ?? LEAVE_KIND_LABEL[l.kind]}${l.part === "partial" ? " (일부)" : ""}`;
 }
+
+// 표·태그에 쓰는 짧은 이름
+export const LEAVE_KIND_SHORT: Record<string, string> = {
+  sick: "병결",
+  interview: "면접",
+  exam: "시험",
+  civic: "공민권",
+  other: "기타",
+};
+
+// 병결과 그 밖의 공가는 승인되면 똑같이 출석 인정이고, 집계만 나눠 보인다.
+export const leaveGroup = (kind: string | null | undefined) => (kind === "sick" ? "병결" : "공가");
 
 export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "network.create": "허용 IP 추가",

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
 import { api, kstHHMM } from "@/lib/client";
 import {
-  LEAVE_KIND_LABEL, LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, TRAINING_STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, noticeText,
+  LEAVE_KIND_LABEL, LEAVE_STATUS_CLASS, leaveGroup, LEAVE_STATUS_LABEL, TRAINING_STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, noticeText,
   todayInSeoul,
 } from "@/lib/messages";
 
@@ -27,6 +27,8 @@ type Tally = {
   days: number;
   absent: number;
   leaveAttend: number;
+  sickAttend: number;
+  otherAttend: number;
   late: number;
   early: number;
   outs: number;
@@ -92,14 +94,17 @@ function judge(r: Row, data: Data, course: Course | undefined): Judged {
   if (!current) flags.push({ label: TRAINING_STATUS_LABEL[r.state], cls: r.state === "dropped" ? "danger" : "paused" });
   else if (r.statusOn === data.date) flags.push({ label: "오늘 상태 변경", cls: "paused" });
   if (absent) flags.push({ label: j.insufficient ? "결석 (수업 50% 미만)" : "결석", cls: "danger" });
-  if (leaveAttend) flags.push({ label: "공가 출석 인정", cls: "approved" });
+  if (leaveAttend) flags.push({ label: `${leaveGroup(r.leave?.kind)} 출석 인정`, cls: "approved" });
   if (notYet) flags.push({ label: "미입실", cls: "paused" });
   if (current && j.late) flags.push({ label: `지각${ex}`, cls: j.excused ? "approved" : "warn" });
   if (current && j.early && final) flags.push({ label: `조퇴${ex}`, cls: j.excused ? "approved" : "warn" });
   if (current && j.outs > 0) flags.push({ label: `외출${j.outs > 1 ? ` ${j.outs}회` : ""}${ex}`, cls: j.excused ? "approved" : "warn" });
   if (missingOut) flags.push({ label: r.dayStatus === "out" ? "복귀 기록 없음" : "퇴실 기록 없음", cls: "pending" });
-  if (current && r.leave && j.pending) flags.push({ label: `공가 ${LEAVE_STATUS_LABEL[r.leave.status]}`, cls: LEAVE_STATUS_CLASS[r.leave.status] });
-  else if (current && r.leave && !flags.some((f) => f.label.includes("공가"))) flags.push({ label: r.leave.part === "partial" ? "일부 시간 공가 승인" : "공가 승인", cls: "approved" });
+  const group = leaveGroup(r.leave?.kind);
+  if (current && r.leave && j.pending) flags.push({ label: `${group} ${LEAVE_STATUS_LABEL[r.leave.status]}`, cls: LEAVE_STATUS_CLASS[r.leave.status] });
+  else if (current && r.leave && !leaveAttend && !flags.some((f) => f.label.includes(group))) {
+    flags.push({ label: r.leave.part === "partial" ? `일부 시간 ${group} 승인` : `${group} 승인`, cls: "approved" });
+  }
   if (r.corrected) flags.push({ label: "정정", cls: "warn" });
   return { ...r, current, absent, notYet, missingOut, flags };
 }
@@ -113,6 +118,7 @@ type Summary = {
   enrolled: number;
   inRoom: number;
   present: number;
+  presentSick: number;
   presentLeave: number;
   absent: number;
   late: number;
@@ -135,7 +141,8 @@ function summarize(rows: Judged[]): Summary {
     enrolled: cur.length,
     inRoom: cur.filter((r) => r.dayStatus === "in_class").length,
     present: ok.filter((r) => r.firstCheckInAt || r.judge.leaveAttend).length,
-    presentLeave: ok.filter((r) => r.judge.leaveAttend && !r.notYet).length,
+    presentSick: ok.filter((r) => r.judge.leaveAttend && !r.notYet && r.leave?.kind === "sick").length,
+    presentLeave: ok.filter((r) => r.judge.leaveAttend && !r.notYet && r.leave?.kind !== "sick").length,
     absent: cur.filter((r) => r.absent).length,
     late: ok.filter((r) => r.judge.late).length,
     lateExcused: ok.filter((r) => r.judge.late && r.judge.excused).length,
@@ -149,7 +156,7 @@ function summarize(rows: Judged[]): Summary {
 
 const hm = (m: number) => `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
 
-const withExcused = (n: number, ex: number) => (ex > 0 ? `${n} (공가 ${ex})` : String(n));
+const withExcused = (n: number, ex: number) => (ex > 0 ? `${n} (공가·병결 ${ex})` : String(n));
 
 export default function ReportBoard() {
   const { operator, region } = useOperator();
@@ -294,7 +301,7 @@ export default function ReportBoard() {
                       <td className="small">{r.firstCheckInAt ? `${hm(r.eval.attendedMinutes)} / ${hm(r.eval.classMinutes)}` : "—"}</td>
                       <td className="small"><TallyCell row={r} /></td>
                       <td className="small" style={{ whiteSpace: "normal", minWidth: 160 }}>
-                        {r.leave && <div>공가 {leaveText(r.leave)} · {LEAVE_STATUS_LABEL[r.leave.status]} — {r.leave.reason}</div>}
+                        {r.leave && <div>{leaveText(r.leave)} · {LEAVE_STATUS_LABEL[r.leave.status]} — {r.leave.reason}</div>}
                         {r.notices.map((n, i) => <div key={i}>{noticeText(n)} — {n.reason}</div>)}
                         {r.current && !r.leave && (r.absent || r.notYet || r.judge.late || r.judge.early || r.judge.outs > 0) && (
                           <LeaveQuick key={`${r.enrollmentId}:${date}`} row={r} date={date} onDone={load} />
@@ -328,7 +335,8 @@ function TallyCell({ row }: { row: Judged }) {
       <div>
         결석 <b className={t.totalAbsent > 0 ? "num-bad" : undefined}>{t.totalAbsent}</b>
         {t.converted > 0 && <span> (실결석 {t.absent} + 환산 {t.converted})</span>}
-        {t.leaveAttend > 0 && <span> · 공가 출석 {t.leaveAttend}</span>}
+        {t.sickAttend > 0 && <span> · 병결 출석 {t.sickAttend}</span>}
+        {t.otherAttend > 0 && <span> · 공가 출석 {t.otherAttend}</span>}
       </div>
       {t.rate !== null && <div>출석률 {t.rate}%</div>}
       <div>지각 {t.late} · 조퇴 {t.early} · 외출 {t.outs}{minor % 3 > 0 && <span> (환산까지 {3 - (minor % 3)})</span>}</div>
@@ -346,7 +354,7 @@ function SummaryCells({ s, isToday, showCompleted, showNotYet }: { s: Summary; i
       {showCompleted && <td>{s.completed}</td>}
       <td><b>{s.enrolled}</b></td>
       <td>{isToday ? <b>{s.inRoom}</b> : "—"}</td>
-      <td>{withExcused(s.present, s.presentLeave)}</td>
+      <td>{s.present}{(s.presentSick > 0 || s.presentLeave > 0) && <small> ({[s.presentSick && `병결 ${s.presentSick}`, s.presentLeave && `공가 ${s.presentLeave}`].filter(Boolean).join(" · ")})</small>}</td>
       <td className={s.absent > 0 ? "num-bad" : undefined}>{s.absent}</td>
       <td>{withExcused(s.late, s.lateExcused)}</td>
       <td>{withExcused(s.early, s.earlyExcused)}</td>

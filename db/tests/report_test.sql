@@ -171,9 +171,9 @@ begin
   perform pg_temp.eq('leave overlap', r->>'code', 'leave_overlap');
   r := attendance.api_student_leave(stu, today - 20, today - 20, 'sick', 'full', '오래전');
   perform pg_temp.eq('leave too old', r->>'code', 'invalid_leave_date');
-  r := attendance.api_student_leave(stu, today + 1, today + 20, 'reserve', 'full', '긴 기간');
+  r := attendance.api_student_leave(stu, today + 1, today + 20, 'civic', 'full', '긴 기간');
   perform pg_temp.eq('leave too long', r->>'code', 'invalid_leave_date');
-  r := attendance.api_student_leave(stu, today + 3, today + 3, 'reserve', 'full', '예비군 훈련');
+  r := attendance.api_student_leave(stu, today + 3, today + 3, 'civic', 'full', '예비군 훈련');
   lid2 := (r->>'id')::bigint;
   r := attendance.api_student_leaves(stu);
   perform pg_temp.eq('student leaves', jsonb_array_length(r->'leaves'), 2);
@@ -288,6 +288,7 @@ begin
   perform pg_temp.eq('cert code', length(r->>'code'), 10);
   r := attendance.api_operator_certificate(dj, e2, w, w + 4);
   perform pg_temp.eq('op cert leave', r->'summary'->>'leaveAttend', '1');
+  perform pg_temp.eq('op cert sick split', r->'summary'->>'sickAttend', '1');
   perform pg_temp.eq('op cert rate', r->'summary'->>'rate', '100.0');
   r := attendance.api_operator_certificates(dj, e1);
   perform pg_temp.eq('cert history', jsonb_array_length(r->'certificates'), 1);

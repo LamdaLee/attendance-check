@@ -111,7 +111,7 @@ begin
   values (v_e3, v_region, v_last, v_last, 'sick', 'full', '장염으로 병원 진료', 'student',
           'approved', now(), '예시 운영자', '진료확인서 확인');
   insert into attendance.leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, created_by, created_name)
-  select id, v_region, v_today + (8 - extract(isodow from v_today)::int), v_today + (9 - extract(isodow from v_today)::int), 'reserve', 'full', '예비군 동원훈련', 'operator', '예시 운영자'
+  select id, v_region, v_today + (8 - extract(isodow from v_today)::int), v_today + (9 - extract(isodow from v_today)::int), 'civic', 'full', '예비군 동원훈련', 'operator', '예시 운영자'
     from attendance.enrollments where name_key = '예시학생05';
   insert into attendance.leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, created_by)
   select id, v_region, v_today, v_today, 'interview', 'partial', '14시 기업 면접으로 13시 조퇴 예정', 'student'
