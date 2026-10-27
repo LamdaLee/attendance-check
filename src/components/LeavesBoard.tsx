@@ -40,7 +40,7 @@ export default function LeavesBoard() {
   const today = todayInSeoul();
   const [from, setFrom] = useState(addDays(today, -21));
   const [to, setTo] = useState(addDays(today, 7));
-  const [filter, setFilter] = useState("submitted");
+  const [filter, setFilter] = useState("");
   const [items, setItems] = useState<Leave[] | null>(null);
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
@@ -81,7 +81,7 @@ export default function LeavesBoard() {
       <div className="a-title">
         <div>
           <h1>공가</h1>
-          <span className="small">병결·면접·예비군 등 공가 신청입니다. 교육생이 서류(사진·PDF)를 올리면 확인한 뒤 승인합니다. 승인된 날은 출석으로 인정됩니다.</span>
+          <span className="small">공가 서류는 교육생이 LMS에 접수합니다. LMS에서 서류를 확인한 뒤 여기서 공가를 등록·승인하면, 그 날은 출석으로 인정됩니다. 출결 일보의 &lsquo;공가 처리&rsquo; 버튼으로도 바로 등록할 수 있습니다.</span>
         </div>
         <button className="btn" onClick={() => { setAdding(true); setMessage(null); }}>공가 등록</button>
       </div>
@@ -167,7 +167,7 @@ function AddLeave({ region, onDone, onCancel }: { region: string; onDone: (t: st
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
   const [reason, setReason] = useState("");
-  const [approve, setApprove] = useState(false);
+  const [approve, setApprove] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -227,7 +227,7 @@ function AddLeave({ region, onDone, onCancel }: { region: string; onDone: (t: st
       </label>
       <label className="row small" style={{ gap: 6 }}>
         <input type="checkbox" checked={approve} onChange={(e) => setApprove(e.target.checked)} style={{ width: "auto", margin: 0 }} />
-        서류를 이미 받아 확인했습니다 (바로 승인)
+        LMS에서 서류를 확인했습니다 (바로 승인)
       </label>
       {error && <p className="notice error">{error}</p>}
       <div className="row" style={{ justifyContent: "flex-end" }}>

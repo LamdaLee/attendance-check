@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CertificateOverlay, birthValid, formatBirth, type CertificateData } from "./Certificate";
 import {
-  ACTION_LABEL, LEAVE_KIND_LABEL, LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
-  formatDate, formatTime, leaveText, messageFor, noticeText, todayInSeoul,
+  ACTION_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
+  formatDate, formatTime, messageFor, noticeText, todayInSeoul,
 } from "@/lib/messages";
 
 type Campus = { name: string; regionCode: string; regionName: string };
@@ -27,41 +27,6 @@ type Receipt = { action: string; at: string; studentName: string; courseName: st
 type Pending = { action: string; requestId: string };
 type Notice = { id: number; date: string; kind: string; expectedTime: string | null; reason: string; status: string; cancellable: boolean };
 type Request = { date: string; reason: string; status: string; note: string | null };
-type Leave = {
-  id: number;
-  startsOn: string;
-  endsOn: string;
-  kind: string;
-  part: string;
-  reason: string;
-  status: string;
-  note: string | null;
-  docs: { id: number; name: string; size: number }[];
-  uploadable: boolean;
-  cancellable: boolean;
-};
-
-// 사진은 긴 변 1800px JPEG 로 줄여서 올린다 (아이폰 HEIC 도 브라우저가 읽을 수 있으면 JPEG 로 바뀐다).
-async function prepareUpload(file: File): Promise<File> {
-  if (file.type === "application/pdf" || !file.type.startsWith("image/")) return file;
-  try {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    const scale = Math.min(1, 1800 / Math.max(img.naturalWidth, img.naturalHeight));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(img.naturalWidth * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
-    canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
-    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.85));
-    if (!blob) return file;
-    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
-  } catch {
-    return file;
-  }
-}
 
 const ALLOWED: Record<string, string[]> = {
   not_in: ["check_in"],
@@ -308,7 +273,7 @@ export default function StudentFlow({ code }: { code: string }) {
             {!networkOk && !codeMode && (
               <p className="notice warn">
                 출결 기록은 교육장 와이파이에서만 할 수 있습니다. 교육장 밖에서는 본인 확인 후
-                <b> 지각·결석·조퇴 예정 알림</b>, <b>공가 신청</b>, <b>정정 요청</b>만 할 수 있습니다.
+                <b> 지각·결석·조퇴 예정 알림</b>과 <b>정정 요청</b>만 할 수 있습니다.
               </p>
             )}
             <label className="field">
@@ -401,7 +366,6 @@ export default function StudentFlow({ code }: { code: string }) {
             )}
 
             <NoticeCard />
-            <LeaveCard />
             <CorrectionCard />
             {today.presence && <CertificateCard />}
             <LinksCard links={links} />
@@ -445,6 +409,7 @@ function LinksCard({ links }: { links: { label: string; url: string }[] }) {
   return (
     <div className="card">
       <h2>바로가기</h2>
+      <p className="small" style={{ marginTop: -6 }}>공가 서류 접수와 출결확인서·참여확인서는 LMS에 로그인해서 진행합니다.</p>
       <div className="link-list">
         {links.map((l) => (
           <a key={l.url} className="btn ghost block" href={l.url} target="_blank" rel="noopener noreferrer">{l.label} →</a>
@@ -587,159 +552,6 @@ function NoticeCard() {
         </ul>
       )}
     </form>
-  );
-}
-
-// 공가 신청 (교육장 밖에서도 가능). 서류를 올리면 운영자가 확인해 승인하고, 승인된 날은 출석으로 인정된다.
-function LeaveCard() {
-  const today = todayInSeoul();
-  const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState("sick");
-  const [part, setPart] = useState("full");
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(today);
-  const [reason, setReason] = useState("");
-  const [items, setItems] = useState<Leave[]>([]);
-  const [sick, setSick] = useState<{ used: number; limit: number } | null>(null);
-  const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const load = useCallback(async () => {
-    const r = await getJson("/api/student/leaves").catch(() => null);
-    if (r?.ok) {
-      setItems(r.leaves);
-      setSick({ used: r.sickUsed, limit: r.sickLimit });
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setMessage(null);
-    const r = await postJson("/api/student/leaves", { action: "create", from, to: to < from ? from : to, kind, part, reason })
-      .catch(() => ({ ok: false, code: "server_error" }));
-    setBusy(false);
-    if (!r.ok) {
-      setMessage({ kind: "error", text: messageFor(r.code) });
-      return;
-    }
-    setReason("");
-    setOpen(false);
-    setMessage({ kind: "ok", text: "공가를 신청했습니다. 아래 목록에서 증빙 서류(사진·PDF)를 올려 주세요." });
-    await load();
-  }
-
-  async function upload(leaveId: number, picked: File | undefined) {
-    if (!picked) return;
-    setBusy(true);
-    setMessage(null);
-    const file = await prepareUpload(picked);
-    if (file.size > 5 * 1024 * 1024) {
-      setBusy(false);
-      setMessage({ kind: "error", text: messageFor("invalid_file") });
-      return;
-    }
-    const form = new FormData();
-    form.append("leaveId", String(leaveId));
-    form.append("file", file);
-    const r = await getJson("/api/student/leaves/docs", { method: "POST", body: form }).catch(() => ({ ok: false, code: "server_error" }));
-    setBusy(false);
-    setMessage(r.ok ? { kind: "ok", text: "서류를 올렸습니다. 매니저가 확인하면 승인으로 바뀝니다." } : { kind: "error", text: messageFor(r.code) });
-    await load();
-  }
-
-  async function removeDoc(id: number) {
-    if (!window.confirm("이 서류를 지울까요?")) return;
-    const r = await postJson("/api/student/leaves", { action: "deleteDoc", id }).catch(() => ({ ok: false, code: "server_error" }));
-    if (!r.ok) setMessage({ kind: "error", text: messageFor(r.code) });
-    await load();
-  }
-
-  async function cancel(id: number) {
-    if (!window.confirm("이 공가 신청을 취소할까요?")) return;
-    const r = await postJson("/api/student/leaves", { action: "cancel", id }).catch(() => ({ ok: false, code: "server_error" }));
-    if (!r.ok) setMessage({ kind: "error", text: messageFor(r.code) });
-    await load();
-  }
-
-  return (
-    <div className="card">
-      <div className="row between">
-        <h2 style={{ margin: 0 }}>공가 신청</h2>
-        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "신청하기"}</button>
-      </div>
-      <p className="small">
-        병원 진료, 면접, 예비군처럼 공가로 처리할 일정을 신청하고 증빙 서류(사진·PDF)를 올려 주세요. 매니저가 확인해 승인하면 그 날은 출석으로 인정됩니다.
-        {sick && <> 병결은 {sick.limit}일까지 가능하며, 지금까지 <b>{sick.used}일</b> 사용했습니다.</>}
-      </p>
-      {open && (
-        <form onSubmit={submit}>
-          <div className="seg" role="radiogroup" aria-label="공가 종류" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-            {Object.entries(LEAVE_KIND_LABEL).map(([k, v]) => (
-              <button type="button" key={k} role="radio" aria-checked={kind === k} className={kind === k ? "on" : undefined} onClick={() => setKind(k)}>
-                {v}
-              </button>
-            ))}
-          </div>
-          <div className="seg" role="radiogroup" aria-label="시간" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            <button type="button" role="radio" aria-checked={part === "full"} className={part === "full" ? "on" : undefined} onClick={() => setPart("full")}>하루 전체</button>
-            <button type="button" role="radio" aria-checked={part === "partial"} className={part === "partial" ? "on" : undefined} onClick={() => setPart("partial")}>일부 시간</button>
-          </div>
-          <div className="grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            <label className="field">
-              시작일
-              <input type="date" value={from} min={addDays(today, -14)} max={addDays(today, 30)} onChange={(e) => { setFrom(e.target.value); if (to < e.target.value) setTo(e.target.value); }} required />
-            </label>
-            <label className="field">
-              종료일
-              <input type="date" value={to} min={from} max={addDays(from, 13)} onChange={(e) => setTo(e.target.value)} required />
-            </label>
-          </div>
-          <label className="field">
-            사유
-            <textarea value={reason} onChange={(e) => setReason(e.target.value)} required maxLength={300}
-              placeholder={part === "partial" ? "예: 14시 면접으로 13시 조퇴" : "예: 장염으로 병원 진료"} />
-          </label>
-          {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
-          <button className="btn block" disabled={busy}>공가 신청</button>
-        </form>
-      )}
-      {!open && message && <p className={`notice ${message.kind}`}>{message.text}</p>}
-      {items.length > 0 && (
-        <ul className="mini-list" style={{ marginTop: 10 }}>
-          {items.map((l) => (
-            <li key={l.id} style={l.status === "cancelled" ? { opacity: 0.5 } : undefined}>
-              <span>
-                <b>{formatDate(l.startsOn)}{l.endsOn !== l.startsOn && ` ~ ${formatDate(l.endsOn)}`}</b> {leaveText(l)}
-                <br /><span className="small">{l.reason}</span>
-                {l.note && <><br /><span className="small">매니저: {l.note}</span></>}
-                {l.docs.map((d) => (
-                  <span key={d.id} className="small doc-chip">
-                    📎 {d.name}
-                    {l.uploadable && <button type="button" className="link-btn" onClick={() => removeDoc(d.id)} aria-label={`${d.name} 지우기`}>지우기</button>}
-                  </span>
-                ))}
-                {l.uploadable && l.docs.length < 3 && (
-                  <label className="btn ghost sm upload-btn">
-                    서류 올리기
-                    <input type="file" accept="image/*,application/pdf" hidden disabled={busy}
-                      onChange={(e) => { void upload(l.id, e.target.files?.[0]); e.target.value = ""; }} />
-                  </label>
-                )}
-              </span>
-              <span className="row" style={{ flexWrap: "nowrap", alignSelf: "flex-start" }}>
-                <span className={`tag ${LEAVE_STATUS_CLASS[l.status]}`}>{LEAVE_STATUS_LABEL[l.status]}</span>
-                {l.cancellable && <button type="button" className="btn plain sm" onClick={() => cancel(l.id)}>취소</button>}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 }
 

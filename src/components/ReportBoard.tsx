@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
 import { api, kstHHMM } from "@/lib/client";
 import {
-  LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, TRAINING_STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, noticeText,
+  LEAVE_KIND_LABEL, LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, TRAINING_STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, noticeText,
   todayInSeoul,
 } from "@/lib/messages";
 
@@ -264,7 +264,7 @@ export default function ReportBoard() {
             외출 제외)으로 오늘 날짜에만 표시합니다. 지각은 교육 시작 후 정한 시간(기본 10분)부터, 조퇴는 마지막 퇴실이 교육 종료 전,
             외출은 수업 시간 중 외출입니다. 수업 시간의 50% 이상 참여해야 지각·조퇴·외출이 성립하고, 미만이면 결석입니다.
             결석은 교육 종료 시각이 지나야 확정됩니다. 승인된 공가 날은 출석으로 인정하고 괄호 안에 따로 적습니다(승인 전 공가는 반영하지 않음).
-            누적은 과정 시작부터 이 날까지이며, 지각·조퇴·외출 3회를 결석 1회로 환산합니다. 병결은 5일까지 신청할 수 있습니다.
+            누적은 과정 시작부터 이 날까지이며, 지각·조퇴·외출 3회를 결석 1회로 환산합니다. 병결은 5일까지 등록할 수 있습니다.
           </p>
 
           <div className="row between" style={{ margin: "18px 0 10px" }}>
@@ -296,7 +296,13 @@ export default function ReportBoard() {
                       <td className="small" style={{ whiteSpace: "normal", minWidth: 160 }}>
                         {r.leave && <div>공가 {leaveText(r.leave)} · {LEAVE_STATUS_LABEL[r.leave.status]} — {r.leave.reason}</div>}
                         {r.notices.map((n, i) => <div key={i}>{noticeText(n)} — {n.reason}</div>)}
-                        {!r.leave && r.notices.length === 0 && "—"}
+                        {r.current && !r.leave && (r.absent || r.notYet || r.judge.late || r.judge.early || r.judge.outs > 0) && (
+                          <LeaveQuick key={`${r.enrollmentId}:${date}`} row={r} date={date} onDone={load} />
+                        )}
+                        {r.current && r.leave && r.leave.status !== "approved" && (
+                          <Link href="/admin/leaves" className="no-print">공가 메뉴에서 승인</Link>
+                        )}
+                        {!r.current && !r.leave && r.notices.length === 0 && "—"}
                       </td>
                       <td style={{ whiteSpace: "normal" }}>
                         <NoteCell key={`${r.enrollmentId}:${date}`} row={r} date={date} />
@@ -347,6 +353,49 @@ function SummaryCells({ s, isToday, showCompleted, showNotYet }: { s: Summary; i
       <td>{withExcused(s.outs, s.outsExcused)}</td>
       {showNotYet && <td>{s.notYet}</td>}
     </>
+  );
+}
+
+// 결석·지각·조퇴를 공가로 처리: 운영자가 LMS 등에서 서류를 확인한 뒤 이 날짜를 바로 승인 공가로 등록한다.
+function LeaveQuick({ row, date, onDone }: { row: Judged; date: string; onDone: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState("sick");
+  const [part, setPart] = useState(row.absent || row.notYet ? "full" : "partial");
+  const [reason, setReason] = useState(row.notices[0]?.reason ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    setBusy(true);
+    setError(null);
+    const r = await api("/api/admin/leaves", { action: "create", enrollmentId: row.enrollmentId, from: date, to: date, kind, part, reason });
+    if (r.ok) {
+      const d = await api("/api/admin/leaves", { action: "decide", id: r.id, decision: "approved", note: "운영자 공가 처리", version: 1 });
+      if (!d.ok) setError(messageFor(d.code));
+    } else setError(messageFor(r.code));
+    setBusy(false);
+    if (r.ok) await onDone();
+  }
+
+  if (!open) return <button className="btn plain sm no-print" style={{ marginTop: 4 }} onClick={() => setOpen(true)}>공가 처리</button>;
+  return (
+    <div className="no-print" style={{ display: "grid", gap: 6, marginTop: 6 }}>
+      <span className="row" style={{ gap: 6 }}>
+        <select className="time-sm" style={{ width: "auto" }} value={kind} onChange={(e) => setKind(e.target.value)}>
+          {Object.entries(LEAVE_KIND_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+        <select className="time-sm" style={{ width: "auto" }} value={part} onChange={(e) => setPart(e.target.value)}>
+          <option value="full">하루 전체</option>
+          <option value="partial">일부 시간</option>
+        </select>
+      </span>
+      <input className="time-sm" style={{ width: "100%" }} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="사유 (예: 병원 진료, LMS 서류 확인)" maxLength={300} />
+      <span className="row" style={{ gap: 6 }}>
+        <button className="btn sm" onClick={save} disabled={busy || reason.trim().length < 2}>공가로 승인</button>
+        <button className="btn plain sm" onClick={() => setOpen(false)}>취소</button>
+      </span>
+      {error && <span className="small" style={{ color: "var(--danger)" }}>{error}</span>}
+    </div>
   );
 }
 
