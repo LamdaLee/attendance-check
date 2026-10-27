@@ -21,6 +21,19 @@ begin
   perform set_config('t.campus', (select id from attendance.campuses where qr_code = 'dev-daejeon-a')::text, false);
 end $$;
 
+-- 평택 러닝센터: 세 지역이 같은 회선, 오늘 일정은 대구·대전만
+do $$
+begin
+  insert into attendance.campuses (region_id, name, qr_code)
+  select id, '평택 러닝센터', 'pt-' || code from attendance.regions;
+  insert into attendance.allowed_networks (campus_id, label, network, status)
+  select id, '평택', '203.0.113.9/32', 'active' from attendance.campuses where qr_code like 'pt-%';
+  insert into attendance.course_days (course_id, edu_date, kind, class_start, class_end, training_minutes, place, updated_by)
+  select co.id, (now() at time zone 'Asia/Seoul')::date, 'class', '08:00', '17:00', 480, '평택 러닝센터', 'test'
+    from attendance.courses co join attendance.regions r on r.id = co.region_id
+   where r.code in ('daegu', 'daejeon') and co.name = 'AX';
+end $$;
+
 set role attendance_app;
 
 do $$
@@ -48,9 +61,13 @@ begin
   perform pg_temp.eq('entry matched one', jsonb_array_length(r->'matched'), 1);
   r := attendance.api_entry('8.8.8.8');
   perform pg_temp.eq('entry no match', jsonb_array_length(r->'matched'), 0);
-  perform pg_temp.eq('entry campuses', jsonb_array_length(r->'campuses'), 3);
+  perform pg_temp.eq('entry campuses', jsonb_array_length(r->'campuses'), 6);
   r := attendance.api_entry(null);
   perform pg_temp.eq('entry no ip', jsonb_array_length(r->'matched'), 0);
+  -- 같은 회선의 평택 러닝센터 세 곳: 오늘 평택 일정이 있는 지역(대구·대전)만
+  r := attendance.api_entry('203.0.113.9');
+  perform pg_temp.eq('shared site scheduled only', jsonb_array_length(r->'matched'), 2);
+  perform pg_temp.eq('shared site first', r->'matched'->0->>'regionName', '대구');
   r := attendance.api_operator_codes(dj, null);
   perform pg_temp.eq('no code yet', r->'campuses'->0->>'code', null);
 
