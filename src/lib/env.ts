@@ -13,6 +13,11 @@ export const env = {
   get databaseSsl() {
     return process.env.DATABASE_SSL === "true";
   },
+  // DB 연결 수. 같은 시각에 몰리는 인원(평택 130명 등)과 DB 왕복 시간에 맞춘다. DB 쪽 풀 한도보다 작게.
+  get databasePoolMax() {
+    const n = Number(process.env.DATABASE_POOL_MAX);
+    return Number.isInteger(n) && n > 0 ? n : 20;
+  },
   get studentMatchSecret() {
     return required("STUDENT_MATCH_SECRET");
   },

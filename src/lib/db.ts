@@ -64,7 +64,7 @@ function getPool(): Pool {
     globalForPool.attendancePool = new Pool({
       connectionString: env.databaseUrl,
       ssl: env.databaseSsl ? { rejectUnauthorized: true } : undefined,
-      max: 10,
+      max: env.databasePoolMax,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
     });

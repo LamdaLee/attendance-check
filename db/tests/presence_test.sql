@@ -149,6 +149,24 @@ begin
   perform pg_temp.eq('code inactive', r->>'code', 'code_inactive');
 end $$;
 
+do $$
+declare
+  r jsonb;
+begin
+  -- 0011: 같은 IP 에서 여러 사람이 틀려도 다른 사람은 막히지 않는다. 같은 이름은 5회에서 막힌다.
+  for i in 1..12 loop
+    r := attendance.api_student_verify('dev-daejeon-a', '없는사람' || i, current_setting('t.h0123'), '198.51.100.77', ('\x' || lpad(to_hex(200 + i), 2, '0'))::bytea, 600);
+  end loop;
+  perform pg_temp.eq('others not blocked', r->>'code', 'not_found');
+  r := attendance.api_student_verify('dev-daejeon-a', '예시학생01', current_setting('t.h0123'), '198.51.100.77', '\xe1', 600);
+  perform pg_temp.eq('shared ip still works', r->>'ok', 'true');
+  for i in 1..5 loop
+    r := attendance.api_student_verify('dev-daejeon-a', '예시학생02', current_setting('t.h0123'), '198.51.100.77', '\xe2', 600);
+  end loop;
+  r := attendance.api_student_verify('dev-daejeon-a', '예시학생02', current_setting('t.h0123'), '198.51.100.77', '\xe2', 600);
+  perform pg_temp.eq('same name limited', r->>'code', 'rate_limited');
+end $$;
+
 reset role;
 
 -- 코드 값은 변경 이력에 남지 않고, 원본 이벤트의 기록 방법이 맞게 남는다

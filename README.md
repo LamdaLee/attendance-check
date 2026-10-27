@@ -204,6 +204,7 @@ db/migrations/0007_schedule.sql 날짜별 일정(평택 러닝센터·휴강), �
 db/migrations/0008_lms.sql     과정별 LMS 바로가기 주소, 학생 화면 바로가기
 db/migrations/0009_leave_kinds.sql 공가 종류(병결·면접·시험·공민권·기타), 병결·공가 출석 나눠 세기
 db/migrations/0010_entry.sql   첫 화면: 접속 IP 로 교육장 찾기
+db/migrations/0011_rate_limits.sql  본인 확인 횟수 제한을 사람별로 (같은 IP 를 쓰는 평택 130명이 서로 막히지 않게)
 db/setup/lg_knewdeal_2.sql    2기 초기 등록 (지역·교육장·과정·평택 주간·공휴일·기관명)
 db/seed/dev.sql               로컬 예시 데이터
 db/seed/dev_history.sql       데모용 지난 평일 기록

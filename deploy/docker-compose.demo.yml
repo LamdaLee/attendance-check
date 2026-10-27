@@ -26,6 +26,7 @@ services:
       - ../db/migrations/0008_lms.sql:/docker-entrypoint-initdb.d/08-lms.sql:ro
       - ../db/migrations/0009_leave_kinds.sql:/docker-entrypoint-initdb.d/09-leave-kinds.sql:ro
       - ../db/migrations/0010_entry.sql:/docker-entrypoint-initdb.d/10-entry.sql:ro
+      - ../db/migrations/0011_rate_limits.sql:/docker-entrypoint-initdb.d/10-rate-limits.sql:ro
       - ../db/seed/dev.sql:/docker-entrypoint-initdb.d/10-seed.sql:ro
       - ../db/seed/dev_history.sql:/docker-entrypoint-initdb.d/11-history.sql:ro
       - ./demo-init.sh:/docker-entrypoint-initdb.d/20-demo.sh:ro
