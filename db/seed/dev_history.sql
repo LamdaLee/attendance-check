@@ -1,6 +1,8 @@
 -- 데모용 과거 기록 (dev.sql 다음에 실행). 운영 DB에는 실행하지 않는다.
 -- 대전에 예시 교육생을 더하고, 최근 평일 기록을 만든다. 일부러 누락 사례를 섞는다.
 --   최근 평일 기준 예시학생03: 1일 전 기록 없음 / 예시학생02: 2일 전 퇴실 없음 / 예시학생04: 3일 전 복귀 없음
+--   0005 이후: 예시학생12 1일 전 자 중도탈락, 예시학생10 1일 전 자 조기취업 (그 날부터 기록 없음),
+--             예시학생03 1일 전 병결 공가(인정), 예시학생05 예비군 공가(서류 대기), 예시학생07 오늘 면접 공가(서류 대기)
 
 begin;
 
@@ -56,6 +58,7 @@ begin
                        time '12:50' + make_interval(mins => (v_e.n * 3) % 9),
                        time '18:00' + make_interval(mins => (v_e.n * 11 + v_k) % 15)];
       if v_k = 1 and v_e.n = 3 then continue; end if;                         -- 기록 없음
+      if v_k = 1 and v_e.n in (10, 12) then continue; end if;                 -- 중도탈락·조기취업 이후
       if v_k = 2 and v_e.n = 2 then v_plan := v_plan[1:3]; end if;            -- 퇴실 없음
       if v_k = 3 and v_e.n = 4 then v_plan := v_plan[1:2]; end if;            -- 복귀 없음
       if v_e.n > 4 and (v_e.n + v_k) % 4 = 0 then v_plan := array['check_in', 'check_out']; v_times := array[v_times[1], v_times[4]]; end if;
@@ -77,6 +80,35 @@ begin
               array_length(v_plan, 1));
     end loop;
   end loop;
+end $$;
+
+do $$
+declare
+  v_today  date := (now() at time zone 'Asia/Seoul')::date;
+  v_last   date := (now() at time zone 'Asia/Seoul')::date - 1;
+  v_region smallint := (select id from attendance.regions where code = 'daejeon');
+  v_e3     bigint := (select id from attendance.enrollments where name_key = '예시학생03');
+begin
+  while extract(isodow from v_last) > 5 loop v_last := v_last - 1; end loop;
+
+  update attendance.enrollments set training_status = 'dropped', status_on = v_last, status = 'ended'
+   where name_key = '예시학생12';
+  update attendance.enrollments set training_status = 'employed', status_on = v_last, status = 'ended'
+   where name_key = '예시학생10';
+
+  insert into attendance.leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, status,
+                                 created_by, decided_at, decided_by, decision_note)
+  values (v_e3, v_region, v_last, v_last, 'sick', 'full', '장염으로 병원 진료', 'approved',
+          'student', now(), '예시 운영자', '진료확인서 확인');
+  insert into attendance.leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, created_by, created_name)
+  select id, v_region, v_today + (8 - extract(isodow from v_today)::int), v_today + (9 - extract(isodow from v_today)::int), 'reserve', 'full', '예비군 동원훈련 (통지서 제출 예정)', 'operator', '예시 운영자'
+    from attendance.enrollments where name_key = '예시학생05';
+  insert into attendance.leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, created_by)
+  select id, v_region, v_today, v_today, 'interview', 'partial', '14시 기업 면접으로 13시 조퇴 예정', 'student'
+    from attendance.enrollments where name_key = '예시학생07';
+
+  insert into attendance.day_notes (enrollment_id, edu_date, region_id, note, updated_by)
+  values (v_e3, v_last, v_region, '진료확인서 제출, 공가 처리', '예시 운영자');
 end $$;
 
 commit;

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
 import { api } from "@/lib/client";
-import { ENROLLMENT_STATUS_LABEL, formatDate, messageFor } from "@/lib/messages";
+import { TRAINING_STATUS_LABEL, formatDate, messageFor, todayInSeoul } from "@/lib/messages";
 
 type Student = {
   enrollmentId: number;
@@ -12,6 +12,8 @@ type Student = {
   course: string;
   courseId: number;
   status: string;
+  trainingStatus: string;
+  statusOn: string | null;
   conflict: boolean;
   lastAttendance: string | null;
   createdAt: string;
@@ -27,7 +29,7 @@ export default function RosterBoard() {
   const [students, setStudents] = useState<Student[] | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [course, setCourse] = useState("");
-  const [status, setStatus] = useState("active");
+  const [status, setStatus] = useState("training");
   const [query, setQuery] = useState("");
   const [panel, setPanel] = useState<"none" | "add" | "bulk">("none");
   const [editing, setEditing] = useState<Student | null>(null);
@@ -53,12 +55,14 @@ export default function RosterBoard() {
       (students ?? []).filter(
         (s) =>
           (!course || s.course === course) &&
-          (status === "" || (status === "active" ? s.status === "active" : s.status !== "active")) &&
+          (status === "" || s.trainingStatus === status) &&
           (!query || s.name.includes(query.trim())),
       ),
     [students, course, status, query],
   );
   const conflicts = (students ?? []).filter((s) => s.conflict).length;
+  const inCourse = (students ?? []).filter((s) => !course || s.course === course);
+  const countOf = (t: string) => inCourse.filter((s) => s.trainingStatus === t).length;
 
   async function done(text: string) {
     setPanel("none");
@@ -89,6 +93,11 @@ export default function RosterBoard() {
       {panel === "bulk" && <BulkImport region={region} onDone={done} onCancel={() => setPanel("none")} />}
       {editing && <EditEnrollment student={editing} courses={courses} onDone={done} onCancel={() => setEditing(null)} />}
 
+      <div className="stats" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
+        <div className="stat"><span>재적{course ? ` · ${course}` : ""}</span><strong>{inCourse.length}</strong></div>
+        {Object.entries(TRAINING_STATUS_LABEL).map(([k, v]) => <div className="stat" key={k}><span>{v}</span><strong>{countOf(k)}</strong></div>)}
+      </div>
+
       <div className="filters">
         <label className="field">
           과정
@@ -98,10 +107,9 @@ export default function RosterBoard() {
           </select>
         </label>
         <label className="field">
-          수강 상태
+          훈련 상태
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="active">수강 중</option>
-            <option value="inactive">중지 · 종료</option>
+            {Object.entries(TRAINING_STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             <option value="">전체</option>
           </select>
         </label>
@@ -111,13 +119,13 @@ export default function RosterBoard() {
       <div className="table-card">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>이름</th><th>과정</th><th>수강 상태</th><th>본인 대조</th><th>최근 출결</th><th>관리</th></tr></thead>
+            <thead><tr><th>이름</th><th>과정</th><th>훈련 상태</th><th>본인 대조</th><th>최근 출결</th><th>관리</th></tr></thead>
             <tbody>
               {filtered.map((s) => (
                 <tr key={s.enrollmentId}>
                   <td><Link href={`/admin/students/${s.enrollmentId}`}><b>{s.name}</b></Link></td>
                   <td>{s.course}</td>
-                  <td><span className={`tag ${s.status === "active" ? "active" : "paused"}`}>{ENROLLMENT_STATUS_LABEL[s.status]}</span></td>
+                  <td><TrainingTag student={s} /></td>
                   <td>{s.conflict ? <span className="tag danger">중복 조합 확인</span> : <span className="small">등록됨</span>}</td>
                   <td className="small">{s.lastAttendance ? formatDate(s.lastAttendance) : "—"}</td>
                   <td><button className="btn plain sm" onClick={() => { setEditing(s); setPanel("none"); setMessage(null); }}>관리</button></td>
@@ -128,8 +136,20 @@ export default function RosterBoard() {
           </table>
         </div>
       </div>
-      <p className="small">교육생을 중지·종료해도 과거 출결 기록은 그대로 남습니다.</p>
+      <p className="small">교육생은 지우지 않습니다. 중도탈락·조기취업·수료로 바꾸면 그 날짜부터 현인원에서 빠지고 출결 입력이 막히며, 과거 기록은 그대로 남습니다.</p>
     </>
+  );
+}
+
+export function TrainingTag({ student }: { student: { trainingStatus: string; statusOn: string | null; status: string } }) {
+  const t = student.trainingStatus;
+  const cls = t === "training" ? (student.status === "paused" ? "paused" : "active") : t === "dropped" ? "danger" : t === "employed" ? "brand" : "paused";
+  return (
+    <span className={`tag ${cls}`}>
+      {TRAINING_STATUS_LABEL[t]}
+      {t === "training" && student.status === "paused" && " · 입력 중지"}
+      {student.statusOn && ` · ${formatDate(student.statusOn)}`}
+    </span>
   );
 }
 
@@ -248,7 +268,9 @@ function BulkImport({ region, onDone, onCancel }: { region: string; onDone: (t: 
 }
 
 function EditEnrollment({ student, courses, onDone, onCancel }: { student: Student; courses: Course[]; onDone: (t: string) => void; onCancel: () => void }) {
-  const [status, setStatus] = useState(student.status);
+  const [training, setTraining] = useState(student.trainingStatus);
+  const [status, setStatus] = useState(student.status === "paused" ? "paused" : "active");
+  const [statusOn, setStatusOn] = useState(student.statusOn ?? todayInSeoul());
   const [courseId, setCourseId] = useState(student.courseId);
   const [last4, setLast4] = useState("");
   const [reason, setReason] = useState("");
@@ -256,7 +278,10 @@ function EditEnrollment({ student, courses, onDone, onCancel }: { student: Stude
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const r = await api(`/api/admin/students/${student.enrollmentId}`, { status, courseId, last4: last4 || undefined, reason });
+    const r = await api(`/api/admin/students/${student.enrollmentId}`, {
+      status, courseId, last4: last4 || undefined, reason,
+      trainingStatus: training, statusOn: training === "training" ? null : statusOn,
+    });
     if (!r.ok) {
       setError(messageFor(r.code));
       return;
@@ -269,13 +294,25 @@ function EditEnrollment({ student, courses, onDone, onCancel }: { student: Stude
       <h2>{student.name} · 수강 정보 관리</h2>
       <div className="grid-2">
         <label className="field">
-          수강 상태
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="active">수강 중</option>
-            <option value="paused">중지 (출결 입력 차단)</option>
-            <option value="ended">종료</option>
+          훈련 상태
+          <select value={training} onChange={(e) => setTraining(e.target.value)}>
+            {Object.entries(TRAINING_STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </label>
+        {training === "training" ? (
+          <label className="field">
+            출결 입력
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <option value="active">가능</option>
+              <option value="paused">일시 중지 (출결 입력 차단)</option>
+            </select>
+          </label>
+        ) : (
+          <label className="field">
+            {TRAINING_STATUS_LABEL[training]} 일자 (이 날부터 현인원에서 제외)
+            <input type="date" value={statusOn} onChange={(e) => setStatusOn(e.target.value)} required />
+          </label>
+        )}
         <label className="field">
           과정
           <select value={courseId} onChange={(e) => setCourseId(Number(e.target.value))}>
@@ -288,7 +325,7 @@ function EditEnrollment({ student, courses, onDone, onCancel }: { student: Stude
         </label>
         <label className="field">
           변경 사유 (필수)
-          <input value={reason} onChange={(e) => setReason(e.target.value)} required placeholder="예: 중도 포기, 번호 변경" />
+          <input value={reason} onChange={(e) => setReason(e.target.value)} required placeholder="예: 개인 사정으로 중도탈락, 번호 변경" />
         </label>
       </div>
       {error && <p className="notice error">{error}</p>}

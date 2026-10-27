@@ -1,7 +1,7 @@
 import { callApi } from "@/lib/db";
 import { last4Hmac } from "@/lib/crypto";
 import { fail, readJson, respond } from "@/lib/http";
-import { isId, operatorRoute } from "@/lib/route";
+import { isDate, isId, operatorRoute } from "@/lib/route";
 
 function idFrom(url: URL): number | null {
   const id = Number(url.pathname.split("/").pop());
@@ -15,7 +15,16 @@ export const GET = operatorRoute(async ({ token, url }) => {
   return respond(await callApi("api_operator_student", [token, id, `${month}-01`]));
 });
 
-type Body = { status?: string; courseId?: number | null; last4?: string; reason?: string };
+type Body = {
+  status?: string;
+  courseId?: number | null;
+  last4?: string;
+  reason?: string;
+  trainingStatus?: string;
+  statusOn?: string | null;
+};
+
+const TRAINING = new Set(["training", "dropped", "employed", "completed"]);
 
 export const POST = operatorRoute(
   async ({ token, url, req }) => {
@@ -24,8 +33,11 @@ export const POST = operatorRoute(
     if (!id || !body?.status) return fail("bad_request");
     if (body.last4 && !/^\d{4}$/.test(body.last4)) return fail("invalid_input");
     if (body.courseId != null && !isId(body.courseId)) return fail("invalid_input");
+    if (body.trainingStatus !== undefined && !TRAINING.has(body.trainingStatus)) return fail("invalid_status");
+    if (body.statusOn != null && !isDate(body.statusOn)) return fail("invalid_input");
     return respond(await callApi("api_operator_enrollment_update", [
       token, id, body.status, body.courseId ?? null, body.last4 ? last4Hmac(body.last4) : null, body.reason ?? "",
+      body.trainingStatus ?? null, body.statusOn ?? null,
     ]));
   },
   { mutation: true },

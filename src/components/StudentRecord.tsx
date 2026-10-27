@@ -3,16 +3,26 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import DayPanel from "./DayPanel";
+import { TrainingTag } from "./RosterBoard";
 import { api } from "@/lib/client";
 import {
-  ENROLLMENT_STATUS_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, formatDate, formatTime, messageFor, todayInSeoul,
+  LEAVE_STATUS_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, formatDate, formatTime, leaveText, messageFor, todayInSeoul,
 } from "@/lib/messages";
 
 type Data = {
-  student: { enrollmentId: number; name: string; course: string; status: string; regionName: string };
+  student: {
+    enrollmentId: number;
+    name: string;
+    course: string;
+    status: string;
+    trainingStatus: string;
+    statusOn: string | null;
+    regionName: string;
+  };
   month: string;
   days: { date: string; status: string; firstCheckInAt: string | null; lastCheckOutAt: string | null; corrected: boolean }[];
   requests: { id: number; date: string; status: string }[];
+  leaves: { id: number; startsOn: string; endsOn: string; kind: string; part: string; status: string; reason: string }[];
 };
 
 function shiftMonth(month: string, delta: number): string {
@@ -42,6 +52,8 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
 
   const s = data.student;
   const requestByDate = new Map(data.requests.map((q) => [q.date, q]));
+  const leaveOn = (date: string) =>
+    data.leaves.find((l) => l.startsOn <= date && date <= l.endsOn && (l.status === "approved" || l.status === "waiting_docs"));
   const counts = {
     days: data.days.length,
     corrected: data.days.filter((d) => d.corrected).length,
@@ -53,7 +65,7 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
       <div className="a-title">
         <div>
           <Link href="/admin/students" className="small">← 교육생 명단</Link>
-          <h1>{s.name} <span className="scope-tag">{s.course} · {ENROLLMENT_STATUS_LABEL[s.status]}</span></h1>
+          <h1>{s.name} <span className="scope-tag">{s.course}</span> <TrainingTag student={s} /></h1>
         </div>
         <div className="month-nav">
           <button className="btn plain sm" onClick={() => setMonth(shiftMonth(month, -1))}>‹ 이전 달</button>
@@ -62,12 +74,20 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
         </div>
       </div>
 
-      <div className="stats">
+      <div className="stats" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
         <div className="stat"><span>기록 있는 날</span><strong>{counts.days}</strong></div>
         <div className="stat"><span>정정 반영</span><strong>{counts.corrected}</strong></div>
         <div className="stat"><span>처리 대기 요청</span><strong>{counts.pending}</strong></div>
+        <div className="stat"><span>공가 (인정 / 신청)</span><strong>{data.leaves.filter((l) => l.status === "approved").length} / {data.leaves.filter((l) => l.status !== "cancelled").length}</strong></div>
         <div className="stat"><span>지역</span><strong style={{ fontSize: 20 }}>{s.regionName}</strong></div>
       </div>
+
+      {data.leaves.length > 0 && (
+        <p className="small">
+          이 달 공가:{" "}
+          {data.leaves.map((l) => `${formatDate(l.startsOn)}${l.endsOn !== l.startsOn ? `~${formatDate(l.endsOn)}` : ""} ${leaveText(l)} (${LEAVE_STATUS_LABEL[l.status]})`).join(" · ")}
+        </p>
+      )}
 
       <div className="split">
         <div className="table-card">
@@ -77,6 +97,7 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
               <tbody>
                 {data.days.map((d) => {
                   const q = requestByDate.get(d.date);
+                  const l = leaveOn(d.date);
                   return (
                     <tr key={d.date} onClick={() => setSelected(d.date)} style={{ cursor: "pointer", background: selected === d.date ? "var(--brand-soft)" : undefined }}>
                       <td>{formatDate(d.date)}</td>
@@ -85,7 +106,8 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
                       <td>
                         <span className={`tag ${d.status}`}>{STATUS_LABEL[d.status]}</span>{" "}
                         {d.corrected && <span className="tag warn">정정</span>}{" "}
-                        {q && <span className={`tag ${q.status}`}>요청 {REQUEST_STATUS_LABEL[q.status]}</span>}
+                        {q && <span className={`tag ${q.status}`}>요청 {REQUEST_STATUS_LABEL[q.status]}</span>}{" "}
+                        {l && <span className={`tag ${l.status === "approved" ? "approved" : "pending"}`}>공가 {leaveText(l)} · {LEAVE_STATUS_LABEL[l.status]}</span>}
                       </td>
                     </tr>
                   );

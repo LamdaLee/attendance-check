@@ -36,7 +36,16 @@ export type ApiFunction =
   | "api_student_code"
   | "api_operator_codes"
   | "api_operator_code_set"
-  | "api_operator_blocked";
+  | "api_operator_blocked"
+  | "api_student_leave"
+  | "api_student_leaves"
+  | "api_student_leave_cancel"
+  | "api_operator_leaves"
+  | "api_operator_leave_create"
+  | "api_operator_leave_decide"
+  | "api_operator_report"
+  | "api_operator_day_note"
+  | "api_operator_course_hours";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 

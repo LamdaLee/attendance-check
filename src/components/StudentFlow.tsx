@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ACTION_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays, formatDate, formatTime, messageFor,
-  noticeText, todayInSeoul,
+  ACTION_LABEL, LEAVE_KIND_LABEL, LEAVE_STATUS_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
+  formatDate, formatTime, leaveText, messageFor, noticeText, todayInSeoul,
 } from "@/lib/messages";
 
 type Campus = { name: string; regionCode: string; regionName: string };
@@ -26,6 +26,17 @@ type Receipt = { action: string; at: string; studentName: string; courseName: st
 type Pending = { action: string; requestId: string };
 type Notice = { id: number; date: string; kind: string; expectedTime: string | null; reason: string; status: string; cancellable: boolean };
 type Request = { date: string; reason: string; status: string; note: string | null };
+type Leave = {
+  id: number;
+  startsOn: string;
+  endsOn: string;
+  kind: string;
+  part: string;
+  reason: string;
+  status: string;
+  decisionNote: string | null;
+  cancellable: boolean;
+};
 
 const ALLOWED: Record<string, string[]> = {
   not_in: ["check_in"],
@@ -351,6 +362,7 @@ export default function StudentFlow({ code }: { code: string }) {
             )}
 
             <NoticeCard />
+            <LeaveCard />
             <CorrectionCard />
             <button className="btn plain block" onClick={switchStudent}>다른 교육생으로 확인 · 확인 종료</button>
           </>
@@ -508,6 +520,113 @@ function NoticeCard() {
         </ul>
       )}
     </form>
+  );
+}
+
+// 공가 신청 (교육장 밖에서도 가능). 증빙 서류가 확인되면 운영자가 인정으로 바꾼다.
+function LeaveCard() {
+  const today = todayInSeoul();
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState("sick");
+  const [part, setPart] = useState("full");
+  const [from, setFrom] = useState(today);
+  const [to, setTo] = useState(today);
+  const [reason, setReason] = useState("");
+  const [items, setItems] = useState<Leave[]>([]);
+  const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const r = await getJson("/api/student/leaves").catch(() => null);
+    if (r?.ok) setItems(r.leaves);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMessage(null);
+    const r = await postJson("/api/student/leaves", { action: "create", from, to: to < from ? from : to, kind, part, reason })
+      .catch(() => ({ ok: false, code: "server_error" }));
+    setBusy(false);
+    if (!r.ok) {
+      setMessage({ kind: "error", text: messageFor(r.code) });
+      return;
+    }
+    setReason("");
+    setOpen(false);
+    setMessage({ kind: "ok", text: "공가를 신청했습니다. 증빙 서류를 담당 매니저에게 제출하면 확인 후 인정으로 바뀝니다." });
+    await load();
+  }
+
+  async function cancel(id: number) {
+    if (!window.confirm("이 공가 신청을 취소할까요?")) return;
+    const r = await postJson("/api/student/leaves", { action: "cancel", id }).catch(() => ({ ok: false, code: "server_error" }));
+    if (!r.ok) setMessage({ kind: "error", text: messageFor(r.code) });
+    await load();
+  }
+
+  return (
+    <div className="card">
+      <div className="row between">
+        <h2 style={{ margin: 0 }}>공가 신청</h2>
+        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "신청하기"}</button>
+      </div>
+      <p className="small">병원 진료, 면접, 예비군처럼 서류로 인정받는 일정입니다. 서류가 확인되면 인정으로 바뀝니다.</p>
+      {open && (
+        <form onSubmit={submit}>
+          <div className="seg" role="radiogroup" aria-label="공가 종류" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+            {Object.entries(LEAVE_KIND_LABEL).map(([k, v]) => (
+              <button type="button" key={k} role="radio" aria-checked={kind === k} className={kind === k ? "on" : undefined} onClick={() => setKind(k)}>
+                {v}
+              </button>
+            ))}
+          </div>
+          <div className="seg" role="radiogroup" aria-label="시간" style={{ gridTemplateColumns: "1fr 1fr" }}>
+            <button type="button" role="radio" aria-checked={part === "full"} className={part === "full" ? "on" : undefined} onClick={() => setPart("full")}>하루 전체</button>
+            <button type="button" role="radio" aria-checked={part === "partial"} className={part === "partial" ? "on" : undefined} onClick={() => setPart("partial")}>일부 시간</button>
+          </div>
+          <div className="grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
+            <label className="field">
+              시작일
+              <input type="date" value={from} min={addDays(today, -14)} max={addDays(today, 30)} onChange={(e) => { setFrom(e.target.value); if (to < e.target.value) setTo(e.target.value); }} required />
+            </label>
+            <label className="field">
+              종료일
+              <input type="date" value={to} min={from} max={addDays(from, 13)} onChange={(e) => setTo(e.target.value)} required />
+            </label>
+          </div>
+          <label className="field">
+            사유
+            <textarea value={reason} onChange={(e) => setReason(e.target.value)} required maxLength={300}
+              placeholder={part === "partial" ? "예: 14시 면접으로 13시 조퇴" : "예: 장염으로 병원 진료, 진료확인서 제출 예정"} />
+          </label>
+          {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
+          <button className="btn block" disabled={busy}>공가 신청</button>
+        </form>
+      )}
+      {!open && message && <p className={`notice ${message.kind}`}>{message.text}</p>}
+      {items.length > 0 && (
+        <ul className="mini-list" style={{ marginTop: 10 }}>
+          {items.map((l) => (
+            <li key={l.id} style={l.status === "cancelled" ? { opacity: 0.5 } : undefined}>
+              <span>
+                <b>{formatDate(l.startsOn)}{l.endsOn !== l.startsOn && ` ~ ${formatDate(l.endsOn)}`}</b> {leaveText(l)}
+                <br /><span className="small">{l.reason}</span>
+                {l.decisionNote && <><br /><span className="small">운영자: {l.decisionNote}</span></>}
+              </span>
+              <span className="row" style={{ flexWrap: "nowrap" }}>
+                <span className={`tag ${l.status === "approved" ? "approved" : l.status === "waiting_docs" ? "pending" : "rejected"}`}>{LEAVE_STATUS_LABEL[l.status]}</span>
+                {l.cancellable && <button type="button" className="btn plain sm" onClick={() => cancel(l.id)}>취소</button>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
