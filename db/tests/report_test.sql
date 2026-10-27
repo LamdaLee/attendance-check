@@ -14,35 +14,63 @@ begin
 end $$;
 grant execute on function pg_temp.eq(text, anyelement, anyelement) to attendance_app;
 
--- 준비: 어제 기준
---   예시학생01(AX) 09:20 입실 · 18:00 퇴실 → 지각
---   예시학생03(AX) 09:00 입실 · 16:00 퇴실 → 조퇴
---   예시학생02(SF) 기록 없음 → 결석 (공가 신청 예정)
---   예시학생04(SF) 09:00 입실 · 18:00 퇴실 → 출석
-do $$
+-- 준비: 기록 넣기 도우미 (원본 이벤트 + 하루 요약)
+create function pg_temp.add_day(p_name text, p_date date, p_actions text[], p_times time[]) returns void
+language plpgsql as $$
 declare
-  y    date := (now() at time zone 'Asia/Seoul')::date - 1;
   net  attendance.allowed_networks := (select n from attendance.allowed_networks n where network = '127.0.0.1/32');
   reg  smallint := (select region_id from attendance.campuses where id = net.campus_id);
-  rec  record;
+  e    bigint := (select id from attendance.enrollments where name_key = p_name);
+  st   text := 'not_in';
+  v_at timestamptz;
+  v_first timestamptz;
+  v_out timestamptz;
 begin
-  update attendance.enrollments set created_at = now() - interval '30 days';
-  for rec in select * from (values ('예시학생01', time '09:20', time '18:00'),
-                                   ('예시학생03', time '09:00', time '16:00'),
-                                   ('예시학생04', time '09:00', time '18:00')) v(n, t_in, t_out) loop
-    insert into attendance.attendance_days (enrollment_id, edu_date, region_id, status, first_check_in_at,
-                                            last_check_out_at, last_event_at, last_action, version)
-    select e.id, y, reg, 'checked_out', (y + rec.t_in) at time zone 'Asia/Seoul', (y + rec.t_out) at time zone 'Asia/Seoul',
-           (y + rec.t_out) at time zone 'Asia/Seoul', 'check_out', 2
-      from attendance.enrollments e where e.name_key = rec.n;
+  for i in 1..array_length(p_actions, 1) loop
+    v_at := (p_date + p_times[i]) at time zone 'Asia/Seoul';
+    insert into attendance.attendance_events (enrollment_id, region_id, campus_id, action, occurred_at, edu_date,
+                                              client_ip, network_id, network_version, request_id)
+    values (e, reg, net.campus_id, p_actions[i], v_at, p_date, '127.0.0.1', net.id, net.version, gen_random_uuid());
+    st := attendance.next_status(st, p_actions[i]);
+    if p_actions[i] = 'check_in' then v_first := coalesce(v_first, v_at); end if;
+    if p_actions[i] = 'check_out' then v_out := v_at; end if;
   end loop;
+  insert into attendance.attendance_days (enrollment_id, edu_date, region_id, status, first_check_in_at,
+                                          last_check_out_at, last_event_at, last_action, version)
+  values (e, p_date, reg, st, v_first, v_out, v_at, p_actions[array_length(p_actions, 1)], array_length(p_actions, 1));
+end $$;
 
-  perform set_config('t.y', y::text, false);
+-- 고정 주(2026-10-19 월 ~ 23 금), 교육 09:00~18:00 · 점심 12:00~13:00 · 09:10 부터 지각
+--   예시학생01(AX) 월 09:20 지각 / 화 09:15 지각 / 수 14:00~15:00 외출 / 목 09:00~12:30 (50% 미만 → 결석) / 금 정상
+--                  → 누적 지각 2 + 외출 1 = 3 → 결석 1회 환산, 실결석 1 → 합계 2
+--   예시학생03(AX) 월 09:00~16:00 조퇴
+--   예시학생04(SF) 월 09:09:59 입실 → 지각 아님
+--   예시학생02(SF) 기록 없음 → 결석
+do $$
+declare
+  w   date := date '2026-10-19';
+  io  text[] := array['check_in', 'check_out'];
+begin
+  update attendance.enrollments set created_at = timestamptz '2026-10-01 00:00+09';
+  perform pg_temp.add_day('예시학생01', w,     io, array[time '09:20', time '18:00']);
+  perform pg_temp.add_day('예시학생01', w + 1, io, array[time '09:15', time '18:00']);
+  perform pg_temp.add_day('예시학생01', w + 2, array['check_in', 'go_out', 'return', 'check_out'],
+                          array[time '09:00', time '14:00', time '15:00', time '18:00']);
+  perform pg_temp.add_day('예시학생01', w + 3, io, array[time '09:00', time '12:30']);
+  perform pg_temp.add_day('예시학생01', w + 4, io, array[time '08:55', time '18:00']);
+  perform pg_temp.add_day('예시학생03', w,     io, array[time '09:00', time '16:00']);
+  perform pg_temp.add_day('예시학생03', w + 4, array['check_in', 'go_out', 'return', 'check_out'],
+                          array[time '09:00', time '12:10', time '12:50', time '18:00']);
+  perform pg_temp.add_day('예시학생04', w,     io, array[time '09:09:59', time '18:00']);
+
+  perform set_config('t.w', w::text, false);
+  perform set_config('t.y', ((now() at time zone 'Asia/Seoul')::date - 1)::text, false);
   perform set_config('t.e1', (select id from attendance.enrollments where name_key = '예시학생01')::text, false);
   perform set_config('t.e2', (select id from attendance.enrollments where name_key = '예시학생02')::text, false);
   perform set_config('t.e3', (select id from attendance.enrollments where name_key = '예시학생03')::text, false);
   perform set_config('t.e4', (select id from attendance.enrollments where name_key = '예시학생04')::text, false);
-  perform set_config('t.ax', (select id from attendance.courses where name = 'AX' and region_id = reg)::text, false);
+  perform set_config('t.ax', (select id from attendance.courses where name = 'AX' and region_id =
+                              (select id from attendance.regions where code = 'daejeon'))::text, false);
   perform set_config('t.h4567', encode(extensions.hmac('4567', 'dev-only-secret', 'sha256'), 'hex'), false);
   perform set_config('t.h2345', encode(extensions.hmac('2345', 'dev-only-secret', 'sha256'), 'hex'), false);
 end $$;
@@ -56,6 +84,7 @@ declare
   stu   bytea := '\x90';
   stu4  bytea := '\x91';
   y     date := current_setting('t.y')::date;
+  w     date := current_setting('t.w')::date;
   today date := (now() at time zone 'Asia/Seoul')::date;
   e1    bigint := current_setting('t.e1')::bigint;
   e2    bigint := current_setting('t.e2')::bigint;
@@ -69,31 +98,60 @@ begin
   perform attendance.api_operator_login('daejeon', 'daejeon-dev', '대전 담당', '127.0.0.1', dj, 3600);
   perform attendance.api_operator_login('busan', 'busan-dev', '부산 담당', '127.0.0.1', bs, 3600);
 
-  -- 일보: 지각 · 조퇴 · 결석 판정
-  r := attendance.api_operator_report(dj, null, y);
+  -- 일보: 지각 · 조퇴 · 결석 판정 (월요일)
+  r := attendance.api_operator_report(dj, null, w);
   perform pg_temp.eq('report rows', jsonb_array_length(r->'rows'), 4);
   select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e1;
-  perform pg_temp.eq('e1 late', row->>'late', 'true');
-  perform pg_temp.eq('e1 not early', row->>'early', 'false');
+  perform pg_temp.eq('e1 late', row->'judge'->>'late', 'true');
+  perform pg_temp.eq('e1 not early', row->'judge'->>'early', 'false');
+  perform pg_temp.eq('e1 attended', row->'eval'->>'attendedMinutes', '460');
+  perform pg_temp.eq('class minutes', row->'eval'->>'classMinutes', '480');
   select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e3;
-  perform pg_temp.eq('e3 early', row->>'early', 'true');
-  perform pg_temp.eq('e3 not late', row->>'late', 'false');
+  perform pg_temp.eq('e3 early', row->'judge'->>'early', 'true');
+  perform pg_temp.eq('e3 not late', row->'judge'->>'late', 'false');
+  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e4;
+  perform pg_temp.eq('e4 within grace', row->'judge'->>'late', 'false');
   select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e2;
-  perform pg_temp.eq('e2 absent', row->>'firstCheckInAt', null);
+  perform pg_temp.eq('e2 absent', row->'judge'->>'absent', 'true');
   perform pg_temp.eq('e2 training', row->>'state', 'training');
-  r := attendance.api_operator_report(bs, 'daejeon', y);
+  r := attendance.api_operator_report(bs, 'daejeon', w);
   perform pg_temp.eq('busan report forbidden', r->>'code', 'forbidden');
 
-  -- 과정 시간 변경: AX 시작을 09:30 으로 → 예시학생01 지각 아님
-  r := attendance.api_operator_course_hours(dj, current_setting('t.ax')::bigint, '09:30', '18:00');
-  perform pg_temp.eq('hours save', r->>'ok', 'true');
-  r := attendance.api_operator_course_hours(dj, current_setting('t.ax')::bigint, '18:00', '09:00');
-  perform pg_temp.eq('hours invalid', r->>'code', 'invalid_hours');
-  r := attendance.api_operator_course_hours(bs, current_setting('t.ax')::bigint, '09:00', '18:00');
-  perform pg_temp.eq('hours busan', r->>'code', 'not_found');
-  r := attendance.api_operator_report(dj, null, y);
+  -- 수요일 외출 1회 / 목요일 50% 미만 → 결석, 조퇴 아님 / 금요일 점심시간 외출은 세지 않음
+  r := attendance.api_operator_report(dj, null, w + 2);
   select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e1;
-  perform pg_temp.eq('e1 not late after hours', row->>'late', 'false');
+  perform pg_temp.eq('e1 out', row->'judge'->>'outs', '1');
+  r := attendance.api_operator_report(dj, null, w + 3);
+  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e1;
+  perform pg_temp.eq('e1 insufficient', row->'judge'->>'insufficient', 'true');
+  perform pg_temp.eq('e1 insufficient absent', row->'judge'->>'absent', 'true');
+  perform pg_temp.eq('e1 insufficient not early', row->'judge'->>'early', 'false');
+  r := attendance.api_operator_report(dj, null, w + 4);
+  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e3;
+  perform pg_temp.eq('lunch out not counted', row->'judge'->>'outs', '0');
+
+  -- 누적 (금요일까지): 예시학생01 지각 2 + 외출 1 → 환산 1, 실결석 1 → 합계 2
+  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e1;
+  perform pg_temp.eq('tally late', row->'tally'->>'late', '2');
+  perform pg_temp.eq('tally outs', row->'tally'->>'outs', '1');
+  perform pg_temp.eq('tally absent', row->'tally'->>'absent', '1');
+  perform pg_temp.eq('tally converted', row->'tally'->>'converted', '1');
+  perform pg_temp.eq('tally total', row->'tally'->>'totalAbsent', '2');
+  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e2;
+  perform pg_temp.eq('e2 tally absent', row->'tally'->>'absent', '1');  -- SF 수업일(기록이 있는 평일)은 월요일 하루
+
+  -- 지각 기준 변경: AX 를 시작 후 30분부터 지각으로 → 예시학생01(09:20) 지각 아님
+  r := attendance.api_operator_course_hours(dj, current_setting('t.ax')::bigint, '09:00', '18:00', 30, '12:00', '13:00');
+  perform pg_temp.eq('hours save', r->>'ok', 'true');
+  r := attendance.api_operator_course_hours(dj, current_setting('t.ax')::bigint, '18:00', '09:00', 10, '12:00', '13:00');
+  perform pg_temp.eq('hours invalid', r->>'code', 'invalid_hours');
+  r := attendance.api_operator_course_hours(dj, current_setting('t.ax')::bigint, '09:00', '18:00', 500, '12:00', '13:00');
+  perform pg_temp.eq('grace invalid', r->>'code', 'invalid_hours');
+  r := attendance.api_operator_course_hours(bs, current_setting('t.ax')::bigint, '09:00', '18:00', 10, '12:00', '13:00');
+  perform pg_temp.eq('hours busan', r->>'code', 'not_found');
+  r := attendance.api_operator_report(dj, null, w);
+  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e1;
+  perform pg_temp.eq('e1 not late after hours', row->'judge'->>'late', 'false');
 
   -- 학생 공가 신청 (교육장 밖에서)
   r := attendance.api_student_verify('dev-daejeon-a', '예시학생02', current_setting('t.h4567'), '8.8.8.8', stu, 600);
@@ -113,38 +171,48 @@ begin
   perform pg_temp.eq('student leaves', jsonb_array_length(r->'leaves'), 2);
   r := attendance.api_student_leave_cancel(stu, lid2);
   perform pg_temp.eq('student cancel', r->>'ok', 'true');
+  -- 지난 날짜 공가는 본인이 취소할 수 없다
+  r := attendance.api_student_leave_cancel(stu, lid);
+  perform pg_temp.eq('student cannot cancel past', r->>'code', 'not_found');
 
-  -- 일보에 서류 대기 공가 표시
+  -- 일보에 공가 표시 (등록 즉시)
   r := attendance.api_operator_report(dj, null, y);
   select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e2;
-  perform pg_temp.eq('e2 leave waiting', row->'leave'->>'status', 'waiting_docs');
+  perform pg_temp.eq('e2 leave registered', row->'leave'->>'status', 'registered');
 
-  -- 운영자: 목록, 서류 확인
+  -- 운영자: 목록, 취소
   r := attendance.api_operator_leaves(dj, null, y, today + 7);
   perform pg_temp.eq('op leaves', jsonb_array_length(r->'leaves'), 2);
   r := attendance.api_operator_leaves(bs, null, y, today + 7);
   perform pg_temp.eq('busan leaves', jsonb_array_length(r->'leaves'), 0);
-  r := attendance.api_operator_leave_decide(bs, lid, 'approved', null, 1);
-  perform pg_temp.eq('busan decide', r->>'code', 'not_found');
-  r := attendance.api_operator_leave_decide(dj, lid, 'rejected', '', 1);
-  perform pg_temp.eq('reject needs note', r->>'code', 'reason_required');
-  r := attendance.api_operator_leave_decide(dj, lid, 'approved', null, 9);
-  perform pg_temp.eq('decide version', r->>'code', 'version_conflict');
-  r := attendance.api_operator_leave_decide(dj, lid, 'approved', '진료확인서 확인', 1);
-  perform pg_temp.eq('approve', r->>'ok', 'true');
-  r := attendance.api_student_leave_cancel(stu, lid);
-  perform pg_temp.eq('student cannot cancel approved', r->>'code', 'not_found');
-  r := attendance.api_operator_report(dj, null, y);
-  select x into row from jsonb_array_elements(r->'rows') x where (x->>'enrollmentId')::bigint = e2;
-  perform pg_temp.eq('e2 leave approved', row->'leave'->>'status', 'approved');
-  r := attendance.api_operator_leave_decide(dj, lid2, 'approved', null, 2);
+  r := attendance.api_operator_leave_cancel(bs, lid, '취소', 1);
+  perform pg_temp.eq('busan cancel', r->>'code', 'not_found');
+  r := attendance.api_operator_leave_cancel(dj, lid, '', 1);
+  perform pg_temp.eq('cancel needs note', r->>'code', 'reason_required');
+  r := attendance.api_operator_leave_cancel(dj, lid, '날짜 착오', 9);
+  perform pg_temp.eq('cancel version', r->>'code', 'version_conflict');
+  r := attendance.api_operator_leave_cancel(dj, lid2, '이미 취소', 2);
   perform pg_temp.eq('cancelled is final', r->>'code', 'already_decided');
 
-  -- 운영자 등록: 바로 인정
-  r := attendance.api_operator_leave_create(dj, e3, y, y, 'interview', 'partial', '취업 면접', true);
+  -- 운영자 등록
+  r := attendance.api_operator_leave_create(dj, e3, y, y, 'interview', 'partial', '취업 면접');
   perform pg_temp.eq('op leave create', r->>'ok', 'true');
-  r := attendance.api_operator_leave_create(bs, e3, today, today, 'interview', 'partial', '취업 면접', true);
+  r := attendance.api_operator_leave_create(dj, e3, y, y, 'sick', 'full', '중복');
+  perform pg_temp.eq('op leave overlap', r->>'code', 'leave_overlap');
+  r := attendance.api_operator_leave_create(bs, e3, today, today, 'interview', 'partial', '취업 면접');
   perform pg_temp.eq('busan leave create', r->>'code', 'not_found');
+
+  -- 병결은 평일 기준 5일까지
+  r := attendance.api_operator_leave_create(dj, e4, today + (8 - extract(isodow from today)::int),
+                                            today + (12 - extract(isodow from today)::int), 'sick', 'full', '입원');
+  perform pg_temp.eq('sick 5 days', r->>'ok', 'true');
+  r := attendance.api_operator_leave_create(dj, e4, today + (15 - extract(isodow from today)::int),
+                                            today + (15 - extract(isodow from today)::int), 'sick', 'full', '병원');
+  perform pg_temp.eq('sick limit', r->>'code', 'sick_limit');
+  perform pg_temp.eq('sick used', r->>'used', '5');
+  r := attendance.api_operator_leave_create(dj, e4, today + (15 - extract(isodow from today)::int),
+                                            today + (15 - extract(isodow from today)::int), 'interview', 'partial', '면접');
+  perform pg_temp.eq('other kinds ok', r->>'ok', 'true');
 
   -- 사유
   r := attendance.api_operator_day_note(dj, e2, y, '진료확인서 제출', 0);
@@ -197,7 +265,7 @@ begin
   perform pg_temp.eq('audit has training',
     exists (select 1 from jsonb_array_elements(r->'items') x where x->>'action' = 'enrollment.training'), true);
   perform pg_temp.eq('audit has leave',
-    exists (select 1 from jsonb_array_elements(r->'items') x where x->>'action' = 'leave.approved'), true);
+    exists (select 1 from jsonb_array_elements(r->'items') x where x->>'action' = 'leave.create'), true);
 end $$;
 
 reset role;

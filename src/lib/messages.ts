@@ -37,11 +37,12 @@ const MESSAGES: Record<string, string> = {
   version_conflict: "다른 사람이 먼저 수정했습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.",
   last_active_network: "마지막 사용 중 주소입니다.",
   invalid_input: "입력 값을 확인해 주세요.",
-  invalid_leave_date: "공가 기간을 확인해 주세요. 최대 14일이며, 지난 14일부터 앞으로 30일 사이만 신청할 수 있습니다.",
-  leave_overlap: "같은 기간에 이미 신청한 공가가 있습니다. 기존 신청을 취소한 뒤 다시 신청해 주세요.",
+  invalid_leave_date: "공가 기간을 확인해 주세요. 최대 14일이며, 지난 14일부터 앞으로 30일 사이만 등록할 수 있습니다.",
+  leave_overlap: "같은 기간에 이미 등록된 공가가 있습니다. 기존 공가를 취소한 뒤 다시 등록해 주세요.",
   status_date_required: "중도탈락·조기취업·수료 일자를 입력해 주세요.",
   status_date_invalid: "일자는 오늘부터 31일 뒤까지만 입력할 수 있습니다.",
-  invalid_hours: "시작 시각이 종료 시각보다 빨라야 합니다.",
+  invalid_hours: "시작 시각이 종료 시각보다 빨라야 하고, 지각 기준은 0~120분, 점심은 시작이 끝보다 빨라야 합니다.",
+  sick_limit: "병결은 과정 중 평일 기준 5일까지 등록할 수 있습니다.",
   invalid_status: "상태 값이 올바르지 않습니다.",
   ip_unavailable: "접속 IP를 확인할 수 없습니다. 서버 프록시 설정을 확인해 주세요.",
   bad_request: "요청 형식이 올바르지 않습니다.",
@@ -112,9 +113,7 @@ export const LEAVE_PART_LABEL: Record<string, string> = {
 };
 
 export const LEAVE_STATUS_LABEL: Record<string, string> = {
-  waiting_docs: "서류 대기",
-  approved: "인정",
-  rejected: "불인정",
+  registered: "등록",
   cancelled: "취소",
 };
 
@@ -133,9 +132,7 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "enrollment.update": "수강 정보 변경",
   "enrollment.training": "훈련 상태 변경",
   "leave.create": "공가 등록",
-  "leave.approved": "공가 인정",
-  "leave.rejected": "공가 불인정",
-  "leave.cancelled": "공가 취소",
+  "leave.cancel": "공가 취소",
   "note.save": "일보 사유 저장",
   "course.hours": "과정 시간 변경",
   "export.csv": "CSV 내보내기",

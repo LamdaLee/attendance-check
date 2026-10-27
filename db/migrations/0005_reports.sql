@@ -2,11 +2,13 @@
 -- 실행: psql "$DATABASE_ADMIN_URL" -v ON_ERROR_STOP=1 -f db/migrations/0005_reports.sql
 --
 --   * 교육생은 지우지 않는다. 중도탈락·조기취업·수료는 훈련 상태와 그 날짜(status_on)로 남긴다.
---     그 날짜부터 현인원에서 빠지고, 본인 확인과 출결 입력이 막힌다 (status = 'ended').
---   * 공가(병결·면접·예비군 등)는 교육생이나 운영자가 등록한다. 처음에는 "서류 대기"이고,
---     운영자가 서류를 확인하면 "인정"이 된다. 출결 원본 기록은 바꾸지 않는다.
---   * 출결 일보는 과정 시간(class_start, class_end)과 그 날 기록으로 지각·조퇴·결석을 계산하고,
---     운영자가 교육생별 사유를 적는다. 공식 출석 인정은 LMS 판정을 따른다.
+--     그 날짜부터 재적에서 빠지고, 본인 확인과 출결 입력이 막힌다 (status = 'ended').
+--   * 공가(병결·면접·예비군 등)는 교육생이나 운영자가 등록해 두는 기록이다. 증빙 서류는 LMS에 직접
+--     올리므로 여기서는 확인 절차 없이 등록·취소만 한다. 출결 원본 기록은 바꾸지 않는다.
+--   * 출결 일보는 과정 시간(class_start, class_end, 지각 기준 late_after_minutes)과 그 날 기록으로
+--     지각·조퇴·결석을 계산하고, 운영자가 교육생별 사유를 적는다. 공식 출석 인정은 LMS 판정을 따른다.
+--   * 인원 구분: 정원 = 수강 명단 전체(중도탈락·조기취업 포함), 재적 = 그 중 훈련중,
+--     현인원 = 지금 강의장에 있는 인원(교육 중 상태).
 
 begin;
 
@@ -17,7 +19,7 @@ begin;
 alter table attendance.enrollments
   add column training_status text not null default 'training'
     check (training_status in ('training', 'dropped', 'employed', 'completed')),
-  -- 중도탈락·조기취업·수료 일자. 이 날부터 현인원에서 빠진다.
+  -- 중도탈락·조기취업·수료 일자. 이 날부터 재적에서 빠진다.
   add column status_on date;
 
 -- 기존에 종료로 둔 수강은 수료로 옮긴다.
@@ -44,7 +46,12 @@ $$;
 alter table attendance.courses
   add column class_start time not null default '09:00',
   add column class_end time not null default '18:00',
-  add constraint courses_class_hours check (class_start < class_end);
+  -- 시작 후 이 분(分)부터 지각. 기본 10분: 09:09 입실은 정상, 09:10 입실부터 지각.
+  add column late_after_minutes smallint not null default 10 check (late_after_minutes between 0 and 120),
+  -- 점심시간은 수업 시간에서 빼고, 이 사이의 외출은 외출로 세지 않는다.
+  add column lunch_start time not null default '12:00',
+  add column lunch_end time not null default '13:00',
+  add constraint courses_class_hours check (class_start < class_end and lunch_start <= lunch_end);
 
 -- ---------------------------------------------------------------------------
 -- 공가
@@ -61,15 +68,14 @@ create table attendance.leaves (
   -- full: 하루 전체(결석) / partial: 일부 시간(지각·조퇴·외출)
   part           text not null default 'full' check (part in ('full', 'partial')),
   reason         text not null,
-  status         text not null default 'waiting_docs'
-                   check (status in ('waiting_docs', 'approved', 'rejected', 'cancelled')),
+  status         text not null default 'registered' check (status in ('registered', 'cancelled')),
   created_by     text not null check (created_by in ('student', 'operator')),
   created_name   text,
   session_id     uuid,
   created_at     timestamptz not null default now(),
-  decided_at     timestamptz,
-  decided_by     text,
-  decision_note  text,
+  cancelled_at   timestamptz,
+  cancelled_by   text,
+  cancel_note    text,
   version        int not null default 1,
   check (ends_on >= starts_on and ends_on - starts_on <= 13)
 );
@@ -77,7 +83,7 @@ create table attendance.leaves (
 create index leaves_region_idx on attendance.leaves (region_id, starts_on);
 create index leaves_enrollment_idx on attendance.leaves (enrollment_id, starts_on);
 
--- 그 날짜에 걸린 공가 (인정 > 서류 대기 순). 반려·취소는 제외.
+-- 그 날짜에 걸린 공가 (취소 제외)
 create function attendance.leave_on(p_enrollment_id bigint, p_date date)
 returns jsonb
 language sql stable as $$
@@ -86,8 +92,8 @@ language sql stable as $$
     from attendance.leaves l
    where l.enrollment_id = p_enrollment_id
      and p_date between l.starts_on and l.ends_on
-     and l.status in ('waiting_docs', 'approved')
-   order by l.status = 'approved' desc, l.id desc
+     and l.status = 'registered'
+   order by l.id desc
    limit 1
 $$;
 
@@ -97,8 +103,176 @@ language sql stable as $$
   select exists (
     select 1 from attendance.leaves l
      where l.enrollment_id = p_enrollment_id
-       and l.status in ('waiting_docs', 'approved')
+       and l.status = 'registered'
        and l.starts_on <= p_to and l.ends_on >= p_from)
+$$;
+
+-- ---------------------------------------------------------------------------
+-- 하루 판정과 누적
+--   * 수업 시간 = 교육 시작~종료에서 점심시간을 뺀 시간
+--   * 그 날 교육 중이었던 시간이 수업 시간의 50% 미만이면 결석 (지각·조퇴·외출은 성립하지 않음)
+--   * 지각: 첫 입실이 시작 + late_after_minutes 이후 / 조퇴: 퇴실로 끝났고 마지막 퇴실이 종료 전
+--   * 외출: 외출~복귀 구간이 수업 시간(점심 제외)에 걸친 경우 1회
+--   * 지각·조퇴·외출 합계 3회 = 결석 1회로 환산 (공가 등록된 날은 세지 않음)
+-- ---------------------------------------------------------------------------
+
+-- [a,b) 와 [c,d) 가 겹치는 분
+create function attendance.overlap_minutes(a timestamptz, b timestamptz, c timestamptz, d timestamptz)
+returns numeric
+language sql immutable as $$
+  select greatest(0, extract(epoch from (least(b, d) - greatest(a, c))) / 60)
+$$;
+
+-- [a,b) 중 수업 시간 [s,e) 안이면서 점심 [ls,le) 밖인 분
+create function attendance.class_minutes_in(
+  a timestamptz, b timestamptz, s timestamptz, e timestamptz, ls timestamptz, le timestamptz
+) returns numeric
+language sql immutable as $$
+  select attendance.overlap_minutes(a, b, s, e) - attendance.overlap_minutes(a, b, greatest(ls, s), least(le, e))
+$$;
+
+-- 하루 평가: 화면 타임라인(정정 반영)으로 계산한다. 끝나지 않은 구간은 종료 시각(오늘이면 지금)까지로 본다.
+create function attendance.day_eval(p_enrollment_id bigint, p_date date, p_course attendance.courses)
+returns jsonb
+language plpgsql stable as $$
+declare
+  v_s        timestamptz := (p_date + p_course.class_start) at time zone 'Asia/Seoul';
+  v_e        timestamptz := (p_date + p_course.class_end) at time zone 'Asia/Seoul';
+  v_ls       timestamptz := (p_date + p_course.lunch_start) at time zone 'Asia/Seoul';
+  v_le       timestamptz := (p_date + p_course.lunch_end) at time zone 'Asia/Seoul';
+  v_cap      timestamptz;
+  v_item     jsonb;
+  v_at       timestamptz;
+  v_action   text;
+  v_in_from  timestamptz;
+  v_out_from timestamptz;
+  v_first    timestamptz;
+  v_last_out timestamptz;
+  v_status   text := 'not_in';
+  v_att      numeric := 0;
+  v_outs     int := 0;
+  v_class    numeric;
+begin
+  v_cap := least(v_e, now());
+  v_class := attendance.class_minutes_in(v_s, v_e, v_s, v_e, v_ls, v_le);
+  for v_item in select value from jsonb_array_elements(attendance.effective_timeline(p_enrollment_id, p_date)) loop
+    v_at := (v_item->>'at')::timestamptz;
+    v_action := v_item->>'action';
+    if v_action in ('check_in', 'return') then
+      if v_action = 'check_in' then v_first := coalesce(v_first, v_at); end if;
+      if v_out_from is not null then
+        if attendance.class_minutes_in(v_out_from, v_at, v_s, v_e, v_ls, v_le) > 0 then v_outs := v_outs + 1; end if;
+        v_out_from := null;
+      end if;
+      v_in_from := v_at;
+      v_status := 'in_class';
+    elsif v_action in ('go_out', 'check_out') then
+      if v_in_from is not null then
+        v_att := v_att + attendance.class_minutes_in(v_in_from, v_at, v_s, v_e, v_ls, v_le);
+      end if;
+      v_in_from := null;
+      if v_action = 'go_out' then
+        v_out_from := v_at;
+        v_status := 'out';
+      else
+        v_last_out := v_at;
+        v_status := 'checked_out';
+      end if;
+    end if;
+  end loop;
+  if v_in_from is not null and v_cap > v_in_from then
+    v_att := v_att + attendance.class_minutes_in(v_in_from, v_cap, v_s, v_e, v_ls, v_le);
+  end if;
+  if v_out_from is not null and v_cap > v_out_from
+     and attendance.class_minutes_in(v_out_from, v_cap, v_s, v_e, v_ls, v_le) > 0 then
+    v_outs := v_outs + 1;
+  end if;
+
+  return jsonb_build_object(
+    'status', v_status,
+    'firstIn', v_first,
+    'lastOut', v_last_out,
+    'attendedMinutes', round(v_att)::int,
+    'classMinutes', round(v_class)::int,
+    'enough', v_first is not null and v_att * 2 >= v_class,
+    'late', v_first is not null and v_first >= v_s + make_interval(mins => p_course.late_after_minutes),
+    'early', v_status = 'checked_out' and v_last_out < v_e,
+    'outs', v_outs
+  );
+end $$;
+
+-- 하루 판정 (평가 + 공가)
+--   absent: 입실 없음 또는 50% 미만 / absentExcused: 하루 전체 공가
+--   late·early·outs: 성립한 지각·조퇴·외출 / excused: 공가가 등록된 날이라 누적에 세지 않음
+create function attendance.day_judge(p_eval jsonb, p_leave jsonb)
+returns jsonb
+language sql immutable as $$
+  select jsonb_build_object(
+    'absent', not coalesce((p_eval->>'enough')::boolean, false),
+    'insufficient', p_eval->>'firstIn' is not null and not (p_eval->>'enough')::boolean,
+    'absentExcused', not coalesce((p_eval->>'enough')::boolean, false) and coalesce(p_leave->>'part', '') = 'full',
+    'late', coalesce((p_eval->>'enough')::boolean, false) and (p_eval->>'late')::boolean,
+    'early', coalesce((p_eval->>'enough')::boolean, false) and (p_eval->>'early')::boolean,
+    'outs', case when coalesce((p_eval->>'enough')::boolean, false) then (p_eval->>'outs')::int else 0 end,
+    'excused', p_leave is not null
+  )
+$$;
+
+-- 기간 누적. 수업일 = 같은 과정 교육생 누구라도 기록이 있는 평일.
+create function attendance.course_tally(p_enrollment_id bigint, p_course attendance.courses, p_from date, p_to date)
+returns jsonb
+language plpgsql stable as $$
+declare
+  v_day     date;
+  v_j       jsonb;
+  v_absent  int := 0;
+  v_excused int := 0;
+  v_late    int := 0;
+  v_early   int := 0;
+  v_outs    int := 0;
+  v_days    int := 0;
+begin
+  for v_day in
+    select distinct d.edu_date
+      from attendance.attendance_days d
+      join attendance.enrollments o on o.id = d.enrollment_id
+     where o.course_id = p_course.id
+       and d.edu_date between p_from and p_to
+       and (d.last_event_at is not null or d.corrected)
+       and extract(isodow from d.edu_date) <= 5
+  loop
+    v_days := v_days + 1;
+    v_j := attendance.day_judge(attendance.day_eval(p_enrollment_id, v_day, p_course),
+                                attendance.leave_on(p_enrollment_id, v_day));
+    if (v_j->>'absent')::boolean then
+      if (v_j->>'absentExcused')::boolean then v_excused := v_excused + 1; else v_absent := v_absent + 1; end if;
+    elsif not (v_j->>'excused')::boolean then
+      v_late := v_late + (v_j->>'late')::boolean::int;
+      v_early := v_early + (v_j->>'early')::boolean::int;
+      v_outs := v_outs + (v_j->>'outs')::int;
+    end if;
+  end loop;
+  return jsonb_build_object(
+    'days', v_days, 'absent', v_absent, 'absentExcused', v_excused,
+    'late', v_late, 'early', v_early, 'outs', v_outs,
+    'converted', (v_late + v_early + v_outs) / 3,
+    'totalAbsent', v_absent + (v_late + v_early + v_outs) / 3
+  );
+end $$;
+
+-- 병결 사용 일수 (평일, 취소 제외). 과정당 5일까지.
+create function attendance.weekdays_between(p_from date, p_to date)
+returns int
+language sql immutable as $$
+  select count(*)::int from generate_series(p_from, p_to, interval '1 day') g where extract(isodow from g) <= 5
+$$;
+
+create function attendance.sick_days_used(p_enrollment_id bigint)
+returns int
+language sql stable as $$
+  select coalesce(sum(attendance.weekdays_between(l.starts_on, l.ends_on)), 0)::int
+    from attendance.leaves l
+   where l.enrollment_id = p_enrollment_id and l.kind = 'sick' and l.status = 'registered'
 $$;
 
 -- ---------------------------------------------------------------------------
@@ -334,6 +508,9 @@ begin
   if leave_overlaps(v_s.enrollment_id, p_from, p_to) then
     return jsonb_build_object('ok', false, 'code', 'leave_overlap');
   end if;
+  if p_kind = 'sick' and sick_days_used(v_s.enrollment_id) + weekdays_between(p_from, p_to) > 5 then
+    return jsonb_build_object('ok', false, 'code', 'sick_limit', 'used', sick_days_used(v_s.enrollment_id));
+  end if;
   insert into leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, created_by, session_id)
   values (v_s.enrollment_id, v_s.region_id, p_from, p_to, p_kind, p_part, trim(p_reason), 'student', v_s.id)
   returning id into v_id;
@@ -351,11 +528,11 @@ begin
   if v_s.id is null then
     return jsonb_build_object('ok', false, 'code', 'session_expired');
   end if;
-  return jsonb_build_object('ok', true, 'leaves', coalesce((
+  return jsonb_build_object('ok', true, 'sickUsed', sick_days_used(v_s.enrollment_id), 'sickLimit', 5, 'leaves', coalesce((
     select jsonb_agg(jsonb_build_object(
              'id', l.id, 'startsOn', l.starts_on, 'endsOn', l.ends_on, 'kind', l.kind, 'part', l.part,
-             'reason', l.reason, 'status', l.status, 'decisionNote', l.decision_note, 'createdAt', l.created_at,
-             'cancellable', l.status = 'waiting_docs'
+             'reason', l.reason, 'status', l.status, 'cancelNote', l.cancel_note, 'createdAt', l.created_at,
+             'cancellable', l.status = 'registered' and l.created_by = 'student' and l.ends_on >= edu_date_now()
            ) order by l.starts_on desc, l.id desc)
       from leaves l
      where l.enrollment_id = v_s.enrollment_id and l.ends_on >= edu_date_now() - 60
@@ -372,8 +549,10 @@ begin
   if v_s.id is null then
     return jsonb_build_object('ok', false, 'code', 'session_expired');
   end if;
-  update leaves set status = 'cancelled', decided_at = now(), decided_by = '본인 취소', version = version + 1
-   where id = p_leave_id and enrollment_id = v_s.enrollment_id and status = 'waiting_docs';
+  -- 본인이 등록했고 아직 지나지 않은 공가만 취소할 수 있다.
+  update leaves set status = 'cancelled', cancelled_at = now(), cancelled_by = '본인', version = version + 1
+   where id = p_leave_id and enrollment_id = v_s.enrollment_id and status = 'registered'
+     and created_by = 'student' and ends_on >= edu_date_now();
   if not found then
     return jsonb_build_object('ok', false, 'code', 'not_found');
   end if;
@@ -381,7 +560,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 운영자: 공가 목록 · 등록 · 서류 확인
+-- 운영자: 공가 목록 · 등록 · 취소
 -- ---------------------------------------------------------------------------
 
 create function attendance.api_operator_leaves(p_token_hash bytea, p_region_code text, p_from date, p_to date)
@@ -407,8 +586,8 @@ begin
              'id', l.id, 'enrollmentId', e.id, 'name', st.name, 'course', co.name,
              'startsOn', l.starts_on, 'endsOn', l.ends_on, 'kind', l.kind, 'part', l.part, 'reason', l.reason,
              'status', l.status, 'createdBy', l.created_by, 'createdName', l.created_name, 'createdAt', l.created_at,
-             'decidedAt', l.decided_at, 'decidedBy', l.decided_by, 'decisionNote', l.decision_note, 'version', l.version
-           ) order by l.status <> 'waiting_docs', l.starts_on, co.name, st.name)
+             'cancelledAt', l.cancelled_at, 'cancelledBy', l.cancelled_by, 'cancelNote', l.cancel_note, 'version', l.version
+           ) order by l.starts_on, co.name, st.name)
       from leaves l
       join enrollments e on e.id = l.enrollment_id
       join students st on st.id = e.student_id
@@ -417,10 +596,9 @@ begin
   ), '[]'::jsonb));
 end $$;
 
--- 운영자 등록. p_approved 면 서류를 이미 확인한 것으로 바로 인정한다.
+-- 운영자 등록
 create function attendance.api_operator_leave_create(
-  p_token_hash bytea, p_enrollment_id bigint, p_from date, p_to date, p_kind text, p_part text, p_reason text,
-  p_approved boolean
+  p_token_hash bytea, p_enrollment_id bigint, p_from date, p_to date, p_kind text, p_part text, p_reason text
 ) returns jsonb
 language plpgsql security definer set search_path = attendance, pg_temp as $$
 declare
@@ -449,13 +627,12 @@ begin
   if leave_overlaps(v_e.id, p_from, p_to) then
     return jsonb_build_object('ok', false, 'code', 'leave_overlap');
   end if;
+  if p_kind = 'sick' and sick_days_used(v_e.id) + weekdays_between(p_from, p_to) > 5 then
+    return jsonb_build_object('ok', false, 'code', 'sick_limit', 'used', sick_days_used(v_e.id));
+  end if;
 
-  insert into leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, status,
-                      created_by, created_name, decided_at, decided_by)
-  values (v_e.id, v_e.region_id, p_from, p_to, p_kind, p_part, trim(p_reason),
-          case when p_approved then 'approved' else 'waiting_docs' end,
-          'operator', v_op.operator_name,
-          case when p_approved then now() end, case when p_approved then v_op.operator_name end)
+  insert into leaves (enrollment_id, region_id, starts_on, ends_on, kind, part, reason, created_by, created_name)
+  values (v_e.id, v_e.region_id, p_from, p_to, p_kind, p_part, trim(p_reason), 'operator', v_op.operator_name)
   returning * into v_leave;
 
   insert into audit_logs (region_id, actor_scope, actor_name, action, target_table, target_id, after, reason)
@@ -464,9 +641,9 @@ begin
   return jsonb_build_object('ok', true, 'id', v_leave.id);
 end $$;
 
--- 서류 확인(인정) · 불인정 · 취소. 서류 대기와 인정 상태에서만 바꿀 수 있다.
-create function attendance.api_operator_leave_decide(
-  p_token_hash bytea, p_leave_id bigint, p_decision text, p_note text, p_version int
+-- 운영자 취소 (잘못 등록했거나 일정이 바뀐 경우). 사유 필수.
+create function attendance.api_operator_leave_cancel(
+  p_token_hash bytea, p_leave_id bigint, p_note text, p_version int
 ) returns jsonb
 language plpgsql security definer set search_path = attendance, pg_temp as $$
 declare
@@ -482,28 +659,25 @@ begin
   if not found or not operator_owns(v_op.scope, v_op.region_id, v_before.region_id) then
     return jsonb_build_object('ok', false, 'code', 'not_found');
   end if;
-  if p_decision not in ('approved', 'rejected', 'cancelled') or p_decision = v_before.status then
-    return jsonb_build_object('ok', false, 'code', 'invalid_status');
-  end if;
-  if v_before.status not in ('waiting_docs', 'approved') then
+  if v_before.status <> 'registered' then
     return jsonb_build_object('ok', false, 'code', 'already_decided');
   end if;
   if v_before.version <> p_version then
     return jsonb_build_object('ok', false, 'code', 'version_conflict');
   end if;
-  if p_decision <> 'approved' and length(trim(coalesce(p_note, ''))) = 0 then
+  if length(trim(coalesce(p_note, ''))) = 0 then
     return jsonb_build_object('ok', false, 'code', 'reason_required');
   end if;
 
   update leaves
-     set status = p_decision, decided_at = now(), decided_by = v_op.operator_name,
-         decision_note = nullif(trim(coalesce(p_note, '')), ''), version = version + 1
+     set status = 'cancelled', cancelled_at = now(), cancelled_by = v_op.operator_name,
+         cancel_note = trim(p_note), version = version + 1
    where id = v_before.id
   returning * into v_after;
 
   insert into audit_logs (region_id, actor_scope, actor_name, action, target_table, target_id, before, after, reason)
-  values (v_before.region_id, v_op.scope, v_op.operator_name, 'leave.' || p_decision, 'leaves', v_before.id::text,
-          to_jsonb(v_before), to_jsonb(v_after), nullif(trim(coalesce(p_note, '')), ''));
+  values (v_before.region_id, v_op.scope, v_op.operator_name, 'leave.cancel', 'leaves', v_before.id::text,
+          to_jsonb(v_before), to_jsonb(v_after), trim(p_note));
   return jsonb_build_object('ok', true);
 end $$;
 
@@ -511,8 +685,9 @@ end $$;
 -- 출결 일보
 -- ---------------------------------------------------------------------------
 
--- 그 날 수강 기간에 들어 있던 교육생 전체(중도탈락·취업 포함)와 그 날 기록·공가·알림·사유.
--- 지각: 첫 입실이 과정 시작 시각 뒤 / 조퇴: 퇴실로 끝났고 마지막 퇴실이 과정 종료 시각 전
+-- 그 날 수강 기간에 들어 있던 교육생 전체(중도탈락·취업 포함)와 그 날 평가·판정·공가·알림·사유,
+-- 그리고 과정 시작부터 그 날까지의 누적(지각·조퇴·외출과 결석 환산). 판정 기준은 day_eval·day_judge 참고.
+-- 오늘 날짜는 교육 종료 시각이 지나야 누적에 넣는다.
 create function attendance.api_operator_report(p_token_hash bytea, p_region_code text, p_date date)
 returns jsonb
 language plpgsql stable security definer set search_path = attendance, pg_temp as $$
@@ -540,7 +715,9 @@ begin
     'courses', coalesce((
       select jsonb_agg(jsonb_build_object(
                'id', co.id, 'name', co.name,
-               'classStart', to_char(co.class_start, 'HH24:MI'), 'classEnd', to_char(co.class_end, 'HH24:MI')
+               'classStart', to_char(co.class_start, 'HH24:MI'), 'classEnd', to_char(co.class_end, 'HH24:MI'),
+               'lunchStart', to_char(co.lunch_start, 'HH24:MI'), 'lunchEnd', to_char(co.lunch_end, 'HH24:MI'),
+               'lateAfter', co.late_after_minutes
              ) order by co.name)
         from courses co
        where co.region_id = v_region and co.is_active
@@ -552,15 +729,22 @@ begin
                    'enrollmentId', e.id, 'name', st.name, 'course', co.name, 'courseId', co.id,
                    'state', training_state(e.training_status, e.status_on, p_date),
                    'statusOn', e.status_on,
-                   'dayStatus', coalesce(d.status, 'not_in'),
-                   'firstCheckInAt', d.first_check_in_at,
-                   'lastCheckOutAt', d.last_check_out_at,
+                   'dayStatus', z.ev->>'status',
+                   'firstCheckInAt', z.ev->'firstIn',
+                   'lastCheckOutAt', z.ev->'lastOut',
                    'corrected', coalesce(d.corrected, false),
-                   'late', d.first_check_in_at is not null
-                           and (d.first_check_in_at at time zone 'Asia/Seoul')::time > co.class_start,
-                   'early', d.status = 'checked_out' and d.last_check_out_at is not null
-                           and (d.last_check_out_at at time zone 'Asia/Seoul')::time < co.class_end,
-                   'leave', leave_on(e.id, p_date),
+                   'eval', z.ev,
+                   'judge', day_judge(z.ev, z.lv),
+                   'leave', z.lv,
+                   'tally', course_tally(
+                              e.id, co,
+                              greatest((e.created_at at time zone 'Asia/Seoul')::date,
+                                       coalesce(e.starts_on, date '1900-01-01'), coalesce(co.starts_on, date '1900-01-01')),
+                              least(case when p_date < edu_date_now() or now() >= (p_date + co.class_end) at time zone 'Asia/Seoul'
+                                         then p_date else p_date - 1 end,
+                                    case when e.training_status in ('dropped', 'employed') then e.status_on - 1
+                                         else date '9999-12-31' end)),
+                   'sickUsed', sick_days_used(e.id),
                    'notices', coalesce((
                      select jsonb_agg(jsonb_build_object(
                               'kind', n.kind, 'expectedTime', to_char(n.expected_time, 'HH24:MI'), 'reason', n.reason
@@ -576,6 +760,7 @@ begin
             join students st on st.id = e.student_id
             join courses co on co.id = e.course_id
             left join attendance_days d on d.enrollment_id = e.id and d.edu_date = p_date
+            cross join lateral (select day_eval(e.id, p_date, co) as ev, leave_on(e.id, p_date) as lv) z
            where e.region_id = v_region
              and (e.created_at at time zone 'Asia/Seoul')::date <= p_date
              and (e.starts_on is null or e.starts_on <= p_date)
@@ -639,9 +824,10 @@ begin
   return jsonb_build_object('ok', true, 'version', v_ver);
 end $$;
 
--- 과정 시간 변경 (지각·조퇴 판단 기준)
+-- 과정 시간 변경 (지각·조퇴 판단 기준). p_late_after: 시작 후 몇 분부터 지각인지
 create function attendance.api_operator_course_hours(
-  p_token_hash bytea, p_course_id bigint, p_start time, p_end time
+  p_token_hash bytea, p_course_id bigint, p_start time, p_end time, p_late_after int,
+  p_lunch_start time, p_lunch_end time
 ) returns jsonb
 language plpgsql security definer set search_path = attendance, pg_temp as $$
 declare
@@ -656,19 +842,26 @@ begin
   if not found or not operator_owns(v_op.scope, v_op.region_id, v_before.region_id) then
     return jsonb_build_object('ok', false, 'code', 'not_found');
   end if;
-  if p_start is null or p_end is null or p_start >= p_end then
+  if p_start is null or p_end is null or p_start >= p_end or p_late_after is null or p_late_after not between 0 and 120
+     or p_lunch_start is null or p_lunch_end is null or p_lunch_start > p_lunch_end then
     return jsonb_build_object('ok', false, 'code', 'invalid_hours');
   end if;
-  if v_before.class_start = p_start and v_before.class_end = p_end then
+  if v_before.class_start = p_start and v_before.class_end = p_end and v_before.late_after_minutes = p_late_after
+     and v_before.lunch_start = p_lunch_start and v_before.lunch_end = p_lunch_end then
     return jsonb_build_object('ok', false, 'code', 'no_change');
   end if;
-  update courses set class_start = p_start, class_end = p_end where id = v_before.id;
+  update courses
+     set class_start = p_start, class_end = p_end, late_after_minutes = p_late_after,
+         lunch_start = p_lunch_start, lunch_end = p_lunch_end
+   where id = v_before.id;
   insert into audit_logs (region_id, actor_scope, actor_name, action, target_table, target_id, before, after)
   values (v_before.region_id, v_op.scope, v_op.operator_name, 'course.hours', 'courses', v_before.id::text,
           jsonb_build_object('course', v_before.name, 'start', to_char(v_before.class_start, 'HH24:MI'),
-                             'end', to_char(v_before.class_end, 'HH24:MI')),
+                             'end', to_char(v_before.class_end, 'HH24:MI'), 'lateAfter', v_before.late_after_minutes,
+                             'lunch', to_char(v_before.lunch_start, 'HH24:MI') || '~' || to_char(v_before.lunch_end, 'HH24:MI')),
           jsonb_build_object('course', v_before.name, 'start', to_char(p_start, 'HH24:MI'),
-                             'end', to_char(p_end, 'HH24:MI')));
+                             'end', to_char(p_end, 'HH24:MI'), 'lateAfter', p_late_after,
+                             'lunch', to_char(p_lunch_start, 'HH24:MI') || '~' || to_char(p_lunch_end, 'HH24:MI')));
   return jsonb_build_object('ok', true);
 end $$;
 
@@ -680,11 +873,11 @@ grant execute on function
   attendance.api_student_leaves(bytea),
   attendance.api_student_leave_cancel(bytea, bigint),
   attendance.api_operator_leaves(bytea, text, date, date),
-  attendance.api_operator_leave_create(bytea, bigint, date, date, text, text, text, boolean),
-  attendance.api_operator_leave_decide(bytea, bigint, text, text, int),
+  attendance.api_operator_leave_create(bytea, bigint, date, date, text, text, text),
+  attendance.api_operator_leave_cancel(bytea, bigint, text, int),
   attendance.api_operator_report(bytea, text, date),
   attendance.api_operator_day_note(bytea, bigint, date, text, int),
-  attendance.api_operator_course_hours(bytea, bigint, time, time)
+  attendance.api_operator_course_hours(bytea, bigint, time, time, int, time, time)
 to attendance_app;
 
 commit;

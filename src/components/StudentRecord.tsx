@@ -6,7 +6,7 @@ import DayPanel from "./DayPanel";
 import { TrainingTag } from "./RosterBoard";
 import { api } from "@/lib/client";
 import {
-  LEAVE_STATUS_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, formatDate, formatTime, leaveText, messageFor, todayInSeoul,
+  REQUEST_STATUS_LABEL, STATUS_LABEL, formatDate, formatTime, leaveText, messageFor, todayInSeoul,
 } from "@/lib/messages";
 
 type Data = {
@@ -53,7 +53,7 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
   const s = data.student;
   const requestByDate = new Map(data.requests.map((q) => [q.date, q]));
   const leaveOn = (date: string) =>
-    data.leaves.find((l) => l.startsOn <= date && date <= l.endsOn && (l.status === "approved" || l.status === "waiting_docs"));
+    data.leaves.find((l) => l.startsOn <= date && date <= l.endsOn && l.status === "registered");
   const counts = {
     days: data.days.length,
     corrected: data.days.filter((d) => d.corrected).length,
@@ -78,14 +78,14 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
         <div className="stat"><span>기록 있는 날</span><strong>{counts.days}</strong></div>
         <div className="stat"><span>정정 반영</span><strong>{counts.corrected}</strong></div>
         <div className="stat"><span>처리 대기 요청</span><strong>{counts.pending}</strong></div>
-        <div className="stat"><span>공가 (인정 / 신청)</span><strong>{data.leaves.filter((l) => l.status === "approved").length} / {data.leaves.filter((l) => l.status !== "cancelled").length}</strong></div>
+        <div className="stat"><span>공가 등록</span><strong>{data.leaves.filter((l) => l.status === "registered").length}</strong></div>
         <div className="stat"><span>지역</span><strong style={{ fontSize: 20 }}>{s.regionName}</strong></div>
       </div>
 
       {data.leaves.length > 0 && (
         <p className="small">
           이 달 공가:{" "}
-          {data.leaves.map((l) => `${formatDate(l.startsOn)}${l.endsOn !== l.startsOn ? `~${formatDate(l.endsOn)}` : ""} ${leaveText(l)} (${LEAVE_STATUS_LABEL[l.status]})`).join(" · ")}
+          {data.leaves.map((l) => `${formatDate(l.startsOn)}${l.endsOn !== l.startsOn ? `~${formatDate(l.endsOn)}` : ""} ${leaveText(l)}${l.status === "cancelled" ? " (취소)" : ""}`).join(" · ")}
         </p>
       )}
 
@@ -107,7 +107,7 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
                         <span className={`tag ${d.status}`}>{STATUS_LABEL[d.status]}</span>{" "}
                         {d.corrected && <span className="tag warn">정정</span>}{" "}
                         {q && <span className={`tag ${q.status}`}>요청 {REQUEST_STATUS_LABEL[q.status]}</span>}{" "}
-                        {l && <span className={`tag ${l.status === "approved" ? "approved" : "pending"}`}>공가 {leaveText(l)} · {LEAVE_STATUS_LABEL[l.status]}</span>}
+                        {l && <span className="tag approved">공가 {leaveText(l)}</span>}
                       </td>
                     </tr>
                   );

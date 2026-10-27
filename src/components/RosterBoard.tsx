@@ -94,8 +94,8 @@ export default function RosterBoard() {
       {editing && <EditEnrollment student={editing} courses={courses} onDone={done} onCancel={() => setEditing(null)} />}
 
       <div className="stats" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
-        <div className="stat"><span>재적{course ? ` · ${course}` : ""}</span><strong>{inCourse.length}</strong></div>
-        {Object.entries(TRAINING_STATUS_LABEL).map(([k, v]) => <div className="stat" key={k}><span>{v}</span><strong>{countOf(k)}</strong></div>)}
+        <div className="stat"><span>정원{course ? ` · ${course}` : ""}</span><strong>{inCourse.length}</strong></div>
+        {Object.entries(TRAINING_STATUS_LABEL).map(([k, v]) => <div className="stat" key={k}><span>{k === "training" ? "재적 (훈련중)" : v}</span><strong>{countOf(k)}</strong></div>)}
       </div>
 
       <div className="filters">
@@ -136,7 +136,7 @@ export default function RosterBoard() {
           </table>
         </div>
       </div>
-      <p className="small">교육생은 지우지 않습니다. 중도탈락·조기취업·수료로 바꾸면 그 날짜부터 현인원에서 빠지고 출결 입력이 막히며, 과거 기록은 그대로 남습니다.</p>
+      <p className="small">교육생은 지우지 않습니다. 중도탈락·조기취업·수료로 바꾸면 그 날짜부터 재적에서 빠지고 출결 입력이 막히며, 과거 기록은 그대로 남습니다.</p>
     </>
   );
 }
@@ -309,7 +309,7 @@ function EditEnrollment({ student, courses, onDone, onCancel }: { student: Stude
           </label>
         ) : (
           <label className="field">
-            {TRAINING_STATUS_LABEL[training]} 일자 (이 날부터 현인원에서 제외)
+            {TRAINING_STATUS_LABEL[training]} 일자 (이 날부터 재적에서 제외)
             <input type="date" value={statusOn} onChange={(e) => setStatusOn(e.target.value)} required />
           </label>
         )}

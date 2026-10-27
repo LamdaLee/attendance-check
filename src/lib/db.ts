@@ -42,7 +42,7 @@ export type ApiFunction =
   | "api_student_leave_cancel"
   | "api_operator_leaves"
   | "api_operator_leave_create"
-  | "api_operator_leave_decide"
+  | "api_operator_leave_cancel"
   | "api_operator_report"
   | "api_operator_day_note"
   | "api_operator_course_hours";

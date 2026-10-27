@@ -34,7 +34,7 @@ type Leave = {
   part: string;
   reason: string;
   status: string;
-  decisionNote: string | null;
+  cancelNote: string | null;
   cancellable: boolean;
 };
 
@@ -523,7 +523,7 @@ function NoticeCard() {
   );
 }
 
-// 공가 신청 (교육장 밖에서도 가능). 증빙 서류가 확인되면 운영자가 인정으로 바꾼다.
+// 공가 등록 (교육장 밖에서도 가능). 증빙 서류는 LMS에 직접 올린다.
 function LeaveCard() {
   const today = todayInSeoul();
   const [open, setOpen] = useState(false);
@@ -533,12 +533,16 @@ function LeaveCard() {
   const [to, setTo] = useState(today);
   const [reason, setReason] = useState("");
   const [items, setItems] = useState<Leave[]>([]);
+  const [sick, setSick] = useState<{ used: number; limit: number } | null>(null);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     const r = await getJson("/api/student/leaves").catch(() => null);
-    if (r?.ok) setItems(r.leaves);
+    if (r?.ok) {
+      setItems(r.leaves);
+      setSick({ used: r.sickUsed, limit: r.sickLimit });
+    }
   }, []);
 
   useEffect(() => {
@@ -558,12 +562,12 @@ function LeaveCard() {
     }
     setReason("");
     setOpen(false);
-    setMessage({ kind: "ok", text: "공가를 신청했습니다. 증빙 서류를 담당 매니저에게 제출하면 확인 후 인정으로 바뀝니다." });
+    setMessage({ kind: "ok", text: "공가를 등록했습니다. 증빙 서류는 LMS에 올려 주세요." });
     await load();
   }
 
   async function cancel(id: number) {
-    if (!window.confirm("이 공가 신청을 취소할까요?")) return;
+    if (!window.confirm("이 공가 등록을 취소할까요?")) return;
     const r = await postJson("/api/student/leaves", { action: "cancel", id }).catch(() => ({ ok: false, code: "server_error" }));
     if (!r.ok) setMessage({ kind: "error", text: messageFor(r.code) });
     await load();
@@ -572,10 +576,13 @@ function LeaveCard() {
   return (
     <div className="card">
       <div className="row between">
-        <h2 style={{ margin: 0 }}>공가 신청</h2>
-        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "신청하기"}</button>
+        <h2 style={{ margin: 0 }}>공가 등록</h2>
+        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "등록하기"}</button>
       </div>
-      <p className="small">병원 진료, 면접, 예비군처럼 서류로 인정받는 일정입니다. 서류가 확인되면 인정으로 바뀝니다.</p>
+      <p className="small">
+        병원 진료, 면접, 예비군처럼 공가로 처리할 일정을 등록해 주세요. 증빙 서류는 LMS에 직접 올려 주세요.
+        {sick && <> 병결은 {sick.limit}일까지 가능하며, 지금까지 <b>{sick.used}일</b> 사용했습니다.</>}
+      </p>
       {open && (
         <form onSubmit={submit}>
           <div className="seg" role="radiogroup" aria-label="공가 종류" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
@@ -602,10 +609,10 @@ function LeaveCard() {
           <label className="field">
             사유
             <textarea value={reason} onChange={(e) => setReason(e.target.value)} required maxLength={300}
-              placeholder={part === "partial" ? "예: 14시 면접으로 13시 조퇴" : "예: 장염으로 병원 진료, 진료확인서 제출 예정"} />
+              placeholder={part === "partial" ? "예: 14시 면접으로 13시 조퇴" : "예: 장염으로 병원 진료"} />
           </label>
           {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
-          <button className="btn block" disabled={busy}>공가 신청</button>
+          <button className="btn block" disabled={busy}>공가 등록</button>
         </form>
       )}
       {!open && message && <p className={`notice ${message.kind}`}>{message.text}</p>}
@@ -616,10 +623,10 @@ function LeaveCard() {
               <span>
                 <b>{formatDate(l.startsOn)}{l.endsOn !== l.startsOn && ` ~ ${formatDate(l.endsOn)}`}</b> {leaveText(l)}
                 <br /><span className="small">{l.reason}</span>
-                {l.decisionNote && <><br /><span className="small">운영자: {l.decisionNote}</span></>}
+                {l.cancelNote && <><br /><span className="small">취소 사유: {l.cancelNote}</span></>}
               </span>
               <span className="row" style={{ flexWrap: "nowrap" }}>
-                <span className={`tag ${l.status === "approved" ? "approved" : l.status === "waiting_docs" ? "pending" : "rejected"}`}>{LEAVE_STATUS_LABEL[l.status]}</span>
+                <span className={`tag ${l.status === "registered" ? "approved" : "rejected"}`}>{LEAVE_STATUS_LABEL[l.status]}</span>
                 {l.cancellable && <button type="button" className="btn plain sm" onClick={() => cancel(l.id)}>취소</button>}
               </span>
             </li>
