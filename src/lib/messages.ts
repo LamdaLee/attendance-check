@@ -42,6 +42,10 @@ const MESSAGES: Record<string, string> = {
   status_date_required: "중도탈락·조기취업·수료 일자를 입력해 주세요.",
   status_date_invalid: "일자는 오늘부터 31일 뒤까지만 입력할 수 있습니다.",
   invalid_hours: "시작 시각이 종료 시각보다 빨라야 하고, 지각 기준은 0~120분, 점심은 시작이 끝보다 빨라야 합니다.",
+  invalid_file: "JPG·PNG 사진이나 PDF 파일만, 5MB까지 올릴 수 있습니다.",
+  too_many_files: "서류는 공가 한 건에 3개까지 올릴 수 있습니다.",
+  presence_required: "출석확인서는 교육장 와이파이에 연결했거나 오늘의 출석코드로 확인한 뒤 만들 수 있습니다.",
+  invalid_period: "기간을 확인해 주세요. 오늘까지, 최대 1년 범위만 만들 수 있습니다.",
   sick_limit: "병결은 과정 중 평일 기준 5일까지 등록할 수 있습니다.",
   invalid_status: "상태 값이 올바르지 않습니다.",
   ip_unavailable: "접속 IP를 확인할 수 없습니다. 서버 프록시 설정을 확인해 주세요.",
@@ -113,8 +117,19 @@ export const LEAVE_PART_LABEL: Record<string, string> = {
 };
 
 export const LEAVE_STATUS_LABEL: Record<string, string> = {
-  registered: "등록",
+  registered: "서류 미제출",
+  submitted: "확인 대기",
+  approved: "승인",
+  rejected: "반려",
   cancelled: "취소",
+};
+
+export const LEAVE_STATUS_CLASS: Record<string, string> = {
+  registered: "paused",
+  submitted: "pending",
+  approved: "approved",
+  rejected: "danger",
+  cancelled: "rejected",
 };
 
 export function leaveText(l: { kind: string; part: string }): string {
@@ -133,6 +148,11 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "enrollment.training": "훈련 상태 변경",
   "leave.create": "공가 등록",
   "leave.cancel": "공가 취소",
+  "leave.approve": "공가 승인",
+  "leave.reject": "공가 반려",
+  "leave.doc_view": "공가 서류 열람",
+  "certificate.issue": "출석확인서 발급",
+  "institution.set": "기관명 변경",
   "note.save": "일보 사유 저장",
   "course.hours": "과정 시간 변경",
   "export.csv": "CSV 내보내기",

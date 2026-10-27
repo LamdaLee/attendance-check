@@ -20,8 +20,6 @@ type Body = {
   start?: string;
   end?: string;
   lateAfter?: number;
-  lunchStart?: string;
-  lunchEnd?: string;
 };
 
 export const POST = operatorRoute(
@@ -29,12 +27,9 @@ export const POST = operatorRoute(
     const body = await readJson<Body>(req);
     if (!body) return fail("bad_request");
     if (body.action === "hours") {
-      if (!isId(body.courseId) || !TIME.test(body.start ?? "") || !TIME.test(body.end ?? "") || !Number.isInteger(body.lateAfter)
-          || !TIME.test(body.lunchStart ?? "") || !TIME.test(body.lunchEnd ?? ""))
+      if (!isId(body.courseId) || !TIME.test(body.start ?? "") || !TIME.test(body.end ?? "") || !Number.isInteger(body.lateAfter))
         return fail("bad_request");
-      return respond(await callApi("api_operator_course_hours", [
-        token, body.courseId, body.start, body.end, body.lateAfter, body.lunchStart, body.lunchEnd,
-      ]));
+      return respond(await callApi("api_operator_course_hours", [token, body.courseId, body.start, body.end, body.lateAfter]));
     }
     if (!isId(body.enrollmentId) || !isDate(body.date) || typeof body.note !== "string" || !Number.isSafeInteger(body.version))
       return fail("bad_request");

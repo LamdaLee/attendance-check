@@ -23,6 +23,7 @@ const STATUS_BY_CODE: Record<string, number> = {
   request_conflict: 409,
   last_active_network: 409,
   invalid_code: 422,
+  presence_required: 403,
   code_inactive: 422,
   ip_unavailable: 400,
   bad_request: 400,

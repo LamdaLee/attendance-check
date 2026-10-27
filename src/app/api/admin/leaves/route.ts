@@ -13,7 +13,8 @@ export const GET = operatorRoute(async ({ token, url }) => {
 });
 
 type Body = {
-  action?: "create" | "cancel";
+  action?: "create" | "cancel" | "decide";
+  decision?: string;
   enrollmentId?: number;
   from?: string;
   to?: string;
@@ -29,6 +30,11 @@ export const POST = operatorRoute(
   async ({ token, req }) => {
     const body = await readJson<Body>(req);
     if (!body) return fail("bad_request");
+    if (body.action === "decide") {
+      if (!isId(body.id) || (body.decision !== "approved" && body.decision !== "rejected") || !Number.isSafeInteger(body.version))
+        return fail("bad_request");
+      return respond(await callApi("api_operator_leave_decide", [token, body.id, body.decision, body.note ?? "", body.version]));
+    }
     if (body.action === "cancel") {
       if (!isId(body.id) || !Number.isSafeInteger(body.version)) return fail("bad_request");
       return respond(await callApi("api_operator_leave_cancel", [token, body.id, body.note ?? "", body.version]));

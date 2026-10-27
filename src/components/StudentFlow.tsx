@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CertificateOverlay, birthValid, formatBirth, type CertificateData } from "./Certificate";
 import {
-  ACTION_LABEL, LEAVE_KIND_LABEL, LEAVE_STATUS_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
+  ACTION_LABEL, LEAVE_KIND_LABEL, LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, NOTICE_LABEL, REQUEST_STATUS_LABEL, STATUS_LABEL, addDays,
   formatDate, formatTime, leaveText, messageFor, noticeText, todayInSeoul,
 } from "@/lib/messages";
 
@@ -34,9 +35,33 @@ type Leave = {
   part: string;
   reason: string;
   status: string;
-  cancelNote: string | null;
+  note: string | null;
+  docs: { id: number; name: string; size: number }[];
+  uploadable: boolean;
   cancellable: boolean;
 };
+
+// 사진은 긴 변 1800px JPEG 로 줄여서 올린다 (아이폰 HEIC 도 브라우저가 읽을 수 있으면 JPEG 로 바뀐다).
+async function prepareUpload(file: File): Promise<File> {
+  if (file.type === "application/pdf" || !file.type.startsWith("image/")) return file;
+  try {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const scale = Math.min(1, 1800 / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.85));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 const ALLOWED: Record<string, string[]> = {
   not_in: ["check_in"],
@@ -364,6 +389,7 @@ export default function StudentFlow({ code }: { code: string }) {
             <NoticeCard />
             <LeaveCard />
             <CorrectionCard />
+            {today.presence && <CertificateCard />}
             <button className="btn plain block" onClick={switchStudent}>다른 교육생으로 확인 · 확인 종료</button>
           </>
         )}
@@ -523,7 +549,7 @@ function NoticeCard() {
   );
 }
 
-// 공가 등록 (교육장 밖에서도 가능). 증빙 서류는 LMS에 직접 올린다.
+// 공가 신청 (교육장 밖에서도 가능). 서류를 올리면 운영자가 확인해 승인하고, 승인된 날은 출석으로 인정된다.
 function LeaveCard() {
   const today = todayInSeoul();
   const [open, setOpen] = useState(false);
@@ -562,12 +588,38 @@ function LeaveCard() {
     }
     setReason("");
     setOpen(false);
-    setMessage({ kind: "ok", text: "공가를 등록했습니다. 증빙 서류는 LMS에 올려 주세요." });
+    setMessage({ kind: "ok", text: "공가를 신청했습니다. 아래 목록에서 증빙 서류(사진·PDF)를 올려 주세요." });
+    await load();
+  }
+
+  async function upload(leaveId: number, picked: File | undefined) {
+    if (!picked) return;
+    setBusy(true);
+    setMessage(null);
+    const file = await prepareUpload(picked);
+    if (file.size > 5 * 1024 * 1024) {
+      setBusy(false);
+      setMessage({ kind: "error", text: messageFor("invalid_file") });
+      return;
+    }
+    const form = new FormData();
+    form.append("leaveId", String(leaveId));
+    form.append("file", file);
+    const r = await getJson("/api/student/leaves/docs", { method: "POST", body: form }).catch(() => ({ ok: false, code: "server_error" }));
+    setBusy(false);
+    setMessage(r.ok ? { kind: "ok", text: "서류를 올렸습니다. 매니저가 확인하면 승인으로 바뀝니다." } : { kind: "error", text: messageFor(r.code) });
+    await load();
+  }
+
+  async function removeDoc(id: number) {
+    if (!window.confirm("이 서류를 지울까요?")) return;
+    const r = await postJson("/api/student/leaves", { action: "deleteDoc", id }).catch(() => ({ ok: false, code: "server_error" }));
+    if (!r.ok) setMessage({ kind: "error", text: messageFor(r.code) });
     await load();
   }
 
   async function cancel(id: number) {
-    if (!window.confirm("이 공가 등록을 취소할까요?")) return;
+    if (!window.confirm("이 공가 신청을 취소할까요?")) return;
     const r = await postJson("/api/student/leaves", { action: "cancel", id }).catch(() => ({ ok: false, code: "server_error" }));
     if (!r.ok) setMessage({ kind: "error", text: messageFor(r.code) });
     await load();
@@ -576,11 +628,11 @@ function LeaveCard() {
   return (
     <div className="card">
       <div className="row between">
-        <h2 style={{ margin: 0 }}>공가 등록</h2>
-        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "등록하기"}</button>
+        <h2 style={{ margin: 0 }}>공가 신청</h2>
+        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "신청하기"}</button>
       </div>
       <p className="small">
-        병원 진료, 면접, 예비군처럼 공가로 처리할 일정을 등록해 주세요. 증빙 서류는 LMS에 직접 올려 주세요.
+        병원 진료, 면접, 예비군처럼 공가로 처리할 일정을 신청하고 증빙 서류(사진·PDF)를 올려 주세요. 매니저가 확인해 승인하면 그 날은 출석으로 인정됩니다.
         {sick && <> 병결은 {sick.limit}일까지 가능하며, 지금까지 <b>{sick.used}일</b> 사용했습니다.</>}
       </p>
       {open && (
@@ -612,7 +664,7 @@ function LeaveCard() {
               placeholder={part === "partial" ? "예: 14시 면접으로 13시 조퇴" : "예: 장염으로 병원 진료"} />
           </label>
           {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
-          <button className="btn block" disabled={busy}>공가 등록</button>
+          <button className="btn block" disabled={busy}>공가 신청</button>
         </form>
       )}
       {!open && message && <p className={`notice ${message.kind}`}>{message.text}</p>}
@@ -623,16 +675,83 @@ function LeaveCard() {
               <span>
                 <b>{formatDate(l.startsOn)}{l.endsOn !== l.startsOn && ` ~ ${formatDate(l.endsOn)}`}</b> {leaveText(l)}
                 <br /><span className="small">{l.reason}</span>
-                {l.cancelNote && <><br /><span className="small">취소 사유: {l.cancelNote}</span></>}
+                {l.note && <><br /><span className="small">매니저: {l.note}</span></>}
+                {l.docs.map((d) => (
+                  <span key={d.id} className="small doc-chip">
+                    📎 {d.name}
+                    {l.uploadable && <button type="button" className="link-btn" onClick={() => removeDoc(d.id)} aria-label={`${d.name} 지우기`}>지우기</button>}
+                  </span>
+                ))}
+                {l.uploadable && l.docs.length < 3 && (
+                  <label className="btn ghost sm upload-btn">
+                    서류 올리기
+                    <input type="file" accept="image/*,application/pdf" hidden disabled={busy}
+                      onChange={(e) => { void upload(l.id, e.target.files?.[0]); e.target.value = ""; }} />
+                  </label>
+                )}
               </span>
-              <span className="row" style={{ flexWrap: "nowrap" }}>
-                <span className={`tag ${l.status === "registered" ? "approved" : "rejected"}`}>{LEAVE_STATUS_LABEL[l.status]}</span>
+              <span className="row" style={{ flexWrap: "nowrap", alignSelf: "flex-start" }}>
+                <span className={`tag ${LEAVE_STATUS_CLASS[l.status]}`}>{LEAVE_STATUS_LABEL[l.status]}</span>
                 {l.cancellable && <button type="button" className="btn plain sm" onClick={() => cancel(l.id)}>취소</button>}
               </span>
             </li>
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+// 출석확인서 (교육장 회선이나 출석코드로 확인된 경우에만). 생년월일은 출력에만 쓰고 저장하지 않는다.
+function CertificateCard() {
+  const today = todayInSeoul();
+  const [open, setOpen] = useState(false);
+  const [from, setFrom] = useState(addDays(today, -30));
+  const [to, setTo] = useState(today);
+  const [birth, setBirth] = useState("");
+  const [cert, setCert] = useState<CertificateData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!birthValid(birth)) {
+      setError("생년월일을 8자리 숫자로 입력해 주세요. 예: 19990101");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    const r = await postJson("/api/student/certificate", { from, to }).catch(() => ({ ok: false, code: "server_error" }));
+    setBusy(false);
+    if (!r.ok) {
+      setError(messageFor(r.code));
+      return;
+    }
+    setCert(r as CertificateData);
+  }
+
+  return (
+    <div className="card">
+      <div className="row between">
+        <h2 style={{ margin: 0 }}>출석확인서</h2>
+        <button type="button" className="btn ghost sm" onClick={() => setOpen(!open)}>{open ? "닫기" : "만들기"}</button>
+      </div>
+      <p className="small">외부 기관에 낼 출석확인서를 기간을 정해 PDF로 저장할 수 있습니다.</p>
+      {open && (
+        <form onSubmit={submit}>
+          <div className="grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
+            <label className="field">시작일<input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} required /></label>
+            <label className="field">종료일<input type="date" value={to} min={from} max={today} onChange={(e) => setTo(e.target.value)} required /></label>
+          </div>
+          <label className="field">
+            생년월일 (확인서에만 표시, 저장하지 않음)
+            <input value={birth} onChange={(e) => setBirth(formatBirth(e.target.value))} inputMode="numeric" placeholder="예: 19990101" required />
+          </label>
+          {error && <p className="notice error">{error}</p>}
+          <button className="btn block" disabled={busy}>확인서 만들기</button>
+        </form>
+      )}
+      {cert && <CertificateOverlay data={cert} birth={birth} onClose={() => setCert(null)} />}
     </div>
   );
 }

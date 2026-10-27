@@ -45,7 +45,17 @@ export type ApiFunction =
   | "api_operator_leave_cancel"
   | "api_operator_report"
   | "api_operator_day_note"
-  | "api_operator_course_hours";
+  | "api_operator_course_hours"
+  | "api_student_leave_doc_add"
+  | "api_student_leave_doc_delete"
+  | "api_operator_leave_doc"
+  | "api_operator_leave_decide"
+  | "api_operator_sheet"
+  | "api_student_certificate"
+  | "api_operator_certificate"
+  | "api_operator_certificates"
+  | "api_operator_institutions"
+  | "api_operator_institution_set";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 

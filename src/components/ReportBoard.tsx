@@ -5,15 +5,36 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
 import { api, kstHHMM } from "@/lib/client";
 import {
-  TRAINING_STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, noticeText,
+  LEAVE_STATUS_CLASS, LEAVE_STATUS_LABEL, TRAINING_STATUS_LABEL, formatDate, formatDateTime, formatTime, leaveText, messageFor, noticeText,
   todayInSeoul,
 } from "@/lib/messages";
 
 type Leave = { id: number; kind: string; part: string; status: string; reason: string };
 // 서버 판정 (attendance.day_eval · day_judge · course_tally)
 type Eval = { status: string; attendedMinutes: number; classMinutes: number; enough: boolean; outs: number };
-type DayJudge = { absent: boolean; insufficient: boolean; absentExcused: boolean; late: boolean; early: boolean; outs: number; excused: boolean };
-type Tally = { days: number; absent: number; absentExcused: number; late: number; early: number; outs: number; converted: number; totalAbsent: number };
+// leaveAttend: 승인 공가로 출석 인정 / excused: 승인 공가 날 / pending: 승인 전 공가가 걸린 날
+type DayJudge = {
+  absent: boolean;
+  leaveAttend: boolean;
+  insufficient: boolean;
+  late: boolean;
+  early: boolean;
+  outs: number;
+  excused: boolean;
+  pending: boolean;
+};
+type Tally = {
+  days: number;
+  absent: number;
+  leaveAttend: number;
+  late: number;
+  early: number;
+  outs: number;
+  converted: number;
+  totalAbsent: number;
+  attended: number;
+  rate: number | null;
+};
 type Row = {
   enrollmentId: number;
   name: string;
@@ -33,7 +54,7 @@ type Row = {
   notices: { kind: string; expectedTime: string | null; reason: string }[];
   note: { text: string; version: number; updatedBy: string; updatedAt: string } | null;
 };
-type Course = { id: number; name: string; classStart: string; classEnd: string; lunchStart: string; lunchEnd: string; lateAfter: number };
+type Course = { id: number; name: string; classStart: string; classEnd: string; lateAfter: number };
 type Data = { date: string; today: string; now: string; courses: Course[]; rows: Row[] };
 
 const SICK_LIMIT = 5;
@@ -52,22 +73,22 @@ function judge(r: Row, data: Data, course: Course | undefined): Judged {
   const current = r.state === "training";
   const final = data.date < data.today || (data.date === data.today && !!course && kstHHMM(data.now) >= course.classEnd);
   const absent = current && final && j.absent;
+  const leaveAttend = current && final && j.leaveAttend;
   const notYet = current && !final && !r.firstCheckInAt;
   const missingOut = current && final && (r.dayStatus === "in_class" || r.dayStatus === "out");
   const ex = j.excused ? " · 공가" : "";
   const flags: { label: string; cls: string }[] = [];
   if (!current) flags.push({ label: TRAINING_STATUS_LABEL[r.state], cls: r.state === "dropped" ? "danger" : "paused" });
   else if (r.statusOn === data.date) flags.push({ label: "오늘 상태 변경", cls: "paused" });
-  if (absent) {
-    if (j.absentExcused) flags.push({ label: "결석 · 공가", cls: "approved" });
-    else flags.push({ label: j.insufficient ? "결석 (수업 50% 미만)" : "결석", cls: "danger" });
-  }
+  if (absent) flags.push({ label: j.insufficient ? "결석 (수업 50% 미만)" : "결석", cls: "danger" });
+  if (leaveAttend) flags.push({ label: "공가 출석 인정", cls: "approved" });
   if (notYet) flags.push({ label: "미입실", cls: "paused" });
   if (current && j.late) flags.push({ label: `지각${ex}`, cls: j.excused ? "approved" : "warn" });
   if (current && j.early && final) flags.push({ label: `조퇴${ex}`, cls: j.excused ? "approved" : "warn" });
   if (current && j.outs > 0) flags.push({ label: `외출${j.outs > 1 ? ` ${j.outs}회` : ""}${ex}`, cls: j.excused ? "approved" : "warn" });
   if (missingOut) flags.push({ label: r.dayStatus === "out" ? "복귀 기록 없음" : "퇴실 기록 없음", cls: "pending" });
-  if (current && r.leave && !flags.some((f) => f.label.includes("공가"))) flags.push({ label: r.leave.part === "partial" ? "일부 시간 공가" : "공가", cls: "approved" });
+  if (current && r.leave && j.pending) flags.push({ label: `공가 ${LEAVE_STATUS_LABEL[r.leave.status]}`, cls: LEAVE_STATUS_CLASS[r.leave.status] });
+  else if (current && r.leave && !flags.some((f) => f.label.includes("공가"))) flags.push({ label: r.leave.part === "partial" ? "일부 시간 공가 승인" : "공가 승인", cls: "approved" });
   if (r.corrected) flags.push({ label: "정정", cls: "warn" });
   return { ...r, current, absent, notYet, missingOut, flags };
 }
@@ -81,8 +102,8 @@ type Summary = {
   enrolled: number;
   inRoom: number;
   present: number;
+  presentLeave: number;
   absent: number;
-  absentExcused: number;
   late: number;
   lateExcused: number;
   early: number;
@@ -102,9 +123,9 @@ function summarize(rows: Judged[]): Summary {
     completed: rows.filter((r) => r.state === "completed").length,
     enrolled: cur.length,
     inRoom: cur.filter((r) => r.dayStatus === "in_class").length,
-    present: ok.filter((r) => r.firstCheckInAt).length,
+    present: ok.filter((r) => r.firstCheckInAt || r.judge.leaveAttend).length,
+    presentLeave: ok.filter((r) => r.judge.leaveAttend && !r.notYet).length,
     absent: cur.filter((r) => r.absent).length,
-    absentExcused: cur.filter((r) => r.absent && r.judge.absentExcused).length,
     late: ok.filter((r) => r.judge.late).length,
     lateExcused: ok.filter((r) => r.judge.late && r.judge.excused).length,
     early: ok.filter((r) => r.judge.early && r.flags.some((f) => f.label.startsWith("조퇴"))).length,
@@ -211,7 +232,7 @@ export default function ReportBoard() {
                           <HoursEditor course={info} onDone={async (changed) => { setEditingHours(null); if (changed) await load(); }} />
                         ) : (
                           <span className="row" style={{ flexWrap: "nowrap", gap: 6 }}>
-                            {info ? <span>{info.classStart}~{info.classEnd}<br /><span className="small">{info.lateAfter}분부터 지각 · 점심 {info.lunchStart}~{info.lunchEnd}</span></span> : "—"}
+                            {info ? <span>{info.classStart}~{info.classEnd}<br /><span className="small">{info.lateAfter}분부터 지각</span></span> : "—"}
                             {info && <button className="btn plain sm no-print" onClick={() => setEditingHours(info.id)}>변경</button>}
                           </span>
                         )}
@@ -233,9 +254,9 @@ export default function ReportBoard() {
           <p className="small">
             정원은 처음 시작 인원(중도탈락·조기취업 포함), 재적은 그 중 훈련중인 인원, 현인원은 지금 강의장에 있는 인원(교육 중,
             외출 제외)으로 오늘 날짜에만 표시합니다. 지각은 교육 시작 후 정한 시간(기본 10분)부터, 조퇴는 마지막 퇴실이 교육 종료 전,
-            외출은 점심시간 밖의 외출입니다. 수업 시간(점심 제외)의 50% 이상 참여해야 지각·조퇴·외출이 성립하고, 미만이면 결석입니다.
-            결석은 교육 종료 시각이 지나야 확정됩니다. 괄호 안은 공가로 등록된 인원입니다.
-            누적은 과정 시작부터 이 날까지이며, 지각·조퇴·외출 3회를 결석 1회로 환산합니다(공가 날 제외). 병결은 5일까지 등록할 수 있습니다.
+            외출은 수업 시간 중 외출입니다. 수업 시간의 50% 이상 참여해야 지각·조퇴·외출이 성립하고, 미만이면 결석입니다.
+            결석은 교육 종료 시각이 지나야 확정됩니다. 승인된 공가 날은 출석으로 인정하고 괄호 안에 따로 적습니다(승인 전 공가는 반영하지 않음).
+            누적은 과정 시작부터 이 날까지이며, 지각·조퇴·외출 3회를 결석 1회로 환산합니다. 병결은 5일까지 신청할 수 있습니다.
           </p>
 
           <div className="row between" style={{ margin: "18px 0 10px" }}>
@@ -265,7 +286,7 @@ export default function ReportBoard() {
                       <td className="small">{r.firstCheckInAt ? `${hm(r.eval.attendedMinutes)} / ${hm(r.eval.classMinutes)}` : "—"}</td>
                       <td className="small"><TallyCell row={r} /></td>
                       <td className="small" style={{ whiteSpace: "normal", minWidth: 160 }}>
-                        {r.leave && <div>공가 {leaveText(r.leave)} — {r.leave.reason}</div>}
+                        {r.leave && <div>공가 {leaveText(r.leave)} · {LEAVE_STATUS_LABEL[r.leave.status]} — {r.leave.reason}</div>}
                         {r.notices.map((n, i) => <div key={i}>{noticeText(n)} — {n.reason}</div>)}
                         {!r.leave && r.notices.length === 0 && "—"}
                       </td>
@@ -293,8 +314,9 @@ function TallyCell({ row }: { row: Judged }) {
       <div>
         결석 <b className={t.totalAbsent > 0 ? "num-bad" : undefined}>{t.totalAbsent}</b>
         {t.converted > 0 && <span> (실결석 {t.absent} + 환산 {t.converted})</span>}
-        {t.absentExcused > 0 && <span> · 공가 {t.absentExcused}</span>}
+        {t.leaveAttend > 0 && <span> · 공가 출석 {t.leaveAttend}</span>}
       </div>
+      {t.rate !== null && <div>출석률 {t.rate}%</div>}
       <div>지각 {t.late} · 조퇴 {t.early} · 외출 {t.outs}{minor % 3 > 0 && <span> (환산까지 {3 - (minor % 3)})</span>}</div>
       <div className={row.sickUsed >= SICK_LIMIT ? "num-bad" : undefined}>병결 {row.sickUsed}/{SICK_LIMIT}일</div>
     </>
@@ -310,8 +332,8 @@ function SummaryCells({ s, isToday, showCompleted, showNotYet }: { s: Summary; i
       {showCompleted && <td>{s.completed}</td>}
       <td><b>{s.enrolled}</b></td>
       <td>{isToday ? <b>{s.inRoom}</b> : "—"}</td>
-      <td>{s.present}</td>
-      <td className={s.absent - s.absentExcused > 0 ? "num-bad" : undefined}>{withExcused(s.absent, s.absentExcused)}</td>
+      <td>{withExcused(s.present, s.presentLeave)}</td>
+      <td className={s.absent > 0 ? "num-bad" : undefined}>{s.absent}</td>
       <td>{withExcused(s.late, s.lateExcused)}</td>
       <td>{withExcused(s.early, s.earlyExcused)}</td>
       <td>{withExcused(s.outs, s.outsExcused)}</td>
@@ -324,12 +346,10 @@ function HoursEditor({ course, onDone }: { course: Course; onDone: (changed: boo
   const [start, setStart] = useState(course.classStart);
   const [end, setEnd] = useState(course.classEnd);
   const [lateAfter, setLateAfter] = useState(course.lateAfter);
-  const [lunchStart, setLunchStart] = useState(course.lunchStart);
-  const [lunchEnd, setLunchEnd] = useState(course.lunchEnd);
   const [error, setError] = useState<string | null>(null);
 
   async function save() {
-    const r = await api("/api/admin/report", { action: "hours", courseId: course.id, start, end, lateAfter, lunchStart, lunchEnd });
+    const r = await api("/api/admin/report", { action: "hours", courseId: course.id, start, end, lateAfter });
     if (!r.ok && r.code !== "no_change") {
       setError(messageFor(r.code));
       return;
@@ -343,10 +363,7 @@ function HoursEditor({ course, onDone }: { course: Course; onDone: (changed: boo
       ~
       <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="time-sm" aria-label="종료" />
       <input type="number" min={0} max={120} value={lateAfter} onChange={(e) => setLateAfter(Number(e.target.value))} className="time-sm" style={{ width: 64 }} aria-label="지각 기준(분)" />
-      분부터 지각 · 점심
-      <input type="time" value={lunchStart} onChange={(e) => setLunchStart(e.target.value)} className="time-sm" aria-label="점심 시작" />
-      ~
-      <input type="time" value={lunchEnd} onChange={(e) => setLunchEnd(e.target.value)} className="time-sm" aria-label="점심 종료" />
+      분부터 지각
       <button className="btn sm" onClick={save}>저장</button>
       <button className="btn plain sm" onClick={() => onDone(false)}>취소</button>
       {error && <span className="small" style={{ color: "var(--danger)" }}>{error}</span>}

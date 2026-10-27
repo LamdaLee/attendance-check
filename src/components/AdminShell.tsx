@@ -24,6 +24,7 @@ const NAV = [
   { href: "/admin/overview", label: "총괄 현황", superOnly: true },
   { href: "/admin/daily", label: "출결 현황" },
   { href: "/admin/report", label: "출결 일보" },
+  { href: "/admin/sheet", label: "출석부" },
   { href: "/admin/notices", label: "사전 알림" },
   { href: "/admin/leaves", label: "공가" },
   { href: "/admin/issues", label: "누락 확인" },
