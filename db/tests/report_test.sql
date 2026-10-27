@@ -431,6 +431,17 @@ begin
   perform attendance.api_student_verify('dev-daejeon-a', '예시학생03', current_setting('t.h8901'), '8.8.8.8', '\x94', 600);
   r := attendance.api_student_links('\x94');
   perform pg_temp.eq('student lms link', r->>'lmsUrl', 'https://lms.example.com/attend');
+  r := attendance.api_operator_link_save(dj, null, null, '런치패스', 'http://x', 1, false);
+  perform pg_temp.eq('link bad url', r->>'code', 'invalid_url');
+  r := attendance.api_operator_link_save(dj, null, null, '런치패스', 'https://lunch.example.com/', 1, false);
+  perform pg_temp.eq('link add', r->>'ok', 'true');
+  r := attendance.api_campus_links('dev-daejeon-a');
+  perform pg_temp.eq('campus links', r->'links'->0->>'label', '런치패스');
+  r := attendance.api_campus_links('dev-busan-a');
+  perform pg_temp.eq('other region links', jsonb_array_length(r->'links'), 0);
+  r := attendance.api_operator_links(dj, null);
+  r := attendance.api_operator_link_save(bs, 'busan', (r->'links'->0->>'id')::bigint, 'x', 'https://x.example.com', 1, true);
+  perform pg_temp.eq('busan cannot delete', r->>'code', 'not_found');
 end $$;
 
 reset role;

@@ -98,6 +98,12 @@ export default function StudentFlow({ code }: { code: string }) {
   const [today, setToday] = useState<Today | null>(null);
   // 과정에 LMS 출결 주소가 있으면 기록 뒤 바로 넘어갈 수 있게 보여 준다.
   const [lmsUrl, setLmsUrl] = useState<string | null>(null);
+  // 지역 바로가기 (LMS 로그인, 런치패스 등). 본인 확인 전에도 보인다.
+  const [links, setLinks] = useState<{ label: string; url: string }[]>([]);
+
+  useEffect(() => {
+    getJson(`/api/campus/${encodeURIComponent(code)}/links`).then((r) => r?.ok && setLinks(r.links)).catch(() => {});
+  }, [code]);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -302,7 +308,7 @@ export default function StudentFlow({ code }: { code: string }) {
             {!networkOk && !codeMode && (
               <p className="notice warn">
                 출결 기록은 교육장 와이파이에서만 할 수 있습니다. 교육장 밖에서는 본인 확인 후
-                <b> 지각·결석·조퇴 예정 알림</b>과 <b>정정 요청</b>만 보낼 수 있습니다.
+                <b> 지각·결석·조퇴 예정 알림</b>, <b>공가 신청</b>, <b>정정 요청</b>만 할 수 있습니다.
               </p>
             )}
             <label className="field">
@@ -326,6 +332,8 @@ export default function StudentFlow({ code }: { code: string }) {
             <p className="small" style={{ marginTop: 14 }}>이 기록은 보조 출결 자료입니다. LMS 입·퇴실도 따로 확인해 주세요.</p>
           </form>
         )}
+
+        {phase === "verify" && <LinksCard links={links} />}
 
         {phase === "home" && today && (
           <>
@@ -396,6 +404,7 @@ export default function StudentFlow({ code }: { code: string }) {
             <LeaveCard />
             <CorrectionCard />
             {today.presence && <CertificateCard />}
+            <LinksCard links={links} />
             <button className="btn plain block" onClick={switchStudent}>다른 교육생으로 확인 · 확인 종료</button>
           </>
         )}
@@ -428,6 +437,20 @@ export default function StudentFlow({ code }: { code: string }) {
         )}
       </div>
     </main>
+  );
+}
+
+function LinksCard({ links }: { links: { label: string; url: string }[] }) {
+  if (links.length === 0) return null;
+  return (
+    <div className="card">
+      <h2>바로가기</h2>
+      <div className="link-list">
+        {links.map((l) => (
+          <a key={l.url} className="btn ghost block" href={l.url} target="_blank" rel="noopener noreferrer">{l.label} →</a>
+        ))}
+      </div>
+    </div>
   );
 }
 

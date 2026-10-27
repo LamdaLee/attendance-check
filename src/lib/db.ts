@@ -61,7 +61,10 @@ export type ApiFunction =
   | "api_operator_course_save"
   | "api_operator_course_day_set"
   | "api_student_links"
-  | "api_operator_course_lms";
+  | "api_operator_course_lms"
+  | "api_campus_links"
+  | "api_operator_links"
+  | "api_operator_link_save";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 

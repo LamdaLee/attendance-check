@@ -1,8 +1,9 @@
--- LG전자 K뉴딜 아카데미 2기 초기 등록 (운영 DB, 마이그레이션 0001~0007 적용 후 1회)
+-- LG전자 K뉴딜 아카데미 2기 초기 등록 (운영 DB, 마이그레이션 0001~0008 적용 후 1회)
 --   psql "$DB" -v ON_ERROR_STOP=1 -f db/setup/lg_knewdeal_2.sql
 --
 -- 들어가는 것: 지역 3곳, 지역별 교육장(본 교육장·평택 연수원), 과정·기간·기본 시간,
---             평택 입소 주간(1주차·5주차) 날짜별 시간, 공휴일 휴강, 출석확인서 기관명.
+--             평택 입소 주간(1주차·5주차) 날짜별 시간, 공휴일 휴강, 출석확인서 기관명,
+--             LMS 출결 바로가기, 학생 화면 바로가기(LMS 로그인·런치패스).
 -- 들어가지 않는 것: 운영자 비밀번호(따로 설정), 교육장 허용 IP(현장에서 등록), 교육생 명단(관리 화면에서 등록).
 --
 -- 평택 입소 주간 (1주차·5주차)
@@ -70,6 +71,20 @@ select co.id, h.d, 'off', h.note, 'setup'
  cross join (values (date '2026-12-25', '성탄절'), (date '2027-01-01', '신정')) h(d, note)
  where r.code in ('daegu', 'daejeon', 'busan') and h.d between co.starts_on and co.ends_on
 on conflict (course_id, edu_date) do nothing;
+
+-- LMS(atosoft) 출결 바로가기: 학생이 입실·퇴실 기록 뒤 넘어가는 주소 (인증 화면, 모두 같은 주소)
+update attendance.courses co set lms_url = 'https://lge.atosoft.kr/Worknet/Present/Present.asp'
+  from attendance.regions r
+ where r.id = co.region_id and r.code in ('daegu', 'daejeon', 'busan') and co.lms_url = '';
+
+-- 학생 화면 바로가기 (지역별)
+insert into attendance.quick_links (region_id, label, url, sort_order)
+select r.id, v.label, v.url, v.sort_order
+  from attendance.regions r
+ cross join (values ('LMS 로그인 (출결확인서·공가서류)', 'https://lge.atosoft.kr/worknet/Slogin.asp', 1),
+                    ('런치패스', 'https://matzip-six.vercel.app/', 2)) v(label, url, sort_order)
+ where r.code in ('daegu', 'daejeon', 'busan')
+   and not exists (select 1 from attendance.quick_links q where q.region_id = r.id and q.url = v.url);
 
 commit;
 

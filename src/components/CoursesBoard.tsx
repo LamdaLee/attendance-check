@@ -76,6 +76,7 @@ export default function CoursesBoard() {
       {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
 
       <div className="split">
+        <div>
         <div className="list">
           {courses?.map((c) => (
             <button key={c.id} className={`item ${c.id === selected ? "on" : ""}`} onClick={() => { setSelected(c.id); setMessage(null); }}>
@@ -88,9 +89,67 @@ export default function CoursesBoard() {
           ))}
           {courses?.length === 0 && <p className="small" style={{ padding: 14 }}>과정이 없습니다.</p>}
         </div>
+        <QuickLinks region={region} />
+        </div>
         {course && <CourseDetail key={course.id} course={course} onSaved={async (t) => { setMessage({ kind: "ok", text: t }); await load(); }} />}
       </div>
     </>
+  );
+}
+
+// 학생 화면 바로가기 (지역 공통): LMS 로그인, 런치패스 등. 본인 확인 전에도 보인다.
+type Link = { id: number; label: string; url: string; sortOrder: number };
+
+function QuickLinks({ region }: { region: string }) {
+  const [links, setLinks] = useState<Link[]>([]);
+  const [label, setLabel] = useState("");
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const r = await api(`/api/admin/links?region=${encodeURIComponent(region)}`);
+    if (r.ok) setLinks(r.links);
+  }, [region]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function save(body: Record<string, unknown>) {
+    const r = await api("/api/admin/links", { region, ...body });
+    if (!r.ok) {
+      setError(messageFor(r.code));
+      return false;
+    }
+    setError(null);
+    await load();
+    return true;
+  }
+
+  return (
+    <div className="panel" style={{ marginTop: 14 }}>
+      <h2>학생 화면 바로가기</h2>
+      <p className="small">이 지역 교육생 화면 아래쪽에 버튼으로 보입니다(본인 확인 전에도 보임). 예: LMS 로그인(출결확인서·공가서류), 런치패스.</p>
+      <ul className="mini-list">
+        {links.map((l) => (
+          <li key={l.id}>
+            <span style={{ minWidth: 0, overflowWrap: "anywhere" }}><b>{l.label}</b><br /><span className="small mono">{l.url}</span></span>
+            <button className="btn plain sm" style={{ whiteSpace: "nowrap" }} onClick={() => window.confirm(`${l.label} 바로가기를 지울까요?`) && save({ id: l.id, delete: true })}>지우기</button>
+          </li>
+        ))}
+      </ul>
+      <form className="row" style={{ marginTop: 10 }} onSubmit={async (e) => {
+        e.preventDefault();
+        if (await save({ label, url, sortOrder: links.length + 1 })) { setLabel(""); setUrl(""); }
+      }}>
+        <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="버튼 이름" maxLength={30} required
+          style={{ flex: 1, minWidth: 140, padding: "9px 11px", border: "1.5px solid var(--line)", borderRadius: 10 }} />
+        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" maxLength={500} required
+          style={{ flex: 1, minWidth: 220, padding: "9px 11px", border: "1.5px solid var(--line)", borderRadius: 10 }} />
+        <button className="btn">추가</button>
+      </form>
+      {error && <p className="notice error">{error}</p>}
+    </div>
   );
 }
 

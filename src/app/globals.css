@@ -221,6 +221,7 @@ pre.json { background: #f7f8fc; border-radius: 10px; padding: 10px; font-size: 1
 
 a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 a.btn.block { display: flex; }
+.link-list { display: grid; gap: 8px; }
 
 /* 공가 서류 */
 .doc-chip { display: inline-flex; gap: 6px; align-items: center; margin: 4px 8px 0 0; }

@@ -160,6 +160,7 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "course.update": "과정 설정 변경",
   "course.day": "날짜별 일정 변경",
   "course.lms": "LMS 주소 변경",
+  "link.save": "학생 화면 바로가기 변경",
   "export.csv": "CSV 내보내기",
   "access.set_password": "비밀번호 설정",
   "code.on": "출석코드 켜기",
