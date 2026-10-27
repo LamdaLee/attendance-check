@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
+import { LeaveCancel, LeaveQuick } from "./LeaveActions";
 import { LIKELY_CHANGED, useBlocked } from "./PresencePanels";
-import { ACTION_LABEL, STATUS_LABEL, formatTime, messageFor, noticeText, todayInSeoul } from "@/lib/messages";
+import { api } from "@/lib/client";
+import { ACTION_LABEL, LEAVE_STATUS_LABEL, STATUS_LABEL, formatTime, leaveText, messageFor, noticeText, todayInSeoul } from "@/lib/messages";
 
 type Row = {
   enrollmentId: number;
@@ -21,6 +23,8 @@ type Row = {
   sharedDevice: string[];
 };
 
+type DayLeave = { id: number; enrollmentId: number; kind: string; part: string; status: string; reason: string };
+
 const REFRESH_MS = 15_000;
 const STATUS_ORDER = ["in_class", "out", "checked_out", "not_in"] as const;
 
@@ -33,6 +37,19 @@ export default function DailyBoard() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
+  // 그 날 걸린 공가 (취소·반려 제외). 출결 현황에서 바로 공가 처리·취소한다.
+  const [leaves, setLeaves] = useState<Map<number, DayLeave>>(new Map());
+
+  const loadLeaves = useCallback(async () => {
+    const r = await api(`/api/admin/leaves?region=${encodeURIComponent(region)}&from=${date}&to=${date}`);
+    if (!r.ok) return;
+    const live = (r.leaves as DayLeave[]).filter((l) => l.status !== "cancelled" && l.status !== "rejected");
+    setLeaves(new Map(live.map((l) => [l.enrollmentId, l])));
+  }, [region, date]);
+
+  useEffect(() => {
+    void loadLeaves();
+  }, [loadLeaves]);
 
   const load = useCallback(async () => {
     try {
@@ -144,7 +161,7 @@ export default function DailyBoard() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>이름</th><th>과정</th><th>입실</th><th>현재 상태</th><th>최근 기록</th><th>퇴실</th><th>사전 알림</th></tr>
+              <tr><th>이름</th><th>과정</th><th>입실</th><th>현재 상태</th><th>최근 기록</th><th>퇴실</th><th>사전 알림</th><th className="no-print">공가</th></tr>
             </thead>
             <tbody>
               {filtered.map((r) => (
@@ -169,10 +186,28 @@ export default function DailyBoard() {
                       </span>
                     ))}
                   </td>
+                  <td className="no-print">
+                    {(() => {
+                      const l = leaves.get(r.enrollmentId);
+                      if (!l) {
+                        return <LeaveQuick key={`${r.enrollmentId}:${date}`} enrollmentId={r.enrollmentId} date={date}
+                          defaultFull={r.status === "not_in"} defaultReason={r.notices[0]?.reason}
+                          onDone={async () => { await Promise.all([load(), loadLeaves()]); }} />;
+                      }
+                      return (
+                        <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
+                          <span className={`tag ${l.status === "approved" ? "approved" : "pending"}`} title={l.reason}>
+                            {leaveText(l)}{l.status !== "approved" && ` · ${LEAVE_STATUS_LABEL[l.status]}`}
+                          </span>
+                          <LeaveCancel leaveId={l.id} name={r.name} date={date} region={region} onDone={loadLeaves} />
+                        </span>
+                      );
+                    })()}
+                  </td>
                 </tr>
               ))}
               {rows && filtered.length === 0 && (
-                <tr><td colSpan={7} className="small center">조건에 맞는 교육생이 없습니다.</td></tr>
+                <tr><td colSpan={8} className="small center">조건에 맞는 교육생이 없습니다.</td></tr>
               )}
             </tbody>
           </table>

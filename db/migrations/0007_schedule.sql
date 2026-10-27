@@ -2,7 +2,7 @@
 -- 실행: psql "$DATABASE_ADMIN_URL" -v ON_ERROR_STOP=1 -f db/migrations/0007_schedule.sql
 --
 --   * 과정 기본 시간(class_start~class_end, 하루 훈련시간 training_minutes) 외에 날짜별 일정을 둔다.
---     course_days: kind = 'class'(그 날만 시간이 다름, 예: 평택 연수) 또는 'off'(휴강·공휴일).
+--     course_days: kind = 'class'(그 날만 시간이 다름, 예: 평택 러닝센터) 또는 'off'(휴강·공휴일).
 --   * 과정에 시작일(starts_on)이 있으면 수업일 = 기간 안의 평일 − 휴강일 + 따로 지정한 수업일.
 --     시작일이 없으면 지금처럼 기록이 있는 평일을 수업일로 본다.
 --   * 출석확인서: 날짜별 훈련시간, 총 훈련시간·참여시간, 과정 정식 이름(full_name).

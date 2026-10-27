@@ -385,7 +385,7 @@ begin
   perform pg_temp.eq('course save period', r->>'code', 'invalid_period');
   r := attendance.api_operator_course_day_set(dj, ax, w + 2, 'off', null, null, null, '', '휴강');
   perform pg_temp.eq('day off', r->>'ok', 'true');
-  r := attendance.api_operator_course_day_set(dj, ax, w + 1, 'class', '08:00', '17:00', 480, '평택 연수원', '');
+  r := attendance.api_operator_course_day_set(dj, ax, w + 1, 'class', '08:00', '17:00', 480, '평택 러닝센터', '');
   perform pg_temp.eq('day class', r->>'ok', 'true');
   r := attendance.api_operator_course_day_set(dj, ax, w + 3, 'class', '17:00', '08:00', 480, '', '');
   perform pg_temp.eq('day invalid', r->>'code', 'invalid_hours');
@@ -401,7 +401,7 @@ begin
   perform pg_temp.eq('no record absent', row->'cells'->1->>'absent', 'true');
   select x into row from jsonb_array_elements(r->'students') x where (x->>'enrollmentId')::bigint = e1;
   perform pg_temp.eq('day start', row->'cells'->1->>'start', '08:00');
-  perform pg_temp.eq('day place', row->'cells'->1->>'place', '평택 연수원');
+  perform pg_temp.eq('day place', row->'cells'->1->>'place', '평택 러닝센터');
   -- 화요일 09:15 입실 → 08:00 시작 기준 지각
   perform pg_temp.eq('late by day schedule', row->'cells'->1->>'late', 'true');
 

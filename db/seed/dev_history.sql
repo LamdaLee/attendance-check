@@ -125,6 +125,10 @@ begin
          decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') b
    where l.enrollment_id = (select id from attendance.enrollments where name_key = '예시학생07');
 
+  -- 운영자가 공가를 바로 승인하는 방식이라 예시 공가도 모두 승인 상태로 둔다.
+  update attendance.leaves set status = 'approved', decided_at = now(), decided_by = '예시 운영자'
+   where status in ('registered', 'submitted');
+
   update attendance.regions set institution_name = '예시 교육기관 대전캠퍼스' where id = v_region;
 
   insert into attendance.day_notes (enrollment_id, edu_date, region_id, note, updated_by)

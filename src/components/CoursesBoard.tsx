@@ -65,7 +65,7 @@ export default function CoursesBoard() {
       <div className="a-title">
         <div>
           <h1>과정 · 일정</h1>
-          <span className="small">과정 기간과 기본 교육 시간, 날짜별 일정(평택 연수·휴강)을 관리합니다. 시작일이 있는 과정은 기간 안의 평일에서 휴강일을 뺀 날을 수업일로 봅니다.</span>
+          <span className="small">과정 기간과 기본 교육 시간, 날짜별 일정(평택 러닝센터·휴강)을 관리합니다. 시작일이 있는 과정은 기간 안의 평일에서 휴강일을 뺀 날을 수업일로 봅니다.</span>
         </div>
         <form className="row" onSubmit={create}>
           <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="새 과정 짧은 이름 (예: AX)" maxLength={40} required
@@ -90,6 +90,7 @@ export default function CoursesBoard() {
           {courses?.length === 0 && <p className="small" style={{ padding: 14 }}>과정이 없습니다.</p>}
         </div>
         <QuickLinks region={region} />
+        <InstitutionSetting region={region} />
         </div>
         {course && <CourseDetail key={course.id} course={course} onSaved={async (t) => { setMessage({ kind: "ok", text: t }); await load(); }} />}
       </div>
@@ -277,7 +278,7 @@ function Schedule({ course }: { course: Course }) {
       {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
       <PyeongtaekPreset course={course} onApply={async (entries) => {
         for (const e of entries) if (!(await setDay(e.date, { kind: "class", ...e }))) return;
-        setMessage({ kind: "ok", text: `${formatDate(entries[0].date)} 주를 평택 연수 일정으로 지정했습니다.` });
+        setMessage({ kind: "ok", text: `${formatDate(entries[0].date)} 주를 평택 러닝센터 일정으로 지정했습니다.` });
         await load();
       }} />
       <div className="table-wrap" style={{ marginTop: 10 }}>
@@ -313,7 +314,7 @@ function Schedule({ course }: { course: Course }) {
           </tbody>
         </table>
       </div>
-      <p className="small">휴강일은 수업일에서 빠집니다(출석부·결석 계산 제외). 주말에 수업하는 날은 위에 없으므로, 필요하면 알려 주세요.</p>
+      <p className="small">휴강일은 수업일에서 빠집니다(결석 계산 제외). 주말에 수업하는 날은 위에 없으므로, 필요하면 알려 주세요.</p>
     </div>
   );
 }
@@ -371,7 +372,7 @@ function PyeongtaekPreset({ course, onApply }: { course: Course; onApply: (e: { 
   function apply() {
     if (!monday) return;
     const plan: [string, string][] = [[firstStart, firstEnd], ["08:00", "17:00"], ["08:00", "17:00"], ["08:00", "17:00"], ["08:00", lastEnd]];
-    onApply(plan.map(([s, e], i) => ({ date: addDays(monday, i), start: s, end: e, minutes: defaultMinutes(s, e), place: "평택 연수원", note: label })));
+    onApply(plan.map(([s, e], i) => ({ date: addDays(monday, i), start: s, end: e, minutes: defaultMinutes(s, e), place: "평택 러닝센터", note: label })));
     setOpen(false);
   }
 
@@ -389,6 +390,41 @@ function PyeongtaekPreset({ course, onApply }: { course: Course; onApply: (e: { 
       <div className="row" style={{ justifyContent: "flex-end" }}>
         <button className="btn plain sm" onClick={() => setOpen(false)}>취소</button>
         <button className="btn sm" onClick={apply} disabled={!monday}>5일 지정</button>
+      </div>
+    </div>
+  );
+}
+
+// 출석확인서에 들어가는 기관명
+function InstitutionSetting({ region }: { region: string }) {
+  const [name, setName] = useState("");
+  const [saved, setSaved] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    api("/api/admin/institution").then((r) => {
+      if (!r.ok) return;
+      const v = (r.regions as { code: string; institution: string }[]).find((x) => x.code === region)?.institution ?? "";
+      setName(v);
+      setSaved(v);
+    });
+  }, [region]);
+
+  async function save() {
+    const r = await api("/api/admin/institution", { region, name });
+    setMessage(r.ok ? "저장했습니다." : messageFor(r.code));
+    if (r.ok) setSaved(name.trim());
+  }
+
+  return (
+    <div className="panel" style={{ marginTop: 14 }}>
+      <h2>출석확인서 기관명</h2>
+      <p className="small">교육생이 만드는 출석확인서의 &lsquo;훈련기관&rsquo;과 서명란에 들어갑니다.</p>
+      <div className="row">
+        <input value={name} onChange={(e) => { setName(e.target.value); setMessage(null); }} maxLength={80} placeholder="예: ○○교육원 대전캠퍼스"
+          style={{ flex: 1, minWidth: 220, padding: "9px 11px", border: "1.5px solid var(--line)", borderRadius: 10 }} />
+        <button className="btn" onClick={save} disabled={name.trim() === saved}>저장</button>
+        {message && <span className="small">{message}</span>}
       </div>
     </div>
   );

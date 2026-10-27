@@ -1,7 +1,7 @@
 -- LG전자 K뉴딜 아카데미 2기 초기 등록 (운영 DB, 마이그레이션 0001~0008 적용 후 1회)
 --   psql "$DB" -v ON_ERROR_STOP=1 -f db/setup/lg_knewdeal_2.sql
 --
--- 들어가는 것: 지역 3곳, 지역별 교육장(본 교육장·평택 연수원), 과정·기간·기본 시간,
+-- 들어가는 것: 지역 3곳, 지역별 교육장(본 교육장·평택 러닝센터), 과정·기간·기본 시간,
 --             평택 입소 주간(1주차·5주차) 날짜별 시간, 공휴일 휴강, 출석확인서 기관명,
 --             LMS 출결 바로가기, 학생 화면 바로가기(LMS 로그인·런치패스).
 -- 들어가지 않는 것: 운영자 비밀번호(따로 설정), 교육장 허용 IP(현장에서 등록), 교육생 명단(관리 화면에서 등록).
@@ -20,10 +20,14 @@ on conflict (code) do nothing;
 
 update attendance.regions set institution_name = 'LG전자' where code in ('daegu', 'daejeon', 'busan');
 
+-- 예전 이름(평택 연수원)으로 이미 등록했다면 이름만 바꾼다.
+update attendance.campuses set name = '평택 러닝센터' where name = '평택 연수원';
+update attendance.course_days set place = '평택 러닝센터' where place = '평택 연수원';
+
 insert into attendance.campuses (region_id, name)
 select r.id, v.name
   from attendance.regions r
- cross join (values ('본 교육장'), ('평택 연수원')) v(name)
+ cross join (values ('본 교육장'), ('평택 러닝센터')) v(name)
  where r.code in ('daegu', 'daejeon', 'busan')
    and not exists (select 1 from attendance.campuses c where c.region_id = r.id and c.name = v.name);
 
@@ -48,7 +52,7 @@ insert into attendance.course_days (course_id, edu_date, kind, class_start, clas
 select co.id, co.starts_on + (wk * 7) + d.offs, 'class', d.st, d.en,
        -- 점심 1시간 제외 (4시간 이하는 그대로)
        (extract(epoch from (d.en - d.st)) / 60 - case when d.en - d.st > interval '4 hours' then 60 else 0 end)::int,
-       '평택 연수원', case when wk = 0 then '1주차 입소' else '5주차 입소' end, 'setup'
+       '평택 러닝센터', case when wk = 0 then '1주차 입소' else '5주차 입소' end, 'setup'
   from attendance.courses co
   join attendance.regions r on r.id = co.region_id
  cross join (values (0), (4)) w(wk)

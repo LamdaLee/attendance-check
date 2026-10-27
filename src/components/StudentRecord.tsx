@@ -67,7 +67,6 @@ export default function StudentRecord({ enrollmentId, initialDate }: { enrollmen
         <div>
           <Link href="/admin/students" className="small">← 교육생 명단</Link>
           <h1>{s.name} <span className="scope-tag">{s.course}</span> <TrainingTag student={s} /></h1>
-          <Link href={`/admin/sheet?enrollment=${enrollmentId}`} className="small">개인 출석부(기간 판정) 보기 →</Link>
         </div>
         <div className="month-nav">
           <button className="btn plain sm" onClick={() => setMonth(shiftMonth(month, -1))}>‹ 이전 달</button>
