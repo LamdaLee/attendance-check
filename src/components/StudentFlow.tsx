@@ -15,7 +15,10 @@ type Today = {
   regionName: string;
   sessionExpiresAt: string;
   networkVerified: boolean;
-  // 교육장 회선에서 확인한 세션에만 온다.
+  // 현장 확인 방법: 교육장 회선 또는 오늘의 출석코드. 없으면 알림·정정 요청만 가능
+  presence: "network" | "code" | null;
+  codeMode: boolean;
+  // 현장 확인된 세션에만 온다.
   status?: keyof typeof STATUS_LABEL;
   events?: { action: string; at: string }[];
 };
@@ -55,6 +58,7 @@ export default function StudentFlow({ code }: { code: string }) {
   const [phase, setPhase] = useState<"loading" | "campus_error" | "verify" | "home" | "done">("loading");
   const [campus, setCampus] = useState<Campus | null>(null);
   const [networkOk, setNetworkOk] = useState(false);
+  const [codeMode, setCodeMode] = useState(false);
   const [today, setToday] = useState<Today | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +78,7 @@ export default function StudentFlow({ code }: { code: string }) {
       }
       setCampus(r.campus);
       setNetworkOk(r.networkOk);
+      setCodeMode(r.codeMode);
       return r.networkOk as boolean;
     } catch {
       setError(messageFor("server_error"));
@@ -187,6 +192,15 @@ export default function StudentFlow({ code }: { code: string }) {
     await loadToday();
   }
 
+  async function switchStudent() {
+    await fetch("/api/student/logout", { method: "POST" }).catch(() => {});
+    setToday(null);
+    setError(null);
+    setInfo(null);
+    setName("");
+    setPhase("verify");
+  }
+
   async function recheckNetwork() {
     setError(null);
     const ok = await loadCampus();
@@ -226,7 +240,9 @@ export default function StudentFlow({ code }: { code: string }) {
 
         {(phase === "verify" || phase === "home") && (
           <div className="card row between">
-            {networkOk ? (
+            {phase === "home" && today?.presence === "code" && !networkOk ? (
+              <span className="pill ok"><span className="dot" />출석코드로 확인됨</span>
+            ) : networkOk ? (
               <span className="pill ok"><span className="dot" />교육장 네트워크 확인됨</span>
             ) : (
               <span className="pill warn"><span className="dot" />교육장 와이파이가 아닙니다</span>
@@ -239,7 +255,12 @@ export default function StudentFlow({ code }: { code: string }) {
           <form className="card" onSubmit={verify}>
             <h2>본인 확인</h2>
             {info && <p className="notice ok">{info}</p>}
-            {!networkOk && (
+            {!networkOk && codeMode && (
+              <p className="notice warn">
+                교육장 와이파이로 확인되지 않습니다. 강의장에서 <b>오늘의 출석코드</b>를 안내받았다면 본인 확인 후 코드를 입력해 출결할 수 있습니다.
+              </p>
+            )}
+            {!networkOk && !codeMode && (
               <p className="notice warn">
                 출결 기록은 교육장 와이파이에서만 할 수 있습니다. 교육장 밖에서는 본인 확인 후
                 <b> 지각·결석·조퇴 예정 알림</b>과 <b>정정 요청</b>만 보낼 수 있습니다.
@@ -269,7 +290,7 @@ export default function StudentFlow({ code }: { code: string }) {
 
         {phase === "home" && today && (
           <>
-            {today.networkVerified && today.status ? (
+            {today.presence && today.status ? (
               <>
                 <div className="card">
                   <div className="state">
@@ -286,7 +307,7 @@ export default function StudentFlow({ code }: { code: string }) {
                         <button
                           key={a}
                           className={`action-btn${allowed ? " primary" : ""}`}
-                          disabled={!allowed || busy || !networkOk}
+                          disabled={!allowed || busy || !(networkOk || today.presence === "code")}
                           onClick={() => act(a)}
                         >
                           <span className="icon" aria-hidden>{ACTION_ICON[a]}</span>
@@ -317,6 +338,8 @@ export default function StudentFlow({ code }: { code: string }) {
                   )}
                 </div>
               </>
+            ) : today.codeMode ? (
+              <CodeCard onDone={loadToday} />
             ) : (
               <div className="card">
                 <p className="notice warn" style={{ margin: 0 }}>
@@ -329,6 +352,7 @@ export default function StudentFlow({ code }: { code: string }) {
 
             <NoticeCard />
             <CorrectionCard />
+            <button className="btn plain block" onClick={switchStudent}>다른 교육생으로 확인 · 확인 종료</button>
           </>
         )}
 
@@ -348,6 +372,51 @@ export default function StudentFlow({ code }: { code: string }) {
         )}
       </div>
     </main>
+  );
+}
+
+// 오늘의 출석코드 입력 (교육장 회선으로 확인되지 않을 때)
+function CodeCard({ onDone }: { onDone: () => Promise<unknown> }) {
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const r = await postJson("/api/student/code", { code }).catch(() => ({ ok: false, code: "server_error" }));
+    setBusy(false);
+    if (!r.ok) {
+      setError(messageFor(r.code));
+      return;
+    }
+    await onDone();
+  }
+
+  return (
+    <form className="card" onSubmit={submit}>
+      <h2>오늘의 출석코드</h2>
+      <p className="small" style={{ marginTop: -6 }}>
+        교육장 와이파이로 확인되지 않아 출석코드로 기록합니다. 강의장에 안내된 6자리 숫자를 입력해 주세요.
+        코드로 남긴 기록은 운영자 화면에 따로 표시됩니다.
+      </p>
+      <label className="field">
+        출석코드
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="\d{6}"
+          required
+          placeholder="000000"
+          style={{ fontSize: 24, letterSpacing: 6, textAlign: "center" }}
+        />
+      </label>
+      {error && <p className="notice error">{error}</p>}
+      <button className="btn block" disabled={busy || code.length !== 6}>코드 확인</button>
+    </form>
   );
 }
 

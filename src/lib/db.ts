@@ -32,7 +32,11 @@ export type ApiFunction =
   | "api_student_notice"
   | "api_student_notices"
   | "api_student_notice_cancel"
-  | "api_operator_notices";
+  | "api_operator_notices"
+  | "api_student_code"
+  | "api_operator_codes"
+  | "api_operator_code_set"
+  | "api_operator_blocked";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 

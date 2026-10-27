@@ -5,6 +5,9 @@ import { env } from "./env";
 
 export const STUDENT_COOKIE = "att_s";
 export const OPERATOR_COOKIE = "att_o";
+// 같은 기기에서 여러 명이 출결했는지 보기 위한 브라우저 표시 (개인을 식별하지 않는 무작위 값)
+export const DEVICE_COOKIE = "att_d";
+export const DEVICE_COOKIE_SECONDS = 365 * 24 * 60 * 60;
 export const STUDENT_SESSION_SECONDS = 10 * 60;
 export const OPERATOR_SESSION_SECONDS = 8 * 60 * 60;
 
@@ -19,21 +22,25 @@ const STATUS_BY_CODE: Record<string, number> = {
   version_conflict: 409,
   request_conflict: 409,
   last_active_network: 409,
+  invalid_code: 422,
+  code_inactive: 422,
   ip_unavailable: 400,
   bad_request: 400,
   server_error: 500,
 };
 
-export function respond(result: ApiResult, init?: { cookie?: { name: string; value: string; maxAge: number } }) {
+type Cookie = { name: string; value: string; maxAge: number };
+
+export function respond(result: ApiResult, init?: { cookie?: Cookie; cookies?: Cookie[] }) {
   const status = result.ok ? 200 : (STATUS_BY_CODE[result.code ?? ""] ?? 422);
   const res = NextResponse.json(result, { status });
-  if (init?.cookie) {
-    res.cookies.set(init.cookie.name, init.cookie.value, {
+  for (const c of [...(init?.cookie ? [init.cookie] : []), ...(init?.cookies ?? [])]) {
+    res.cookies.set(c.name, c.value, {
       httpOnly: true,
       secure: env.isProduction,
       sameSite: "strict",
       path: "/",
-      maxAge: init.cookie.maxAge,
+      maxAge: c.maxAge,
     });
   }
   return res;

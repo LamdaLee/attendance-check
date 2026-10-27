@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, kstHHMM, kstIso } from "@/lib/client";
 import { ACTION_LABEL, REQUEST_STATUS_LABEL, formatDate, formatDateTime, formatTime, messageFor } from "@/lib/messages";
 
-type Item = { action: string; at: string; source?: string };
+type Item = { action: string; at: string; source?: string; method?: string };
 type Day = {
   enrollmentId: number;
   name: string;
@@ -27,6 +27,7 @@ function Timeline({ items, empty }: { items: Item[]; empty: string }) {
           <time>{formatTime(t.at)}</time>
           {ACTION_LABEL[t.action]}
           {t.source === "corrected" && <span className="tag warn">정정</span>}
+          {t.method === "code" && <span className="tag brand">출석코드</span>}
         </li>
       ))}
     </ul>

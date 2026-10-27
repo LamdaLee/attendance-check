@@ -16,9 +16,15 @@
 | 운영자 · 정정 요청 | 원본과 반영 기록 비교, 승인하며 정정, 반려, 직권 정정 |
 | 운영자 · 교육생 | 명단 조회, 한 명 추가, CSV 일괄 등록(검증 후 저장), 중지·종료·과정 변경·뒷자리 재등록 |
 | 운영자 · 학생별 기록 | 월별 기록, 날짜별 상세와 정정 이력 |
-| 운영자 · 교육장 · IP | 허용 IP 추가·변경·중지·삭제, 교육장 QR |
+| 운영자 · 교육장 · IP | 허용 IP 추가·변경·중지·삭제, 교육장 QR, 막힌 접속 바로 허용, 오늘의 출석코드 |
 | 운영자 · 변경 이력 | IP·명단·정정·내보내기·비밀번호 변경 기록 |
 | 총괄 · 총괄 현황 | 세 지역 현황, 허용 IP 없는 교육장 경고, 지역 전환 |
+
+**교육장 공인 IP가 바뀌거나 와이파이가 안 될 때**
+- 막힌 접속: 본인 확인된 교육생이 허용되지 않은 IP에서 막히면 IP별로 모아 보여 줍니다. 같은 새 IP에서 여러 명(3명 이상)이 막히면 "IP 변경 의심"으로 표시하고, 운영자가 [이 IP 허용]으로 바로 복구합니다. 출결 현황 상단에도 경고가 뜹니다.
+- 오늘의 출석코드: 운영자가 교육장별로 켜는 6자리 코드(그날만 유효). 강의장에 안내하면 교육장 회선으로 확인되지 않는 교육생도 코드로 출결할 수 있습니다. 코드로 남긴 기록은 "코드"로 표시되고, 새 코드를 발급하면 이전 코드는 바로 무효가 됩니다. 메신저로 전달하면 밖에서도 쓸 수 있으므로 필요할 때만 켭니다.
+
+**대리 출석 표시**: 브라우저에 무작위 기기 표시(쿠키 `att_d`, 해시만 저장)를 남겨, 하루에 한 기기에서 여러 교육생이 출결하면 출결 현황에 "같은 기기 n명"으로 표시합니다. 막지는 않습니다(휴대폰을 빌려 쓰는 경우). 브라우저를 바꾸면 피할 수 있는 보조 신호입니다.
 
 **교육장 밖에서 할 수 있는 것**: 본인 확인 후 사전 알림과 정정 요청만 가능합니다. 출결 버튼과 오늘 기록 보기는 교육장 회선에서만 됩니다(다른 사람의 이름·뒷자리를 아는 사람이 기록을 엿보지 못하게).
 
@@ -61,7 +67,7 @@ cp .env.example .env          # DATABASE_URL, DATABASE_ADMIN_URL 수정
 
 npm run db:migrate            # db/migrations/*.sql 을 번호 순서대로 적용
 npm run db:seed:dev           # 예시 데이터 + 지난 평일 기록 (운영 DB에는 실행하지 않음)
-npm run db:test               # DB 함수 검증 → ALL TESTS PASSED, SCREENS TESTS PASSED
+npm run db:test               # DB 함수 검증 → ALL / SCREENS / PRESENCE TESTS PASSED
                               # (테스트는 seed/dev.sql 만 넣은 DB에서 실행)
 psql "$DATABASE_ADMIN_URL" -c "alter role attendance_app login password 'dev'"
 
@@ -153,7 +159,7 @@ nohup $C up -d --build > ~/deploy.log 2>&1 &
 tail -f ~/deploy.log
 ```
 
-데이터를 유지하고 싶다면 `down -v` 대신 `$C up -d db` 후 `$C exec -T db sh -c 'for f in /migrations/0002_screens.sql /migrations/0003_notices.sql; do psql -v ON_ERROR_STOP=1 -U postgres -d attendance -f $f || exit 1; done'` 로 마이그레이션만 적용하고 앱을 다시 빌드합니다.
+데이터를 유지하고 싶다면 `down -v` 대신 `$C up -d db` 후 `$C exec -T db sh -c 'for f in /migrations/0002_screens.sql /migrations/0003_notices.sql /migrations/0004_presence.sql; do psql -v ON_ERROR_STOP=1 -U postgres -d attendance -f $f || exit 1; done'` 로 마이그레이션만 적용하고 앱을 다시 빌드합니다.
 
 ### 4. 교육장 IP 등록
 
@@ -168,10 +174,12 @@ tail -f ~/deploy.log
 db/migrations/0001_init.sql   스키마·출결·IP 관리·권한
 db/migrations/0002_screens.sql 학생별 기록·정정·명단·누락 확인·변경 이력·내보내기·총괄 현황
 db/migrations/0003_notices.sql 사전 알림, 교육장 밖 본인 확인
+db/migrations/0004_presence.sql 오늘의 출석코드, 막힌 접속 기록, 같은 기기 표시
 db/seed/dev.sql               로컬 예시 데이터
 db/seed/dev_history.sql       데모용 지난 평일 기록
 db/tests/attendance_test.sql  DB 함수 검증 (순서·중복·IP·지역 권한·IP 관리)
 db/tests/screens_test.sql     DB 함수 검증 (정정·명단·누락·이력·내보내기·총괄·알림)
+db/tests/presence_test.sql    DB 함수 검증 (출석코드·막힌 접속·같은 기기)
 scripts/admin.mjs             지역·교육장·과정·비밀번호·명단 관리
 src/app/c/[code]              학생 화면
 src/app/admin                 운영자 화면 (출결 현황, 교육장·IP)

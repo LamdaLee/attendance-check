@@ -3,6 +3,7 @@
 import QRCode from "qrcode";
 import { useCallback, useEffect, useState } from "react";
 import { useOperator } from "./AdminShell";
+import { BlockedPanel, CodePanel, type CodeInfo } from "./PresencePanels";
 import { messageFor } from "@/lib/messages";
 
 type Network = {
@@ -72,8 +73,13 @@ export default function NetworkManager() {
   const [myIp, setMyIp] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "ok" | "error" | "warn"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [codes, setCodes] = useState<Record<number, CodeInfo>>({});
 
   const load = useCallback(async () => {
+    fetch(`/api/admin/codes?region=${encodeURIComponent(region)}`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((r) => r.ok && setCodes(Object.fromEntries((r.campuses as CodeInfo[]).map((c) => [c.campusId, c]))))
+      .catch(() => {});
     const res = await fetch(`/api/admin/networks?region=${encodeURIComponent(region)}`, { cache: "no-store" });
     const r = await res.json();
     if (!r.ok) {
@@ -160,6 +166,13 @@ export default function NetworkManager() {
       </div>
 
       {message && <p className={`notice ${message.kind}`}>{message.text}</p>}
+      <BlockedPanel
+        region={region}
+        onAllowed={(text) => {
+          setMessage({ kind: "ok", text });
+          void load();
+        }}
+      />
       {!campuses && <p className="small">불러오는 중…</p>}
       {campuses?.length === 0 && <p className="notice">이 지역에 등록된 교육장이 없습니다. 관리 스크립트로 교육장을 추가해 주세요.</p>}
 
@@ -178,6 +191,7 @@ export default function NetworkManager() {
               <p className="notice warn">사용 중인 주소가 없어 이 교육장의 학생 출결 입력이 차단된 상태입니다.</p>
             )}
             <CampusQr code={c.qrCode} />
+            <CodePanel campusId={c.id} info={codes[c.id]} onChange={load} />
 
             <div className="table-wrap" style={{ marginTop: 14 }}>
               <table>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
+import { LIKELY_CHANGED, useBlocked } from "./PresencePanels";
 import { ACTION_LABEL, STATUS_LABEL, formatTime, messageFor, noticeText, todayInSeoul } from "@/lib/messages";
 
 type Row = {
@@ -16,6 +17,8 @@ type Row = {
   lastEventAt: string | null;
   corrected: boolean;
   notices: { kind: string; expectedTime: string | null; reason: string }[];
+  viaCode: boolean;
+  sharedDevice: string[];
 };
 
 const REFRESH_MS = 15_000;
@@ -72,6 +75,13 @@ export default function DailyBoard() {
   }, [rows, course]);
 
   const regionName = operator.regions.find((r) => r.code === region)?.name ?? "";
+  const { items: blocked, reload: reloadBlocked } = useBlocked(region, 60);
+  useEffect(() => {
+    const t = setInterval(reloadBlocked, 60_000);
+    return () => clearInterval(t);
+  }, [reloadBlocked]);
+  const suspect = (blocked ?? []).filter((b) => b.students >= LIKELY_CHANGED);
+  const sharedCount = (rows ?? []).filter((r) => r.sharedDevice.length > 0).length;
 
   return (
     <>
@@ -94,6 +104,16 @@ export default function DailyBoard() {
         자료 생성 {updatedAt ? updatedAt.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }) : "—"} 한국시간 · 원본 기록과 승인된 정정 반영 ·
         보조 출결 자료이며 공식 LMS의 출석 인정 판정을 대신하지 않습니다.
       </div>
+
+      {suspect.length > 0 && (
+        <p className="notice warn no-print">
+          최근 1시간 동안 {suspect.map((b) => `${b.campusName}의 새 IP ${b.ip}에서 ${b.students}명`).join(", ")}이 막혔습니다.
+          교육장 공인 IP가 바뀌었을 수 있습니다. <Link href="/admin/networks">교육장 · IP에서 확인</Link>
+        </p>
+      )}
+      {sharedCount > 0 && (
+        <p className="notice no-print">같은 기기로 다른 교육생과 함께 출결한 교육생이 {sharedCount}명 있습니다. 대리 출석인지 확인이 필요할 수 있습니다.</p>
+      )}
 
       <div className="filters">
         <label className="field">날짜<input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} /></label>
@@ -135,6 +155,10 @@ export default function DailyBoard() {
                   <td>
                     <span className={`tag ${r.status}`}>{STATUS_LABEL[r.status]}</span>
                     {r.corrected && <span className="tag warn"> 정정</span>}
+                    {r.viaCode && <span className="tag brand" title="교육장 회선이 아닌 오늘의 출석코드로 기록"> 코드</span>}
+                    {r.sharedDevice.length > 0 && (
+                      <span className="tag danger" title={`같은 기기: ${r.sharedDevice.join(", ")}`}> 같은 기기 {r.sharedDevice.length + 1}명</span>
+                    )}
                   </td>
                   <td>{r.lastAction ? `${formatTime(r.lastEventAt)} ${ACTION_LABEL[r.lastAction]}` : "—"}</td>
                   <td>{formatTime(r.lastCheckOutAt)}</td>

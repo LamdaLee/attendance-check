@@ -1,6 +1,9 @@
 import { callApi } from "@/lib/db";
 import { hashToken, last4Hmac, newSessionToken, normalizeName } from "@/lib/crypto";
-import { STUDENT_COOKIE, STUDENT_SESSION_SECONDS, fail, guarded, isSameOrigin, readJson, respond } from "@/lib/http";
+import {
+  DEVICE_COOKIE, DEVICE_COOKIE_SECONDS, STUDENT_COOKIE, STUDENT_SESSION_SECONDS, fail, guarded, isSameOrigin, readCookie,
+  readJson, respond,
+} from "@/lib/http";
 import { getClientIp } from "@/lib/ip";
 
 type Body = { code?: string; name?: string; last4?: string };
@@ -17,12 +20,19 @@ export async function POST(req: Request) {
     }
 
     const token = newSessionToken();
+    const existing = readCookie(req, DEVICE_COOKIE);
+    const device = existing && /^[A-Za-z0-9_-]{43}$/.test(existing) ? existing : newSessionToken();
     const result = await callApi("api_student_verify", [
-      body.code, name, last4Hmac(body.last4!), ip, hashToken(token), STUDENT_SESSION_SECONDS,
+      body.code, name, last4Hmac(body.last4!), ip, hashToken(token), STUDENT_SESSION_SECONDS, hashToken(device),
     ]);
     if (result.code === "not_found") result.code = "student_not_found";
     return respond(result, result.ok
-      ? { cookie: { name: STUDENT_COOKIE, value: token, maxAge: STUDENT_SESSION_SECONDS } }
+      ? {
+          cookies: [
+            { name: STUDENT_COOKIE, value: token, maxAge: STUDENT_SESSION_SECONDS },
+            { name: DEVICE_COOKIE, value: device, maxAge: DEVICE_COOKIE_SECONDS },
+          ],
+        }
       : undefined);
   });
 }

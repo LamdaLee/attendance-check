@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "for f in db/migrations/*.sql; do psql \"$DATABASE_ADMIN_URL\" -v ON_ERROR_STOP=1 -f \"$f\" || exit 1; done",
     "db:seed:dev": "psql \"$DATABASE_ADMIN_URL\" -v ON_ERROR_STOP=1 -f db/seed/dev.sql && psql \"$DATABASE_ADMIN_URL\" -v ON_ERROR_STOP=1 -f db/seed/dev_history.sql",
-    "db:test": "psql \"$DATABASE_ADMIN_URL\" -v ON_ERROR_STOP=1 -f db/tests/attendance_test.sql && psql \"$DATABASE_ADMIN_URL\" -v ON_ERROR_STOP=1 -f db/tests/screens_test.sql",
+    "db:test": "for f in db/tests/attendance_test.sql db/tests/screens_test.sql db/tests/presence_test.sql; do psql \"$DATABASE_ADMIN_URL\" -v ON_ERROR_STOP=1 -f \"$f\" || exit 1; done",
     "admin": "node --env-file-if-exists=.env scripts/admin.mjs"
   },
   "engines": {

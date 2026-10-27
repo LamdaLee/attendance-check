@@ -18,6 +18,8 @@ const MESSAGES: Record<string, string> = {
   invalid_name: "이름이 비어 있거나 너무 깁니다.",
   invalid_last4: "뒷자리는 숫자 4자리여야 합니다. 엑셀에서는 앞의 0이 빠지지 않게 텍스트로 저장해 주세요.",
   duplicate_in_file: "파일 안에 이름과 뒷자리가 같은 행이 있습니다.",
+  invalid_code: "출석코드가 맞지 않습니다. 강의장에 안내된 오늘의 코드를 확인해 주세요.",
+  code_inactive: "오늘은 출석코드가 켜져 있지 않습니다. 교육장 와이파이에 연결해 주세요.",
   range_too_long: "기간은 최대 31일까지 조회할 수 있습니다.",
   ambiguous: "같은 정보로 등록된 교육생이 있어 확인이 필요합니다. 운영자에게 말씀해 주세요.",
   rate_limited: "시도 횟수가 많습니다. 10분 후 다시 시도해 주세요.",
@@ -95,6 +97,9 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "enrollment.update": "수강 정보 변경",
   "export.csv": "CSV 내보내기",
   "access.set_password": "비밀번호 설정",
+  "code.on": "출석코드 켜기",
+  "code.renew": "출석코드 새로 발급",
+  "code.off": "출석코드 끄기",
 };
 
 export function noticeText(n: { kind: string; expectedTime?: string | null }): string {
