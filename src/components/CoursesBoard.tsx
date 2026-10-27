@@ -16,6 +16,7 @@ type Course = {
   classEnd: string;
   lateAfter: number;
   trainingMinutes: number;
+  lmsUrl: string;
   students: number;
 };
 type Day = { date: string; kind: "class" | "off"; start: string | null; end: string | null; minutes: number | null; place: string; note: string };
@@ -140,8 +141,34 @@ function CourseDetail({ course, onSaved }: { course: Course; onSaved: (t: string
         {error && <p className="notice error">{error}</p>}
         <div className="row" style={{ justifyContent: "flex-end" }}><button className="btn">저장</button></div>
       </form>
+      <LmsLink course={course} onSaved={onSaved} />
       <Schedule course={course} />
     </div>
+  );
+}
+
+// 학생 화면에서 출결 기록 뒤 LMS 로 바로 넘어가는 주소
+function LmsLink({ course, onSaved }: { course: Course; onSaved: (t: string) => void }) {
+  const [url, setUrl] = useState(course.lmsUrl);
+  const [error, setError] = useState<string | null>(null);
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const r = await api("/api/admin/courses", { action: "lms", courseId: course.id, url });
+    if (!r.ok) return setError(messageFor(r.code));
+    setError(null);
+    onSaved(url.trim() ? `${course.name} LMS 바로가기를 저장했습니다.` : `${course.name} LMS 바로가기를 껐습니다.`);
+  }
+  return (
+    <form className="panel" onSubmit={save}>
+      <h2>LMS 바로가기</h2>
+      <p className="small">교육생이 이 앱에서 입실·퇴실을 기록한 뒤 바로 LMS 출결 화면으로 넘어가는 버튼을 보여 줍니다. LMS 출결 화면 주소(https://…)를 넣고, 비우면 버튼을 숨깁니다. 교육생별 개인 주소가 아니라 모두에게 같은 주소여야 합니다.</p>
+      <div className="row">
+        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" maxLength={500}
+          style={{ flex: 1, minWidth: 220, padding: "9px 11px", border: "1.5px solid var(--line)", borderRadius: 10 }} />
+        <button className="btn" disabled={url.trim() === course.lmsUrl}>저장</button>
+      </div>
+      {error && <p className="notice error">{error}</p>}
+    </form>
   );
 }
 

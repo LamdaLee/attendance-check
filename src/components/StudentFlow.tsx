@@ -96,6 +96,8 @@ export default function StudentFlow({ code }: { code: string }) {
   const [networkOk, setNetworkOk] = useState(false);
   const [codeMode, setCodeMode] = useState(false);
   const [today, setToday] = useState<Today | null>(null);
+  // 과정에 LMS 출결 주소가 있으면 기록 뒤 바로 넘어갈 수 있게 보여 준다.
+  const [lmsUrl, setLmsUrl] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -128,6 +130,7 @@ export default function StudentFlow({ code }: { code: string }) {
     if (r.ok && r.campusCode === code) {
       setToday(r);
       setPhase("home");
+      getJson("/api/student/links").then((l) => setLmsUrl(l?.ok ? l.lmsUrl ?? null : null)).catch(() => {});
       return r as Today;
     }
     setToday(null);
@@ -359,6 +362,9 @@ export default function StudentFlow({ code }: { code: string }) {
                   {today.status === "checked_out" && (
                     <p className="notice" style={{ marginTop: 14 }}>오늘 퇴실까지 기록했습니다. 다시 입실해야 한다면 운영자에게 말씀해 주세요.</p>
                   )}
+                  {lmsUrl && (
+                    <a className="btn ghost block" style={{ marginTop: 10 }} href={lmsUrl} target="_blank" rel="noopener noreferrer">LMS 출결 열기 →</a>
+                  )}
                 </div>
 
                 <div className="card">
@@ -404,8 +410,20 @@ export default function StudentFlow({ code }: { code: string }) {
               <div><span>구분</span><b>{ACTION_LABEL[receipt.action]}</b></div>
               <div><span>기록 시각</span><b>{formatTime(receipt.at, true)}</b></div>
             </div>
-            <button className="btn block" onClick={backToHome}>오늘 기록 보기</button>
-            <p className="small" style={{ marginTop: 14 }}>LMS 출결은 별도로 확인해 주세요.</p>
+            {lmsUrl ? (
+              <>
+                <a className="btn block" href={lmsUrl} target="_blank" rel="noopener noreferrer">
+                  LMS에서도 {ACTION_LABEL[receipt.action]} 체크하기 →
+                </a>
+                <p className="small" style={{ margin: "8px 0 14px" }}>LMS 출결 화면이 새 창으로 열립니다. 거기서 {ACTION_LABEL[receipt.action]} 버튼을 눌러 주세요.</p>
+                <button className="btn plain block" onClick={backToHome}>오늘 기록 보기</button>
+              </>
+            ) : (
+              <>
+                <button className="btn block" onClick={backToHome}>오늘 기록 보기</button>
+                <p className="small" style={{ marginTop: 14 }}>LMS 출결은 별도로 확인해 주세요.</p>
+              </>
+            )}
           </div>
         )}
       </div>

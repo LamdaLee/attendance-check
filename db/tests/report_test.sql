@@ -71,6 +71,7 @@ begin
   perform set_config('t.e4', (select id from attendance.enrollments where name_key = '예시학생04')::text, false);
   perform set_config('t.ax', (select id from attendance.courses where name = 'AX' and region_id =
                               (select id from attendance.regions where code = 'daejeon'))::text, false);
+  perform set_config('t.h8901', encode(extensions.hmac('8901', 'dev-only-secret', 'sha256'), 'hex'), false);
   perform set_config('t.h0123', encode(extensions.hmac('0123', 'dev-only-secret', 'sha256'), 'hex'), false);
   perform set_config('t.h4567', encode(extensions.hmac('4567', 'dev-only-secret', 'sha256'), 'hex'), false);
   perform set_config('t.h2345', encode(extensions.hmac('2345', 'dev-only-secret', 'sha256'), 'hex'), false);
@@ -417,6 +418,19 @@ begin
   perform pg_temp.eq('course dup', r->>'code', 'duplicate');
   r := attendance.api_operator_course_create(dj, null, '디지털마케팅');
   perform pg_temp.eq('course create', r->>'ok', 'true');
+
+  -- 0008: LMS 바로가기
+  r := attendance.api_operator_course_lms(dj, ax, 'javascript:alert(1)');
+  perform pg_temp.eq('lms bad url', r->>'code', 'invalid_url');
+  r := attendance.api_operator_course_lms(bs, ax, 'https://lms.example.com/attend');
+  perform pg_temp.eq('lms busan', r->>'code', 'not_found');
+  r := attendance.api_operator_course_lms(dj, ax, 'https://lms.example.com/attend');
+  perform pg_temp.eq('lms save', r->>'ok', 'true');
+  r := attendance.api_operator_courses(dj, null);
+  perform pg_temp.eq('lms listed', (select x->>'lmsUrl' from jsonb_array_elements(r->'courses') x where (x->>'id')::bigint = ax), 'https://lms.example.com/attend');
+  perform attendance.api_student_verify('dev-daejeon-a', '예시학생03', current_setting('t.h8901'), '8.8.8.8', '\x94', 600);
+  r := attendance.api_student_links('\x94');
+  perform pg_temp.eq('student lms link', r->>'lmsUrl', 'https://lms.example.com/attend');
 end $$;
 
 reset role;

@@ -16,7 +16,8 @@ export const GET = operatorRoute(async ({ token, url }) => {
 });
 
 type Body = {
-  action?: "create" | "save" | "day";
+  action?: "create" | "save" | "day" | "lms";
+  url?: string;
   region?: string;
   name?: string;
   courseId?: number;
@@ -61,6 +62,10 @@ export const POST = operatorRoute(
         token, b.courseId, b.date, b.kind, b.kind === "class" ? b.start : null, b.kind === "class" ? b.end : null,
         b.kind === "class" ? b.minutes : null, b.place ?? "", b.note ?? "",
       ]));
+    }
+    if (b.action === "lms") {
+      if (!isId(b.courseId) || typeof b.url !== "string") return fail("bad_request");
+      return respond(await callApi("api_operator_course_lms", [token, b.courseId, b.url]));
     }
     return fail("bad_request");
   },
