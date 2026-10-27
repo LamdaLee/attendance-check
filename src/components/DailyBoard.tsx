@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useOperator } from "./AdminShell";
-import { ACTION_LABEL, STATUS_LABEL, formatTime, messageFor, todayInSeoul } from "@/lib/messages";
+import { ACTION_LABEL, STATUS_LABEL, formatTime, messageFor, noticeText, todayInSeoul } from "@/lib/messages";
 
 type Row = {
   enrollmentId: number;
@@ -13,6 +14,8 @@ type Row = {
   lastCheckOutAt: string | null;
   lastAction: string | null;
   lastEventAt: string | null;
+  corrected: boolean;
+  notices: { kind: string; expectedTime: string | null; reason: string }[];
 };
 
 const REFRESH_MS = 15_000;
@@ -79,13 +82,16 @@ export default function DailyBoard() {
             {failed ?? (updatedAt ? `마지막 갱신 ${formatTime(updatedAt.toISOString(), true)}${date === todayInSeoul() ? " · 15초 자동 갱신" : ""}` : "불러오는 중…")}
           </span>
         </div>
-        <button className="btn ghost no-print" onClick={() => window.print()}>캡처 · 인쇄</button>
+        <div className="row no-print">
+          <a className="btn plain" href={`/api/admin/export?region=${encodeURIComponent(region)}&from=${date}&to=${date}`}>CSV 내보내기</a>
+          <button className="btn ghost" onClick={() => window.print()}>캡처 · 인쇄</button>
+        </div>
       </div>
 
       <div className="print-meta">
         {regionName} · 대상일 {date} · 과정 {course || "전체"} · 상태 {status ? STATUS_LABEL[status] : "전체"}
         {query && ` · 이름 “${query}”`}<br />
-        자료 생성 {updatedAt ? updatedAt.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }) : "—"} 한국시간 · 원본 기록 기준 ·
+        자료 생성 {updatedAt ? updatedAt.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }) : "—"} 한국시간 · 원본 기록과 승인된 정정 반영 ·
         보조 출결 자료이며 공식 LMS의 출석 인정 판정을 대신하지 않습니다.
       </div>
 
@@ -118,21 +124,31 @@ export default function DailyBoard() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>이름</th><th>과정</th><th>입실</th><th>현재 상태</th><th>최근 기록</th><th>퇴실</th></tr>
+              <tr><th>이름</th><th>과정</th><th>입실</th><th>현재 상태</th><th>최근 기록</th><th>퇴실</th><th>사전 알림</th></tr>
             </thead>
             <tbody>
               {filtered.map((r) => (
                 <tr key={r.enrollmentId}>
-                  <td><b>{r.name}</b></td>
+                  <td><Link href={`/admin/students/${r.enrollmentId}?date=${date}`}><b>{r.name}</b></Link></td>
                   <td>{r.course}</td>
                   <td>{formatTime(r.firstCheckInAt)}</td>
-                  <td><span className={`tag ${r.status}`}>{STATUS_LABEL[r.status]}</span></td>
+                  <td>
+                    <span className={`tag ${r.status}`}>{STATUS_LABEL[r.status]}</span>
+                    {r.corrected && <span className="tag warn"> 정정</span>}
+                  </td>
                   <td>{r.lastAction ? `${formatTime(r.lastEventAt)} ${ACTION_LABEL[r.lastAction]}` : "—"}</td>
                   <td>{formatTime(r.lastCheckOutAt)}</td>
+                  <td>
+                    {r.notices.map((n, i) => (
+                      <span key={i} className={`tag ${n.kind === "absent" ? "danger" : "warn"}`} title={n.reason} style={{ marginRight: 4 }}>
+                        {noticeText(n)}
+                      </span>
+                    ))}
+                  </td>
                 </tr>
               ))}
               {rows && filtered.length === 0 && (
-                <tr><td colSpan={6} className="small center">조건에 맞는 교육생이 없습니다.</td></tr>
+                <tr><td colSpan={7} className="small center">조건에 맞는 교육생이 없습니다.</td></tr>
               )}
             </tbody>
           </table>

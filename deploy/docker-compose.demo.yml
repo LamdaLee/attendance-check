@@ -4,6 +4,7 @@
 #   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
 #
 # 예시 교육생: 예시학생01 / 0123 (대전 교육장 A, QR 주소 /c/dev-daejeon-a)
+# 예시학생05~12 의 뒷자리는 1555, 1666, … 1999, 2110, 2221, 2332 (1000 + 번호×111)
 services:
   db:
     image: postgres:16-alpine
@@ -16,8 +17,13 @@ services:
       DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?DEMO_ADMIN_PASSWORD 를 지정해 주세요}
     volumes:
       - ../db/migrations/0001_init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
-      - ../db/seed/dev.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
-      - ./demo-init.sh:/docker-entrypoint-initdb.d/03-demo.sh:ro
+      - ../db/migrations/0002_screens.sql:/docker-entrypoint-initdb.d/02-screens.sql:ro
+      - ../db/migrations/0003_notices.sql:/docker-entrypoint-initdb.d/03-notices.sql:ro
+      - ../db/seed/dev.sql:/docker-entrypoint-initdb.d/10-seed.sql:ro
+      - ../db/seed/dev_history.sql:/docker-entrypoint-initdb.d/11-history.sql:ro
+      - ./demo-init.sh:/docker-entrypoint-initdb.d/20-demo.sh:ro
+      # 이후 마이그레이션을 이미 떠 있는 데모 DB에 적용할 때 쓰는 경로
+      - ../db/migrations:/migrations:ro
       - demo_db:/var/lib/postgresql/data
     # 포트를 외부에 열지 않는다. 앱 컨테이너만 접근한다.
 

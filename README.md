@@ -5,6 +5,23 @@
 - 앱: Next.js(모바일 웹) — 학생 화면 `/c/<교육장 QR 코드>`, 운영자 화면 `/admin`
 - DB: 직접 설치한 Supabase 의 Postgres, 전용 스키마 `attendance`
 
+## 기능
+
+| 화면 | 내용 |
+| --- | --- |
+| 학생 `/c/<코드>` | 이름+뒷자리 본인 확인, 입실·외출·복귀·퇴실, 오늘 기록, 지각·결석·조퇴 예정 알림, 정정 요청 |
+| 운영자 · 출결 현황 | 날짜·과정·상태·이름 조회, 15초 자동 갱신, 사전 알림·정정 표시, 인쇄, CSV |
+| 운영자 · 사전 알림 | 오늘부터 14일까지의 지각·결석·조퇴 예정 목록 |
+| 운영자 · 누락 확인 | 지난 날짜의 퇴실 없음·복귀 없음·기록 없음 (결석으로 단정하지 않음) |
+| 운영자 · 정정 요청 | 원본과 반영 기록 비교, 승인하며 정정, 반려, 직권 정정 |
+| 운영자 · 교육생 | 명단 조회, 한 명 추가, CSV 일괄 등록(검증 후 저장), 중지·종료·과정 변경·뒷자리 재등록 |
+| 운영자 · 학생별 기록 | 월별 기록, 날짜별 상세와 정정 이력 |
+| 운영자 · 교육장 · IP | 허용 IP 추가·변경·중지·삭제, 교육장 QR |
+| 운영자 · 변경 이력 | IP·명단·정정·내보내기·비밀번호 변경 기록 |
+| 총괄 · 총괄 현황 | 세 지역 현황, 허용 IP 없는 교육장 경고, 지역 전환 |
+
+**교육장 밖에서 할 수 있는 것**: 본인 확인 후 사전 알림과 정정 요청만 가능합니다. 출결 버튼과 오늘 기록 보기는 교육장 회선에서만 됩니다(다른 사람의 이름·뒷자리를 아는 사람이 기록을 엿보지 못하게).
+
 ## 구성
 
 ```
@@ -42,9 +59,10 @@
 npm install
 cp .env.example .env          # DATABASE_URL, DATABASE_ADMIN_URL 수정
 
-npm run db:migrate            # 스키마·함수 생성
-npm run db:seed:dev           # 예시 데이터 (운영 DB에는 실행하지 않음)
-npm run db:test               # DB 함수 검증 → ALL TESTS PASSED
+npm run db:migrate            # db/migrations/*.sql 을 번호 순서대로 적용
+npm run db:seed:dev           # 예시 데이터 + 지난 평일 기록 (운영 DB에는 실행하지 않음)
+npm run db:test               # DB 함수 검증 → ALL TESTS PASSED, SCREENS TESTS PASSED
+                              # (테스트는 seed/dev.sql 만 넣은 DB에서 실행)
 psql "$DATABASE_ADMIN_URL" -c "alter role attendance_app login password 'dev'"
 
 npm run dev
@@ -120,6 +138,22 @@ echo "주소: https://${IP//./-}.sslip.io/admin   운영자 비밀번호(모든 
 - 운영자 화면에서 대전으로 입장 → **교육장 · IP** → 시험할 휴대폰·와이파이에서 **현재 접속 IP 확인** → 그 주소를 사용 중으로 등록 → 화면의 QR 로 학생 흐름을 시험합니다.
 - 집 PC Supabase 로 옮길 때는 `.env` 에 `DATABASE_URL`, 새 `STUDENT_MATCH_SECRET` 을 넣고 `docker compose up -d` (demo 파일 없이) 로 다시 띄웁니다. 데모 데이터는 옮기지 않습니다.
 - 데모 DB 를 지우려면 `docker compose -f docker-compose.yml -f docker-compose.demo.yml down -v`.
+- 예시 교육생: `예시학생01`/`0123`, `예시학생02`/`4567`, `예시학생03`/`8901`, `예시학생04`/`2345`, `예시학생05`~`12` 는 `1555`, `1666` … (1000 + 번호×111).
+
+#### 이미 띄운 데모 서버를 새 버전으로 바꾸기
+
+데모 데이터는 버리고 새로 만듭니다(지난 평일 기록이 들어갑니다). 운영자 비밀번호는 `.env` 그대로입니다. 허용 IP 는 다시 등록해야 합니다.
+
+```bash
+cd ~/attendance-check && git pull
+cd deploy
+C="docker compose -f docker-compose.yml -f docker-compose.demo.yml"
+$C down -v
+nohup $C up -d --build > ~/deploy.log 2>&1 &
+tail -f ~/deploy.log
+```
+
+데이터를 유지하고 싶다면 `down -v` 대신 `$C up -d db` 후 `$C exec -T db sh -c 'for f in /migrations/0002_screens.sql /migrations/0003_notices.sql; do psql -v ON_ERROR_STOP=1 -U postgres -d attendance -f $f || exit 1; done'` 로 마이그레이션만 적용하고 앱을 다시 빌드합니다.
 
 ### 4. 교육장 IP 등록
 
@@ -131,9 +165,13 @@ echo "주소: https://${IP//./-}.sslip.io/admin   운영자 비밀번호(모든 
 ## 디렉터리
 
 ```
-db/migrations/0001_init.sql   스키마·함수·권한
+db/migrations/0001_init.sql   스키마·출결·IP 관리·권한
+db/migrations/0002_screens.sql 학생별 기록·정정·명단·누락 확인·변경 이력·내보내기·총괄 현황
+db/migrations/0003_notices.sql 사전 알림, 교육장 밖 본인 확인
 db/seed/dev.sql               로컬 예시 데이터
+db/seed/dev_history.sql       데모용 지난 평일 기록
 db/tests/attendance_test.sql  DB 함수 검증 (순서·중복·IP·지역 권한·IP 관리)
+db/tests/screens_test.sql     DB 함수 검증 (정정·명단·누락·이력·내보내기·총괄·알림)
 scripts/admin.mjs             지역·교육장·과정·비밀번호·명단 관리
 src/app/c/[code]              학생 화면
 src/app/admin                 운영자 화면 (출결 현황, 교육장·IP)
@@ -141,11 +179,9 @@ src/app/api                   API (DB 함수 호출만 함)
 deploy/                       Caddy + Docker Compose
 ```
 
-## 다음 단계 (요구서 기준 미구현)
+## 남은 일
 
-- 학생별 월간 기록 화면 (F13)
-- 정정 요청·승인 (F15) — 테이블만 준비됨
-- 교육생 명단 화면과 웹 일괄 등록 (F10·F11) — 현재는 관리 스크립트
-- 누락 확인 목록 (F14), 변경 이력 화면 (F18), CSV 내보내기 (F17)
-- 총괄 전체 현황 화면 (F12 WF12) — 현재는 총괄이 지역을 전환해서 조회
-- 백업·복구 절차 (F20)
+- 백업·복구 절차와 복구 시험 (F20)
+- 지역 간 교육생 이동 화면 (현재는 기존 수강 종료 후 새 지역에 등록)
+- 지역·교육장·과정 추가 화면 (현재는 관리 스크립트)
+- 사전 알림 도착 시 운영자 알림(메신저 등)

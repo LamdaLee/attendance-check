@@ -21,8 +21,14 @@ export function useOperator(): Ctx {
 }
 
 const NAV = [
+  { href: "/admin/overview", label: "총괄 현황", superOnly: true },
   { href: "/admin/daily", label: "출결 현황" },
+  { href: "/admin/notices", label: "사전 알림" },
+  { href: "/admin/issues", label: "누락 확인" },
+  { href: "/admin/corrections", label: "정정 요청" },
+  { href: "/admin/students", label: "교육생" },
   { href: "/admin/networks", label: "교육장 · IP" },
+  { href: "/admin/audit", label: "변경 이력" },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
@@ -87,8 +93,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             )}
           </div>
           <nav className="a-nav">
-            {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className={pathname === n.href ? "active" : undefined}>{n.label}</Link>
+            {NAV.filter((n) => !n.superOnly || operator.scope === "super").map((n) => (
+              <Link key={n.href} href={n.href} className={pathname.startsWith(n.href) ? "active" : undefined}>{n.label}</Link>
             ))}
           </nav>
           <div className="a-user">

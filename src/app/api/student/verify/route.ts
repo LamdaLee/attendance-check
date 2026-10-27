@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     const result = await callApi("api_student_verify", [
       body.code, name, last4Hmac(body.last4!), ip, hashToken(token), STUDENT_SESSION_SECONDS,
     ]);
+    if (result.code === "not_found") result.code = "student_not_found";
     return respond(result, result.ok
       ? { cookie: { name: STUDENT_COOKIE, value: token, maxAge: STUDENT_SESSION_SECONDS } }
       : undefined);

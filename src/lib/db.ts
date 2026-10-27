@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { env } from "./env";
 
 // 앱은 attendance 스키마의 api_* 함수만 호출한다. 테이블 직접 조회는 DB 권한으로 막혀 있다.
-type ApiFunction =
+export type ApiFunction =
   | "api_campus_info"
   | "api_student_verify"
   | "api_student_today"
@@ -13,7 +13,26 @@ type ApiFunction =
   | "api_operator_me"
   | "api_operator_daily"
   | "api_operator_networks"
-  | "api_operator_network_save";
+  | "api_operator_network_save"
+  | "api_operator_student"
+  | "api_operator_day"
+  | "api_student_correction_request"
+  | "api_student_corrections"
+  | "api_operator_corrections"
+  | "api_operator_correction_save"
+  | "api_operator_correction_reject"
+  | "api_operator_courses"
+  | "api_operator_roster"
+  | "api_operator_enroll"
+  | "api_operator_enrollment_update"
+  | "api_operator_issues"
+  | "api_operator_audit"
+  | "api_operator_export"
+  | "api_operator_overview"
+  | "api_student_notice"
+  | "api_student_notices"
+  | "api_student_notice_cancel"
+  | "api_operator_notices";
 
 export type ApiResult = { ok: boolean; code?: string; [key: string]: unknown };
 

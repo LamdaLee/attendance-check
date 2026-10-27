@@ -1,4 +1,4 @@
--- DB 함수 검증. dev 시드가 들어간 DB에서 실행하며, 끝나면 모두 되돌린다.
+-- DB 함수 검증 (0001~0003 적용 후). dev 시드가 들어간 DB에서 실행하며, 끝나면 모두 되돌린다.
 --   psql "$DATABASE_ADMIN_URL" -v ON_ERROR_STOP=1 -f db/tests/attendance_test.sql
 -- 실패하면 에러로 멈춘다. 마지막에 'ALL TESTS PASSED' 가 출력되면 통과.
 
@@ -37,15 +37,20 @@ begin
   perform pg_temp.eq('campus missing', r->>'code', 'campus_not_found');
 
   -- F03 · 본인 대조
-  r := attendance.api_student_verify('dev-daejeon-a', '예시학생01', hmac0123, bad_ip, tok, 600);
-  perform pg_temp.eq('verify bad ip', r->>'code', 'network_denied');
+  -- 교육장 밖: 본인 확인은 되지만 회선 미확인 세션이 되고, 출결 기록은 보여주지 않는다.
+  r := attendance.api_student_verify('dev-daejeon-a', '예시학생01', hmac0123, bad_ip, '\x03', 600);
+  perform pg_temp.eq('verify off network', r->>'networkVerified', 'false');
+  r := attendance.api_student_today('\x03');
+  perform pg_temp.eq('today off network hides status', r ? 'status', false);
+  r := attendance.api_student_action('\x03', 'check_in', gen_random_uuid(), bad_ip);
+  perform pg_temp.eq('action off network', r->>'code', 'network_denied');
   r := attendance.api_student_verify('dev-daejeon-a', '예시학생01', 'wrong', ok_ip, tok, 600);
   perform pg_temp.eq('verify wrong last4', r->>'code', 'not_found');
   -- A06 · 다른 지역 QR
   r := attendance.api_student_verify('dev-busan-a', '예시학생01', hmac0123, ok_ip, tok, 600);
-  perform pg_temp.eq('verify other region', r->>'code', 'network_denied');
+  perform pg_temp.eq('verify other region', r->>'code', 'not_found');
   r := attendance.api_student_verify('dev-daejeon-a', '예시학생01', hmac0123, ok_ip, tok, 600);
-  perform pg_temp.eq('verify ok', r->>'ok', 'true');
+  perform pg_temp.eq('verify ok', r->>'networkVerified', 'true');
   perform pg_temp.eq('verify name', r->>'studentName', '예시학생01');
 
   r := attendance.api_student_today(tok);
